@@ -1,0 +1,246 @@
+{
+  "package": "packaging",
+  "old_version": "21.3",
+  "new_version": "24.0",
+  "counts": {
+    "gone": 12,
+    "reshaped": 5,
+    "added": 10,
+    "silent": 2
+  },
+  "compared": 7,
+  "unreachable": 15,
+  "reaching_you": 8,
+  "seconds": 1.9,
+  "changes": [
+    {
+      "kind": "gone",
+      "qualname": "packaging.requirements.LegacySpecifier.contains",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": [
+        "src/build/_util.py:66"
+      ]
+    },
+    {
+      "kind": "gone",
+      "qualname": "packaging.requirements.Specifier.contains",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": [
+        "src/build/_util.py:66"
+      ]
+    },
+    {
+      "kind": "gone",
+      "qualname": "packaging.specifiers.LegacySpecifier.contains",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": [
+        "src/build/_util.py:66"
+      ]
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "packaging.requirements.SpecifierSet.contains",
+      "detail": "(self, item: packaging.version.Version | packaging.version.LegacyVersion | str, prereleases: bool | None = None) -> bool -> (self, item: packaging.version.Version | str, prereleases: bool | None = None, installed: bool | None = None) -> bool",
+      "witness": null,
+      "used_at": [
+        "src/build/_util.py:66"
+      ]
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "packaging.specifiers.SpecifierSet.contains",
+      "detail": "(self, item: packaging.version.Version | packaging.version.LegacyVersion | str, prereleases: bool | None = None) -> bool -> (self, item: packaging.version.Version | str, prereleases: bool | None = None, installed: bool | None = None) -> bool",
+      "witness": null,
+      "used_at": [
+        "src/build/_util.py:66"
+      ]
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "packaging.utils.canonicalize_name",
+      "detail": "(name: str) -> packaging.utils.NormalizedName -> (name: str, *, validate: bool = False) -> packaging.utils.NormalizedName",
+      "witness": null,
+      "used_at": [
+        "src/build/env.py:241",
+        "src/build/env.py:211"
+      ]
+    },
+    {
+      "kind": "added",
+      "qualname": "packaging.metadata.parse_email",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [
+        "src/build/__main__.py:485"
+      ]
+    },
+    {
+      "kind": "added",
+      "qualname": "packaging.requirements.canonicalize_name",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [
+        "src/build/env.py:241",
+        "src/build/env.py:211"
+      ]
+    },
+    {
+      "kind": "silent",
+      "qualname": "packaging.tags.sys_tags",
+      "detail": "same signature (*, warn: bool = False) -> Iterator[packaging.tags.Tag]; 1 of 1 exercised inputs disagree",
+      "witness": {
+        "args": "()",
+        "old": "ok: [<cp314-cp314-win_amd64 @ id>, <cp314-abi3-win_amd64 @ id>, <cp314-none-win_amd64 @ id>, <cp313-abi3-win_amd64 @ id>, <cp312-abi3-win_amd64 @ id>, <cp311-abi3-win_amd64 @ id>, <cp310-abi3-win_amd64 @ id>, <cp39-abi3-win_amd64 @ id>, <cp38-abi3-win_amd64 @ id>, <cp37-abi3-win_amd64 @ id>, <cp36-abi3-win_amd64 @ id>, <cp35-abi3-win_amd64 @ id>, <cp34-abi3-win_amd64 @ id>, <cp33-abi3-win_amd64 @ id>, <cp32-abi3-win_amd64 @ id>, <py314-none-win_amd64 @ id>, <py3-none-win_amd64 @ id>, <py313-none-win_amd64 @ id>, <py312-none-win_amd64 @ id>, <py311-none-win_amd64 @ id>, <py310-none-win_amd64 @ id>, <py39-none-win_amd64 @ id>, <py38-none-win_amd64 @ id>, <py37-none-win_amd64 @ id>, <py36-none-win_amd64 @ id>, <py35-none-win_amd64 @ id>, <py34-none-win_amd64 @ id>, <py33-none-win_amd64 @ id>, <py32-none-win_amd64 @ id>, <py31-none-win_amd64 @ id>, <py30-none-win_amd64 @ id>, <py314-none-any @ id>, <py3-none-any @ id>, <py313-none-any @ id>, <py312-none-any @ id>, <py311-none-any @ id>, <py310-none-any @ id>, <py39-none-any @ id>, <py38-none-any @ id>, <py37-none-any @ id>, <py36-none-any @ id>, <py35-none-any @ id>, <py34-none-any @ id>, <py33-none-any @ id>, <py32-none-any @ id>, <py31-none-any @ id>, <py30-none-any @ id>]",
+        "new": "ok: [<cp314-cp314-win_amd64 @ id>, <cp314-abi3-win_amd64 @ id>, <cp314-none-win_amd64 @ id>, <cp313-abi3-win_amd64 @ id>, <cp312-abi3-win_amd64 @ id>, <cp311-abi3-win_amd64 @ id>, <cp310-abi3-win_amd64 @ id>, <cp39-abi3-win_amd64 @ id>, <cp38-abi3-win_amd64 @ id>, <cp37-abi3-win_amd64 @ id>, <cp36-abi3-win_amd64 @ id>, <cp35-abi3-win_amd64 @ id>, <cp34-abi3-win_amd64 @ id>, <cp33-abi3-win_amd64 @ id>, <cp32-abi3-win_amd64 @ id>, <py314-none-win_amd64 @ id>, <py3-none-win_amd64 @ id>, <py313-none-win_amd64 @ id>, <py312-none-win_amd64 @ id>, <py311-none-win_amd64 @ id>, <py310-none-win_amd64 @ id>, <py39-none-win_amd64 @ id>, <py38-none-win_amd64 @ id>, <py37-none-win_amd64 @ id>, <py36-none-win_amd64 @ id>, <py35-none-win_amd64 @ id>, <py34-none-win_amd64 @ id>, <py33-none-win_amd64 @ id>, <py32-none-win_amd64 @ id>, <py31-none-win_amd64 @ id>, <py30-none-win_amd64 @ id>, <cp314-none-any @ id>, <py314-none-any @ id>, <py3-none-any @ id>, <py313-none-any @ id>, <py312-none-any @ id>, <py311-none-any @ id>, <py310-none-any @ id>, <py39-none-any @ id>, <py38-none-any @ id>, <py37-none-any @ id>, <py36-none-any @ id>, <py35-none-any @ id>, <py34-none-any @ id>, <py33-none-any @ id>, <py32-none-any @ id>, <py31-none-any @ id>, <py30-none-any @ id>]"
+      },
+      "used_at": []
+    },
+    {
+      "kind": "silent",
+      "qualname": "packaging.version.parse",
+      "detail": "same signature (version: str) -> ForwardRef('LegacyVersion') | ForwardRef('Version'); 3 of 7 exercised inputs disagree",
+      "witness": {
+        "args": "(\"\",)",
+        "old": "ok: <LegacyVersion('')>",
+        "new": "raise: InvalidVersion: Invalid version: ''"
+      },
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "packaging.requirements.LegacySpecifier",
+      "detail": "a class that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "packaging.requirements.LegacySpecifier.filter",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "packaging.requirements.Specifier",
+      "detail": "a class that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "packaging.requirements.Specifier.filter",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "packaging.specifiers.LegacySpecifier",
+      "detail": "a class that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "packaging.specifiers.LegacySpecifier.filter",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "packaging.specifiers.LegacyVersion",
+      "detail": "a class that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "packaging.specifiers.parse",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "packaging.version.LegacyVersion",
+      "detail": "a class that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "packaging.specifiers.canonicalize_version",
+      "detail": "(version: packaging.version.Version | str) -> str -> (version: packaging.version.Version | str, *, strip_trailing_zero: bool = True) -> str",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "packaging.utils.canonicalize_version",
+      "detail": "(version: packaging.version.Version | str) -> str -> (version: packaging.version.Version | str, *, strip_trailing_zero: bool = True) -> str",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "packaging.metadata.InvalidMetadata",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "packaging.metadata.Metadata",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "packaging.metadata.Metadata.from_email",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "packaging.metadata.Metadata.from_raw",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "packaging.metadata.RawMetadata",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "packaging.requirements.ParserSyntaxError",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "packaging.utils.InvalidName",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "packaging.utils.is_normalized_name",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    }
+  ]
+}

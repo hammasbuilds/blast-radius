@@ -1,0 +1,2886 @@
+{
+  "package": "click",
+  "old_version": "7.1.2",
+  "new_version": "8.1.7",
+  "counts": {
+    "gone": 50,
+    "reshaped": 68,
+    "added": 292
+  },
+  "compared": 0,
+  "unreachable": 400,
+  "reaching_you": 0,
+  "seconds": 1.2,
+  "changes": [
+    {
+      "kind": "gone",
+      "qualname": "click.Argument.full_process_value",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.CommandCollection.resultcallback",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.Group.resultcallback",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.MultiCommand.resultcallback",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.Option.full_process_value",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.Parameter.full_process_value",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.Argument.full_process_value",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.CommandCollection.resultcallback",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.Group.resultcallback",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.IntRange",
+      "detail": "a class that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.IntRange.convert",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.IntRange.fail",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.IntRange.get_metavar",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.IntRange.get_missing_message",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.IntRange.split_envvar_value",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.MultiCommand.resultcallback",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.Option.full_process_value",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.Parameter.full_process_value",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.convert_type",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.fast_exit",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.get_os_args",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.invoke_param_callback",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.isidentifier",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.iteritems",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.decorators.Argument.full_process_value",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.decorators.Group.resultcallback",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.decorators.Option.full_process_value",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.decorators.iteritems",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.exceptions.filename_to_ui",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.formatting.get_terminal_size",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.get_os_args",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.get_terminal_size",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.termui.Path",
+      "detail": "a class that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.termui.Path.coerce_path_result",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.termui.Path.convert",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.termui.Path.fail",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.termui.Path.get_metavar",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.termui.Path.get_missing_message",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.termui.Path.split_envvar_value",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.termui.get_terminal_size",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.termui.get_winterm_size",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.testing.iteritems",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.types.filename_to_ui",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.types.get_filesystem_encoding",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.types.get_streerror",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.utils.filename_to_ui",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.utils.get_filesystem_encoding",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.utils.get_os_args",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.utils.get_streerror",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.utils.is_bytes",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.Argument.get_default",
+      "detail": "(self, ctx) -> (self, ctx: click.core.Context, call: bool = True) -> Any | Callable[[], Any] | None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.BaseCommand.main",
+      "detail": "(self, args=None, prog_name=None, complete_var=None, standalone_mode=True, **extra) -> (self, args: Sequence[str] | None = None, prog_name: str | None = None, complete_var: str | None = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any) -> Any",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.Command.main",
+      "detail": "(self, args=None, prog_name=None, complete_var=None, standalone_mode=True, **extra) -> (self, args: Sequence[str] | None = None, prog_name: str | None = None, complete_var: str | None = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any) -> Any",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.CommandCollection.main",
+      "detail": "(self, args=None, prog_name=None, complete_var=None, standalone_mode=True, **extra) -> (self, args: Sequence[str] | None = None, prog_name: str | None = None, complete_var: str | None = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any) -> Any",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.Context.forward",
+      "detail": "(*args, **kwargs) -> (_Context__self, _Context__cmd: 'Command', *args: Any, **kwargs: Any) -> Any",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.Context.invoke",
+      "detail": "(*args, **kwargs) -> (_Context__self, _Context__callback: ForwardRef('Command') | ForwardRef('t.Callable[..., V]'), *args: Any, **kwargs: Any) -> Any | ~V",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.Context.lookup_default",
+      "detail": "(self, name) -> (self, name: str, call: bool = True) -> Any | None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.FloatRange",
+      "detail": "(min=None, max=None, clamp=False) -> (min: float | None = None, max: float | None = None, min_open: bool = False, max_open: bool = False, clamp: bool = False) -> None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.Group.main",
+      "detail": "(self, args=None, prog_name=None, complete_var=None, standalone_mode=True, **extra) -> (self, args: Sequence[str] | None = None, prog_name: str | None = None, complete_var: str | None = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any) -> Any",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.IntRange",
+      "detail": "(min=None, max=None, clamp=False) -> (min: float | None = None, max: float | None = None, min_open: bool = False, max_open: bool = False, clamp: bool = False) -> None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.MultiCommand.main",
+      "detail": "(self, args=None, prog_name=None, complete_var=None, standalone_mode=True, **extra) -> (self, args: Sequence[str] | None = None, prog_name: str | None = None, complete_var: str | None = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any) -> Any",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.Option",
+      "detail": "(param_decls=None, show_default=False, prompt=False, confirmation_prompt=False, hide_input=False, is_flag=None, flag_value=None, multiple=False, count=False, allow_from_autoenv=True, type=None, help=None, hidden=False, show_choices=True, show_envvar=False, **attrs) -> (param_decls: Sequence[str] | N",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.Option.get_default",
+      "detail": "(self, ctx) -> (self, ctx: click.core.Context, call: bool = True) -> Any | Callable[[], Any] | None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.OptionParser.add_argument",
+      "detail": "(self, dest, nargs=1, obj=None) -> (self, obj: 'CoreArgument', dest: str | None, nargs: int = 1) -> None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.OptionParser.add_option",
+      "detail": "(self, opts, dest, action=None, nargs=1, const=None, obj=None) -> (self, obj: 'CoreOption', opts: Sequence[str], dest: str | None, action: str | None = None, nargs: int = 1, const: Any | None = None) -> None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.Parameter",
+      "detail": "(param_decls=None, type=None, required=False, default=None, callback=None, nargs=None, metavar=None, expose_value=True, is_eager=False, envvar=None, autocompletion=None) -> (param_decls: Sequence[str] | None = None, type: click.types.ParamType | Any | None = None, required: bool = False, default: An",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.Parameter.get_default",
+      "detail": "(self, ctx) -> (self, ctx: click.core.Context, call: bool = True) -> Any | Callable[[], Any] | None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.Path",
+      "detail": "(exists=False, file_okay=True, dir_okay=True, writable=False, readable=True, resolve_path=False, allow_dash=False, path_type=None) -> (exists: bool = False, file_okay: bool = True, dir_okay: bool = True, writable: bool = False, readable: bool = True, resolve_path: bool = False, allow_dash: bool = Fa",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.Path.coerce_path_result",
+      "detail": "(self, rv) -> (self, value: 't.Union[str, os.PathLike[str]]') -> 't.Union[str, bytes, os.PathLike[str]]'",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.argument",
+      "detail": "(*param_decls, **attrs) -> (*param_decls: str, cls: Type[click.core.Argument] | None = None, **attrs: Any) -> Callable[[~FC], ~FC]",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.confirmation_option",
+      "detail": "(*param_decls, **attrs) -> (*param_decls: str, **kwargs: Any) -> Callable[[~FC], ~FC]",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.core.Argument.get_default",
+      "detail": "(self, ctx) -> (self, ctx: click.core.Context, call: bool = True) -> Any | Callable[[], Any] | None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.core.BaseCommand.main",
+      "detail": "(self, args=None, prog_name=None, complete_var=None, standalone_mode=True, **extra) -> (self, args: Sequence[str] | None = None, prog_name: str | None = None, complete_var: str | None = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any) -> Any",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.core.Command.main",
+      "detail": "(self, args=None, prog_name=None, complete_var=None, standalone_mode=True, **extra) -> (self, args: Sequence[str] | None = None, prog_name: str | None = None, complete_var: str | None = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any) -> Any",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.core.CommandCollection.main",
+      "detail": "(self, args=None, prog_name=None, complete_var=None, standalone_mode=True, **extra) -> (self, args: Sequence[str] | None = None, prog_name: str | None = None, complete_var: str | None = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any) -> Any",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.core.Context.forward",
+      "detail": "(*args, **kwargs) -> (_Context__self, _Context__cmd: 'Command', *args: Any, **kwargs: Any) -> Any",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.core.Context.invoke",
+      "detail": "(*args, **kwargs) -> (_Context__self, _Context__callback: ForwardRef('Command') | ForwardRef('t.Callable[..., V]'), *args: Any, **kwargs: Any) -> Any | ~V",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.core.Context.lookup_default",
+      "detail": "(self, name) -> (self, name: str, call: bool = True) -> Any | None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.core.Group.main",
+      "detail": "(self, args=None, prog_name=None, complete_var=None, standalone_mode=True, **extra) -> (self, args: Sequence[str] | None = None, prog_name: str | None = None, complete_var: str | None = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any) -> Any",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.core.MultiCommand.main",
+      "detail": "(self, args=None, prog_name=None, complete_var=None, standalone_mode=True, **extra) -> (self, args: Sequence[str] | None = None, prog_name: str | None = None, complete_var: str | None = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any) -> Any",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.core.Option",
+      "detail": "(param_decls=None, show_default=False, prompt=False, confirmation_prompt=False, hide_input=False, is_flag=None, flag_value=None, multiple=False, count=False, allow_from_autoenv=True, type=None, help=None, hidden=False, show_choices=True, show_envvar=False, **attrs) -> (param_decls: Sequence[str] | N",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.core.Option.get_default",
+      "detail": "(self, ctx) -> (self, ctx: click.core.Context, call: bool = True) -> Any | Callable[[], Any] | None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.core.OptionParser.add_argument",
+      "detail": "(self, dest, nargs=1, obj=None) -> (self, obj: 'CoreArgument', dest: str | None, nargs: int = 1) -> None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.core.OptionParser.add_option",
+      "detail": "(self, opts, dest, action=None, nargs=1, const=None, obj=None) -> (self, obj: 'CoreOption', opts: Sequence[str], dest: str | None, action: str | None = None, nargs: int = 1, const: Any | None = None) -> None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.core.Parameter",
+      "detail": "(param_decls=None, type=None, required=False, default=None, callback=None, nargs=None, metavar=None, expose_value=True, is_eager=False, envvar=None, autocompletion=None) -> (param_decls: Sequence[str] | None = None, type: click.types.ParamType | Any | None = None, required: bool = False, default: An",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.core.Parameter.get_default",
+      "detail": "(self, ctx) -> (self, ctx: click.core.Context, call: bool = True) -> Any | Callable[[], Any] | None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.core.style",
+      "detail": "(text, fg=None, bg=None, bold=None, dim=None, underline=None, blink=None, reverse=None, reset=True) -> (text: Any, fg: int | Tuple[int, int, int] | str | None = None, bg: int | Tuple[int, int, int] | str | None = None, bold: bool | None = None, dim: bool | None = None, underline: bool | None = None,",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.decorators.Argument.get_default",
+      "detail": "(self, ctx) -> (self, ctx: click.core.Context, call: bool = True) -> Any | Callable[[], Any] | None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.decorators.Command.main",
+      "detail": "(self, args=None, prog_name=None, complete_var=None, standalone_mode=True, **extra) -> (self, args: Sequence[str] | None = None, prog_name: str | None = None, complete_var: str | None = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any) -> Any",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.decorators.Group.main",
+      "detail": "(self, args=None, prog_name=None, complete_var=None, standalone_mode=True, **extra) -> (self, args: Sequence[str] | None = None, prog_name: str | None = None, complete_var: str | None = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any) -> Any",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.decorators.Option",
+      "detail": "(param_decls=None, show_default=False, prompt=False, confirmation_prompt=False, hide_input=False, is_flag=None, flag_value=None, multiple=False, count=False, allow_from_autoenv=True, type=None, help=None, hidden=False, show_choices=True, show_envvar=False, **attrs) -> (param_decls: Sequence[str] | N",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.decorators.Option.get_default",
+      "detail": "(self, ctx) -> (self, ctx: click.core.Context, call: bool = True) -> Any | Callable[[], Any] | None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.decorators.argument",
+      "detail": "(*param_decls, **attrs) -> (*param_decls: str, cls: Type[click.core.Argument] | None = None, **attrs: Any) -> Callable[[~FC], ~FC]",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.decorators.confirmation_option",
+      "detail": "(*param_decls, **attrs) -> (*param_decls: str, **kwargs: Any) -> Callable[[~FC], ~FC]",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.decorators.group",
+      "detail": "(name=None, **attrs) -> (name: str | Callable[..., Any] | None = None, cls: Type[~GrpType] | None = None, **attrs: Any) -> click.core.Group | Callable[[Callable[..., Any]], click.core.Group | ~GrpType]",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.decorators.help_option",
+      "detail": "(*param_decls, **attrs) -> (*param_decls: str, **kwargs: Any) -> Callable[[~FC], ~FC]",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.decorators.option",
+      "detail": "(*param_decls, **attrs) -> (*param_decls: str, cls: Type[click.core.Option] | None = None, **attrs: Any) -> Callable[[~FC], ~FC]",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.decorators.password_option",
+      "detail": "(*param_decls, **attrs) -> (*param_decls: str, **kwargs: Any) -> Callable[[~FC], ~FC]",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.decorators.version_option",
+      "detail": "(version=None, *param_decls, **attrs) -> (version: str | None = None, *param_decls: str, package_name: str | None = None, prog_name: str | None = None, message: str | None = None, **kwargs: Any) -> Callable[[~FC], ~FC]",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.group",
+      "detail": "(name=None, **attrs) -> (name: str | Callable[..., Any] | None = None, cls: Type[~GrpType] | None = None, **attrs: Any) -> click.core.Group | Callable[[Callable[..., Any]], click.core.Group | ~GrpType]",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.help_option",
+      "detail": "(*param_decls, **attrs) -> (*param_decls: str, **kwargs: Any) -> Callable[[~FC], ~FC]",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.option",
+      "detail": "(*param_decls, **attrs) -> (*param_decls: str, cls: Type[click.core.Option] | None = None, **attrs: Any) -> Callable[[~FC], ~FC]",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.parser.Argument",
+      "detail": "(dest, nargs=1, obj=None) -> (obj: 'CoreArgument', dest: str | None, nargs: int = 1)",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.parser.Option",
+      "detail": "(opts, dest, action=None, nargs=1, const=None, obj=None) -> (obj: 'CoreOption', opts: Sequence[str], dest: str | None, action: str | None = None, nargs: int = 1, const: Any | None = None)",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.parser.OptionParser.add_argument",
+      "detail": "(self, dest, nargs=1, obj=None) -> (self, obj: 'CoreArgument', dest: str | None, nargs: int = 1) -> None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.parser.OptionParser.add_option",
+      "detail": "(self, opts, dest, action=None, nargs=1, const=None, obj=None) -> (self, obj: 'CoreOption', opts: Sequence[str], dest: str | None, action: str | None = None, nargs: int = 1, const: Any | None = None) -> None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.password_option",
+      "detail": "(*param_decls, **attrs) -> (*param_decls: str, **kwargs: Any) -> Callable[[~FC], ~FC]",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.progressbar",
+      "detail": "(iterable=None, length=None, label=None, show_eta=True, show_percent=None, show_pos=False, item_show_func=None, fill_char='#', empty_char='-', bar_template='%(label)s  [%(bar)s]  %(info)s', info_sep='  ', width=36, file=None, color=None) -> (iterable: Iterable[~V] | None = None, length: int | None =",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.style",
+      "detail": "(text, fg=None, bg=None, bold=None, dim=None, underline=None, blink=None, reverse=None, reset=True) -> (text: Any, fg: int | Tuple[int, int, int] | str | None = None, bg: int | Tuple[int, int, int] | str | None = None, bold: bool | None = None, dim: bool | None = None, underline: bool | None = None,",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.termui.progressbar",
+      "detail": "(iterable=None, length=None, label=None, show_eta=True, show_percent=None, show_pos=False, item_show_func=None, fill_char='#', empty_char='-', bar_template='%(label)s  [%(bar)s]  %(info)s', info_sep='  ', width=36, file=None, color=None) -> (iterable: Iterable[~V] | None = None, length: int | None =",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.termui.style",
+      "detail": "(text, fg=None, bg=None, bold=None, dim=None, underline=None, blink=None, reverse=None, reset=True) -> (text: Any, fg: int | Tuple[int, int, int] | str | None = None, bg: int | Tuple[int, int, int] | str | None = None, bold: bool | None = None, dim: bool | None = None, underline: bool | None = None,",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.testing.CliRunner.isolated_filesystem",
+      "detail": "(self) -> (self, temp_dir: str | ForwardRef('os.PathLike[str]') | None = None) -> Iterator[str]",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.testing.Result",
+      "detail": "(runner, stdout_bytes, stderr_bytes, exit_code, exception, exc_info=None) -> (runner: 'CliRunner', stdout_bytes: bytes, stderr_bytes: bytes | None, return_value: Any, exit_code: int, exception: BaseException | None, exc_info: Tuple[Type[BaseException], BaseException, traceback] | None = None)",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.types.FloatRange",
+      "detail": "(min=None, max=None, clamp=False) -> (min: float | None = None, max: float | None = None, min_open: bool = False, max_open: bool = False, clamp: bool = False) -> None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.types.IntRange",
+      "detail": "(min=None, max=None, clamp=False) -> (min: float | None = None, max: float | None = None, min_open: bool = False, max_open: bool = False, clamp: bool = False) -> None",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.types.Path",
+      "detail": "(exists=False, file_okay=True, dir_okay=True, writable=False, readable=True, resolve_path=False, allow_dash=False, path_type=None) -> (exists: bool = False, file_okay: bool = True, dir_okay: bool = True, writable: bool = False, readable: bool = True, resolve_path: bool = False, allow_dash: bool = Fa",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.types.Path.coerce_path_result",
+      "detail": "(self, rv) -> (self, value: 't.Union[str, os.PathLike[str]]') -> 't.Union[str, bytes, os.PathLike[str]]'",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "reshaped",
+      "qualname": "click.version_option",
+      "detail": "(version=None, *param_decls, **attrs) -> (version: str | None = None, *param_decls: str, package_name: str | None = None, prog_name: str | None = None, message: str | None = None, **kwargs: Any) -> Callable[[~FC], ~FC]",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Argument.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Argument.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.BaseCommand.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.BaseCommand.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Choice.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Choice.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Command.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Command.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.CommandCollection.result_callback",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.CommandCollection.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.CommandCollection.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Context.get_parameter_source",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Context.set_parameter_source",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Context.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Context.with_resource",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.DateTime.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.DateTime.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.File.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.File.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.FloatRange.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.FloatRange.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Group.result_callback",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Group.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Group.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.IntRange.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.IntRange.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.MultiCommand.result_callback",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.MultiCommand.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.MultiCommand.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Option.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Option.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.ParamType.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.ParamType.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Parameter.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Parameter.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Path.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Path.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Tuple.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.Tuple.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.Argument.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.Argument.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.BaseCommand.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.BaseCommand.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.Command.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.Command.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.CommandCollection.result_callback",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.CommandCollection.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.CommandCollection.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.Context.get_parameter_source",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.Context.set_parameter_source",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.Context.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.Context.with_resource",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.Group.result_callback",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.Group.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.Group.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.MultiCommand.result_callback",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.MultiCommand.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.MultiCommand.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.Option.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.Option.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.Parameter.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.Parameter.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.core.ParameterSource",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Argument.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Argument.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Command.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Command.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.abort",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.call_on_close",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.close",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.ensure_object",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.exit",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.fail",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.find_object",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.find_root",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.forward",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.get_help",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.get_parameter_source",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.get_usage",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.invoke",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.lookup_default",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.make_formatter",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.scope",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.set_parameter_source",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Context.with_resource",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Group.result_callback",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Group.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Group.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Option.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Option.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Parameter",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Parameter.add_to_parser",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Parameter.consume_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Parameter.get_default",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Parameter.get_error_hint",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Parameter.get_help_record",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Parameter.get_usage_pieces",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Parameter.handle_parse_result",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Parameter.make_metavar",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Parameter.process_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Parameter.resolve_envvar_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Parameter.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Parameter.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Parameter.type_cast_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Parameter.value_from_envvar",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.Parameter.value_is_missing",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.decorators.pass_meta_key",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.exceptions.format_filename",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Argument",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Argument.add_to_parser",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Argument.consume_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Argument.get_default",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Argument.get_error_hint",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Argument.get_help_record",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Argument.get_usage_pieces",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Argument.handle_parse_result",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Argument.make_metavar",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Argument.process_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Argument.resolve_envvar_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Argument.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Argument.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Argument.type_cast_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Argument.value_from_envvar",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Argument.value_is_missing",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.BaseCommand",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.BaseCommand.get_help",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.BaseCommand.get_usage",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.BaseCommand.invoke",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.BaseCommand.main",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.BaseCommand.make_context",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.BaseCommand.parse_args",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.BaseCommand.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.BaseCommand.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.BashComplete",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.BashComplete.complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.BashComplete.format_completion",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.BashComplete.get_completion_args",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.BashComplete.get_completions",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.BashComplete.source",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.BashComplete.source_vars",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.CompletionItem",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.abort",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.call_on_close",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.close",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.ensure_object",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.exit",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.fail",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.find_object",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.find_root",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.forward",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.get_help",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.get_parameter_source",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.get_usage",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.invoke",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.lookup_default",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.make_formatter",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.scope",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.set_parameter_source",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Context.with_resource",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.FishComplete",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.FishComplete.complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.FishComplete.format_completion",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.FishComplete.get_completion_args",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.FishComplete.get_completions",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.FishComplete.source",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.FishComplete.source_vars",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.collect_usage_pieces",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.format_commands",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.format_epilog",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.format_help",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.format_help_text",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.format_options",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.format_usage",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.get_command",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.get_help",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.get_help_option",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.get_help_option_names",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.get_params",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.get_short_help_str",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.get_usage",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.invoke",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.list_commands",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.main",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.make_context",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.make_parser",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.parse_args",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.resolve_command",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.result_callback",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.MultiCommand.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Option",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Option.add_to_parser",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Option.consume_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Option.get_default",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Option.get_error_hint",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Option.get_help_record",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Option.get_usage_pieces",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Option.handle_parse_result",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Option.make_metavar",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Option.process_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Option.prompt_for_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Option.resolve_envvar_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Option.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Option.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Option.type_cast_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Option.value_from_envvar",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Option.value_is_missing",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Parameter",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Parameter.add_to_parser",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Parameter.consume_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Parameter.get_default",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Parameter.get_error_hint",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Parameter.get_help_record",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Parameter.get_usage_pieces",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Parameter.handle_parse_result",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Parameter.make_metavar",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Parameter.process_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Parameter.resolve_envvar_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Parameter.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Parameter.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Parameter.type_cast_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Parameter.value_from_envvar",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.Parameter.value_is_missing",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.ParameterSource",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.ShellComplete",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.ShellComplete.complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.ShellComplete.format_completion",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.ShellComplete.get_completion_args",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.ShellComplete.get_completions",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.ShellComplete.source",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.ShellComplete.source_vars",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.ZshComplete",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.ZshComplete.complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.ZshComplete.format_completion",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.ZshComplete.get_completion_args",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.ZshComplete.get_completions",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.ZshComplete.source",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.ZshComplete.source_vars",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.add_completion_class",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.echo",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.get_completion_class",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.shell_completion.split_arg_string",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.termui.Choice.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.termui.Choice.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.termui.ParamType",
+      "detail": "new class",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.termui.ParamType.convert",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.termui.ParamType.fail",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.termui.ParamType.get_metavar",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.termui.ParamType.get_missing_message",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.termui.ParamType.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.termui.ParamType.split_envvar_value",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.termui.ParamType.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.testing.EchoingStdin.read1",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.BoolParamType.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.BoolParamType.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.Choice.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.Choice.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.CompositeParamType.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.CompositeParamType.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.DateTime.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.DateTime.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.File.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.File.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.FloatParamType.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.FloatParamType.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.FloatRange.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.FloatRange.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.FuncParamType.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.FuncParamType.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.IntParamType.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.IntParamType.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.IntRange.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.IntRange.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.ParamType.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.ParamType.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.Path.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.Path.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.StringParamType.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.StringParamType.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.Tuple.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.Tuple.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.UUIDParameterType.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.UUIDParameterType.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.UnprocessedParamType.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.UnprocessedParamType.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.types.format_filename",
+      "detail": "new function",
+      "witness": null,
+      "used_at": []
+    }
+  ]
+}

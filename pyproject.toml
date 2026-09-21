@@ -1,0 +1,36 @@
+[project]
+name = "blast-radius"
+version = "0.1.0"
+description = "What a dependency upgrade actually changes - including the changes nothing warns you about"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["dependency", "upgrade", "semver", "api-diff", "differential-testing", "breaking-change"]
+# No runtime dependencies. Installing the two versions uses whichever of uv or pip is
+# already on the machine, and everything else is stdlib.
+dependencies = []
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.16,<0.17"]
+
+[project.scripts]
+blast-radius = "blast_radius.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/blast_radius"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
