@@ -210,6 +210,123 @@ def test_names_imported_from_elsewhere_are_not_counted_as_the_packages_own(tmp_p
     assert "borrower.dumps" not in out
 
 
+def _write(root, name, files):
+    pkg = root / name
+    pkg.mkdir(parents=True, exist_ok=True)
+    for filename, body in files.items():
+        path = pkg / filename
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(body, encoding="utf-8")
+    return pkg
+
+
+def test_one_object_imported_into_several_modules_is_counted_once(tmp_path):
+    """The bug that made every count meaningless.
+
+    `walk()` visits every module, so a class imported into five of them was recorded
+    five times under five paths. coverage.CoverageData is imported into collector,
+    control, data, html and sqldata, so ONE signature change to `update` was reported
+    as six reshaped symbols. Counting the same object once per importer is not a
+    measurement of anything.
+    """
+    _write(
+        tmp_path,
+        "aliased",
+        {
+            "__init__.py": "from .core import Thing\n",
+            "core.py": "class Thing:\n    def run(self, a):\n        return a\n",
+            "other.py": "from .core import Thing\n",
+            "third.py": "from .core import Thing\n",
+        },
+    )
+    out = surface(tmp_path, "aliased")
+    assert out is not None
+
+    things = [k for k in out if k.endswith(".Thing")]
+    assert len(things) == 1, f"one class recorded {len(things)} times: {things}"
+
+    runs = [k for k in out if k.endswith(".Thing.run")]
+    assert len(runs) == 1, f"one method recorded {len(runs)} times: {runs}"
+
+
+def test_a_symbol_is_reported_under_its_shortest_public_path(tmp_path):
+    """`aliased.Thing` is what a user writes, not `aliased.core.Thing`."""
+    _write(
+        tmp_path,
+        "shortest",
+        {
+            "__init__.py": "from .deep.inner import Thing\n",
+            "deep/__init__.py": "",
+            "deep/inner.py": "class Thing:\n    pass\n",
+        },
+    )
+    out = surface(tmp_path, "shortest")
+    assert out is not None
+    assert "shortest.Thing" in out
+    assert out["shortest.Thing"]["name"] == "shortest.Thing"
+
+
+def test_moving_a_class_between_internal_modules_is_not_an_api_change(tmp_path):
+    """The other half of the same bug.
+
+    coverage 7.5.0 -> 7.5.4 moved PathAliases out of coverage.sqldata. Keyed on where
+    a symbol is defined, that reads as four removals. Keyed on the name people import,
+    it is nothing - because `from coverage import PathAliases` still works, and no
+    caller can tell.
+    """
+    before = _write(
+        tmp_path / "before",
+        "mover",
+        {
+            "__init__.py": "from .old_home import Thing\n",
+            "old_home.py": "class Thing:\n    def run(self, a):\n        return a\n",
+        },
+    )
+    after = _write(
+        tmp_path / "after",
+        "mover",
+        {
+            "__init__.py": "from .new_home import Thing\n",
+            "new_home.py": "class Thing:\n    def run(self, a):\n        return a\n",
+        },
+    )
+    assert before.exists() and after.exists()
+
+    old = surface(tmp_path / "before", "mover")
+    new = surface(tmp_path / "after", "mover")
+    assert old is not None and new is not None
+    assert api_changes(old, new) == []
+
+
+def test_all_marks_a_symbol_as_exported(tmp_path):
+    """Internal churn and published breakage must be countable separately.
+
+    Without this, `coverage.parser.join_regex` - an internal helper in an internal
+    module - weighed exactly as much as `coverage.CoverageData.update`, so a release
+    that tidied its internals looked like one that broke its users.
+    """
+    _write(
+        tmp_path,
+        "declared",
+        {
+            "__init__.py": "from .pub import Shown\n",
+            "pub.py": (
+                '__all__ = ["Shown"]\n\n\nclass Shown:\n    pass\n\n\nclass Hidden:\n    pass\n'
+            ),
+            "internal.py": "class Internal:\n    pass\n",
+        },
+    )
+    out = surface(tmp_path, "declared")
+    assert out is not None
+
+    # In the package root namespace, so published whatever else is true.
+    assert out["declared.Shown"]["exported"] is True
+    # Not in pub.__all__, so never collected at all.
+    assert not [k for k in out if k.endswith(".Hidden")]
+    # Reachable, but in a module that declares no public surface.
+    assert out["declared.internal.Internal"]["exported"] is False
+
+
 # --- accounting ---------------------------------------------------------------------------
 
 

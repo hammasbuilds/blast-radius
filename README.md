@@ -4,6 +4,7 @@
 <p align="center">
   <a href="#the-through-line">The through-line</a> &middot;
   <a href="#the-result">The result</a> &middot;
+  <a href="docs/SEMVER.md">The semver sweep</a> &middot;
   <a href="docs/RESULTS.md">Full results</a> &middot;
   <a href="#how-it-works">How it works</a> &middot;
   <a href="#run-it">Run it</a> &middot;
@@ -16,7 +17,8 @@
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python">
   <img src="https://img.shields.io/badge/runtime%20deps-0-brightgreen" alt="zero dependencies">
   <img src="https://img.shields.io/badge/model-none%20required-success" alt="no model">
-  <img src="https://img.shields.io/badge/tests-28-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-32-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/upgrade%20pairs%20measured-27-blue" alt="pairs">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
 </p>
 
@@ -49,6 +51,41 @@ sorts what actually changed by **how likely it is to reach production unnoticed*
 > **A changelog is a claim. This is the diff.**
 
 ## The result
+
+### 27 upgrade pairs: how often does a patch release break public API?
+
+Semantic versioning says a patch release changes nothing a caller can see, and a minor
+release only adds. Measured across widely-pinned packages:
+
+| Bump | Pairs | Broke exported API | Exported symbols removed or reshaped |
+|---|---:|---:|---:|
+| **patch** | 15 | **2 (13%)** | 3 |
+| **minor** | 9 | **4 (44%)** | 16 |
+| major | 3 | 2 (67%) | 47 |
+
+Small enough to name every instance, which is the point — a percentage with no names behind
+it is not checkable.
+
+**`urllib3` 2.2.1 → 2.2.2**, a patch release, added a **required** keyword-only parameter to
+`BaseHTTPResponse.__init__`, inserted between `version` and `reason`:
+
+```
+2.2.1  (*, headers=None, status, version,                 reason, decode_content, ...)
+2.2.2  (*, headers=None, status, version, version_string, reason, decode_content, ...)
+```
+
+Every subclass calling `super().__init__(...)` now raises `TypeError`. `HTTPResponse` takes
+the same parameter positionally, so positional callers have `reason` land silently in
+`version_string`.
+
+The first version of this sweep said **38%**. Three bugs in the probe were inflating it —
+aliased symbols counted once per importing module, internal module moves read as removals,
+and internal churn weighed the same as published API. Every correction moved the number
+down.
+
+&#128202; **[The full sweep, every break named, and the three corrections &rarr;](docs/SEMVER.md)**
+
+### One upgrade in depth
 
 `packaging` 21.3 → 24.0, with call sites matched against [`pypa/build`](https://github.com/pypa/build):
 
@@ -154,7 +191,7 @@ src/blast_radius/
 
 ## Problems hit while building this
 
-Four sources of *confident wrong answers*. Not one of them raised an error.
+Seven sources of *confident wrong answers*. Not one of them raised an error.
 
 - **Both probes loaded the same copy, and it reported "nothing changed".** Python silently
   ignores a `sys.path` entry that does not exist, so a non-native path meant the import fell
@@ -170,11 +207,28 @@ Four sources of *confident wrong answers*. Not one of them raised an error.
   `str(inspect.signature(f))` called every one of those a reshape — and left **zero**
   functions stable, which silently starved the behaviour pass of every candidate it had.
   Comparing call shape took it to 68 and turned the pass back on.
+- **One object counted once per module that imported it.** `coverage.CoverageData` is
+  imported into five modules, so a single signature change to `update` was reported as six
+  reshaped symbols. `coverage` 7.5.0's surface was 1,409 symbols; deduplicated it is
+  **547** — inflated 2.6x by aliases. This is also why moving a class between internal
+  modules read as a removal plus an addition, although `from coverage import PathAliases`
+  still worked and no caller could tell.
+- **Internal churn weighed the same as published API.** `coverage.parser.join_regex`
+  counted exactly as much as `coverage.CoverageData.update`, so a release that tidied its
+  internals looked like one that broke its users. Symbols now carry an `exported` flag,
+  set when the author said so via `__all__` or the package root namespace.
+- **A failed install crashed the whole run, on Windows only.** `subprocess.run(text=True)`
+  decodes with the locale codec — cp1252 here — and `uv` draws its errors with box
+  characters that cp1252 cannot represent. The resulting `UnicodeDecodeError` came from
+  subprocess's reader thread, is not an `OSError`, and was not caught, so the fallback to
+  pip never happened. Fixed by decoding UTF-8 explicitly; `install()` now also reports
+  **why** it failed instead of returning a bare `False`.
 
 ## Also worth reading
 
 | | |
 |---|---|
+| &#128200; **[The semver sweep](docs/SEMVER.md)** | 27 upgrade pairs, every break named |
 | &#128202; **[Results](docs/RESULTS.md)** | Both upgrades in full, with the limits |
 | **[suite-auditor](https://github.com/hammasbuilds/suite-auditor)** | The same differential idea, pointed at a test suite |
 | **[pr-referee](https://github.com/hammasbuilds/pr-referee)** | And pointed at a diff |

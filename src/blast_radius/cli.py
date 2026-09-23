@@ -10,6 +10,7 @@ your own code actually references.
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import subprocess
 import sys
@@ -28,10 +29,20 @@ from blast_radius.report import summary, write_json, write_markdown
 from blast_radius.types import Kind, Report
 
 
-def install(package: str, version: str, into: Path, timeout: float = 600.0) -> bool:
-    """Install one version into its own directory. `uv` if present, else pip."""
+def install(package: str, version: str, into: Path, timeout: float = 600.0) -> tuple[bool, str]:
+    """Install one version into its own directory. `uv` if present, else pip.
+
+    Returns (installed, reason). The reason is empty on success and carries the
+    installer's own last line on failure - a bare False leaves the caller printing
+    "install failed" with nothing to act on, and the real causes are specific and
+    fixable: no wheel for this interpreter, no pip in the running environment, a
+    yanked version.
+    """
     into.mkdir(parents=True, exist_ok=True)
     spec = f"{package}=={version}"
+    # uv adopts an active virtualenv over --target unless it is cleared.
+    env = {k: v for k, v in os.environ.items() if k != "VIRTUAL_ENV"}
+    reasons: list[str] = []
     for cmd in (
         ["uv", "pip", "install", "--quiet", "--target", str(into), spec],
         [sys.executable, "-m", "pip", "install", "--quiet", "--target", str(into), spec],
@@ -40,17 +51,29 @@ def install(package: str, version: str, into: Path, timeout: float = 600.0) -> b
             proc = subprocess.run(
                 cmd,
                 capture_output=True,
-                text=True,
                 timeout=timeout,
                 check=False,
-                # uv adopts an active virtualenv over --target unless it is cleared.
-                env={k: v for k, v in __import__("os").environ.items() if k != "VIRTUAL_ENV"},
+                env=env,
+                # NOT text=True. That decodes with the locale codec, which on a
+                # Windows console is cp1252 - and uv draws its errors with box
+                # characters that cp1252 cannot represent. The decode then raises
+                # UnicodeDecodeError from subprocess's reader thread, which is not
+                # OSError and was not caught here, so a failed install crashed the
+                # whole run instead of moving on to pip.
+                encoding="utf-8",
+                errors="replace",
             )
-        except (OSError, subprocess.TimeoutExpired):
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            reasons.append(f"{cmd[0]}: {type(exc).__name__}")
             continue
         if proc.returncode == 0 and any(into.iterdir()):
-            return True
-    return False
+            return True, ""
+        lines = (proc.stderr or proc.stdout or "").strip().splitlines()
+        tail = next(
+            (line.strip() for line in reversed(lines) if line.strip()), f"exit {proc.returncode}"
+        )
+        reasons.append(f"{cmd[0]}: {tail[:160]}")
+    return False, " | ".join(reasons)
 
 
 def cmd_check(args: argparse.Namespace) -> int:
@@ -63,8 +86,11 @@ def cmd_check(args: argparse.Namespace) -> int:
     try:
         for version in (args.old_version, args.new_version):
             print(f"installing {args.package}=={version} ...")
-            if not install(args.package, version, workdir / version):
+            installed, why = install(args.package, version, workdir / version)
+            if not installed:
                 print(f"  could not install {args.package}=={version}")
+                if why:
+                    print(f"  {why}")
                 return 1
 
         print("\nreading both public surfaces...")
