@@ -4,8 +4,8 @@
 <p align="center">
   <a href="#the-through-line">The through-line</a> &middot;
   <a href="#the-result">The result</a> &middot;
-  <a href="docs/SEMVER.md">The semver sweep</a> &middot;
-  <a href="docs/RESULTS.md">Full results</a> &middot;
+  <a href="https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md">The semver sweep</a> &middot;
+  <a href="https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md">Full results</a> &middot;
   <a href="#how-it-works">How it works</a> &middot;
   <a href="#run-it">Run it</a> &middot;
   <a href="#what-this-does-not-do">What it does NOT do</a> &middot;
@@ -19,7 +19,7 @@
   <img src="https://img.shields.io/badge/model-none%20required-success" alt="no model">
   <img src="https://img.shields.io/badge/tests-32-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/upgrade%20pairs%20measured-27-blue" alt="pairs">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
+  <a href="https://github.com/hammasbuilds/blast-radius/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
 </p>
 
 ---
@@ -83,7 +83,7 @@ aliased symbols counted once per importing module, internal module moves read as
 and internal churn weighed the same as published API. Every correction moved the number
 down.
 
-&#128202; **[The full sweep, every break named, and the three corrections &rarr;](docs/SEMVER.md)**
+&#128202; **[The full sweep, every break named, and the three corrections &rarr;](https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md)**
 
 ### One upgrade in depth
 
@@ -128,7 +128,7 @@ is classes and decorators that need a constructed `Context` first, and a tool th
 functions with literals cannot get there. The report says *"could not be called"* rather
 than *"no changes found"*, because those are different claims.
 
-See [docs/RESULTS.md](docs/RESULTS.md) for both runs.
+See [docs/RESULTS.md](https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md) for both runs.
 
 ## How it works
 
@@ -228,8 +228,8 @@ Seven sources of *confident wrong answers*. Not one of them raised an error.
 
 | | |
 |---|---|
-| &#128200; **[The semver sweep](docs/SEMVER.md)** | 27 upgrade pairs, every break named |
-| &#128202; **[Results](docs/RESULTS.md)** | Both upgrades in full, with the limits |
+| &#128200; **[The semver sweep](https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md)** | 27 upgrade pairs, every break named |
+| &#128202; **[Results](https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md)** | Both upgrades in full, with the limits |
 | **[suite-auditor](https://github.com/hammasbuilds/suite-auditor)** | The same differential idea, pointed at a test suite |
 | **[pr-referee](https://github.com/hammasbuilds/pr-referee)** | And pointed at a diff |
 | **[repo-surgeon](https://github.com/hammasbuilds/repo-surgeon)** | And at a migration, refusing what it cannot prove |
@@ -243,4 +243,4 @@ call site analysis
 
 ## License
 
-MIT - see [LICENSE](LICENSE).
+MIT - see [LICENSE](https://github.com/hammasbuilds/blast-radius/blob/main/LICENSE).
