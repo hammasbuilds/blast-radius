@@ -338,8 +338,30 @@ def resolve(qualname):
     raise ImportError(qualname)
 
 
+# Results are written out as they are produced, not only at the end.
+#
+# Every function in the batch runs in ONE interpreter, so anything that stops
+# that interpreter - a hang hitting the timeout, a segfaulting C extension,
+# os._exit - used to discard the results of every function that had already
+# finished. click 8.1.6 -> 8.1.7 has 234 stable callables; the first 160 are
+# probed in about a second, and one function later in the list was enough to
+# report all 234 as unreachable.
+#
+# The journal also names what was in flight when the interpreter died, which is
+# the one thing the parent cannot work out for itself.
+journal = open(sys.argv[3], "a", encoding="utf-8")
+
+
+def record(key, value):
+    results[key] = value
+    journal.write(json.dumps({"q": key, "r": value}) + "\n")
+    journal.flush()
+
+
 results = {}
 for qualname, argsets in payload.items():
+    journal.write(json.dumps({"q": qualname, "start": 1}) + "\n")
+    journal.flush()
     rows = []
     try:
         fn = resolve(qualname)
@@ -347,10 +369,10 @@ for qualname, argsets in payload.items():
         # Honest unreachability: the name exists and is callable, but only on an
         # object this tool cannot build. Kept separate from a resolve failure,
         # which means the name could not be found at all.
-        results[qualname] = {"needs_instance": str(exc)[:150]}
+        record(qualname, {"needs_instance": str(exc)[:150]})
         continue
     except Exception as exc:
-        results[qualname] = {"error": type(exc).__name__ + ": " + str(exc)[:150]}
+        record(qualname, {"error": type(exc).__name__ + ": " + str(exc)[:150]})
         continue
     for src in argsets:
         try:
@@ -384,8 +406,9 @@ for qualname, argsets in payload.items():
             raise
         except BaseException as exc:
             rows.append(["raise", scrub(type(exc).__name__ + ": " + str(exc)[:150])])
-    results[qualname] = {"rows": rows}
+    record(qualname, {"rows": rows})
 
+journal.close()
 print("__BR_JSON__" + json.dumps(results))
 """
 
@@ -399,7 +422,39 @@ class WrongVersionImported(RuntimeError):
     """
 
 
-def _run(script: str, args: list[str], timeout: float) -> dict | None:
+def _recover(journal: Path) -> dict | None:
+    """Whatever the probe managed to finish before it died, read back off disk.
+
+    Returns None if it never got far enough to produce anything, so that a probe
+    which failed immediately is still distinguishable from one that ran.
+
+    The last line may be a half-written record - the interpreter can be killed
+    mid-write - so an unparsable line is skipped rather than treated as the end
+    of the file.
+    """
+    if not journal.exists():
+        return None
+    done: dict = {}
+    started = None
+    for line in journal.read_text(encoding="utf-8", errors="replace").splitlines():
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if "r" in record:
+            done[record["q"]] = record["r"]
+        elif record.get("start"):
+            started = record["q"]
+    # The name that was in flight when it died. Recorded even when nothing at all
+    # finished - the FIRST function in the batch hanging is exactly the case where
+    # the caller most needs to be told which one, and it is the case with no
+    # results to carry the news.
+    if started is not None and started not in done:
+        done["__incomplete__"] = {"died_on": started, "completed": len(done)}
+    return done or None
+
+
+def _run(script: str, args: list[str], timeout: float, journal: Path | None = None) -> dict | None:
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -410,13 +465,27 @@ def _run(script: str, args: list[str], timeout: float) -> dict | None:
             proc = subprocess.run(
                 [sys.executable, str(path), *args],
                 capture_output=True,
-                text=True,
+                # No stdin. A function that reads from it - click.confirm, and
+                # every other prompt helper - otherwise blocks until the timeout
+                # and takes the batch with it. click.confirm is the function that
+                # was stopping the click run at 141 of 234. With the descriptor
+                # closed it gets EOF immediately and raises, which is a real
+                # behaviour worth comparing like any other.
+                stdin=subprocess.DEVNULL,
+                # Not text=True: that decodes with the locale codec, which on Windows is
+                # cp1252. The child writes UTF-8, and any probed function whose repr or
+                # output carries a non-cp1252 character then raises UnicodeDecodeError in
+                # the parent - out of a reader thread, so not an OSError, and not caught
+                # below. Decoding here with errors="replace" keeps a stray byte from
+                # deciding whether the whole run reports anything.
+                encoding="utf-8",
+                errors="replace",
                 timeout=timeout,
                 check=False,
                 cwd=tmp,
             )
         except (subprocess.TimeoutExpired, OSError):
-            return None
+            return _recover(journal) if journal else None
     out = proc.stdout or ""
     if "__BR_WRONGDIR__" in out:
         # Loud on purpose. Silently returning None here would look like "this version has
@@ -425,16 +494,42 @@ def _run(script: str, args: list[str], timeout: float) -> dict | None:
         raise WrongVersionImported(f"the import did not come from the target directory: {detail}")
     marker = out.find("__BR_JSON__")
     if marker < 0:
-        return None
+        # No summary line: the interpreter did not reach the end. Anything it
+        # finished first is still on disk and still worth comparing.
+        return _recover(journal) if journal else None
     try:
         return json.loads(out[marker + len("__BR_JSON__") :])
     except json.JSONDecodeError:
-        return None
+        return _recover(journal) if journal else None
 
 
 def surface(target_dir: Path, package: str, timeout: float = 180.0) -> dict | None:
     """Every public callable in an installed version, with its signature."""
     return _run(SURFACE, [str(target_dir.resolve()), package], timeout)
+
+
+# Each restart costs one full timeout, so this is a budget, not a target. click
+# 8.1.x needs exactly three - getchar, launch and termui.hidden_prompt_func, all
+# of which read the console directly rather than stdin, so closing the descriptor
+# does not reach them. A cap of three would clear click with nothing to spare,
+# and the failure mode of being one short is the tail of the package silently
+# counted unreachable.
+MAX_RESTARTS = 5
+
+
+def _attempt(target_dir: Path, payload: dict[str, list[str]], timeout: float) -> dict | None:
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        blob = Path(tmp) / "payload.json"
+        blob.write_text(json.dumps(payload), encoding="utf-8")
+        journal = Path(tmp) / "journal.jsonl"
+        return _run(
+            CALL,
+            [str(target_dir.resolve()), str(blob), str(journal)],
+            timeout,
+            journal=journal,
+        )
 
 
 def call(target_dir: Path, payload: dict[str, list[str]], timeout: float = 300.0) -> dict | None:
@@ -443,12 +538,53 @@ def call(target_dir: Path, payload: dict[str, list[str]], timeout: float = 300.0
     The payload goes through a temporary file rather than the command line,
     which has a length limit the payload routinely exceeded. See the comment at
     the top of CALL.
+
+    One function that never returns should cost one function. It used to cost
+    the whole batch: every name shares an interpreter, so a `time.sleep` in a
+    default argument, a C extension waiting on a socket, or anything else that
+    outlasts the timeout took the results of the functions before it and
+    prevented the ones after it from being attempted at all.
+
+    The journal recovers the first group. This loop recovers the second: the
+    name the probe died on is recorded as unreachable - which is the truth about
+    it, from this tool's point of view - and a fresh interpreter picks up at the
+    next name. Restarts are capped, because each one costs a full timeout and a
+    package that hangs everywhere should be reported, not waited on.
     """
     if not payload:
         return {}
-    import tempfile
 
-    with tempfile.TemporaryDirectory() as tmp:
-        blob = Path(tmp) / "payload.json"
-        blob.write_text(json.dumps(payload), encoding="utf-8")
-        return _run(CALL, [str(target_dir.resolve()), str(blob)], timeout)
+    results: dict = {}
+    stopped_on: list[str] = []
+    remaining = list(payload)
+    for restart in range(MAX_RESTARTS + 1):
+        out = _attempt(target_dir, {q: payload[q] for q in remaining}, timeout)
+        if out is None:
+            break
+        incomplete = out.pop("__incomplete__", None)
+        results.update(out)
+        if incomplete is None:
+            remaining = []
+            break
+        died_on = incomplete["died_on"]
+        if died_on not in remaining:
+            # The journal named something this attempt was not asked for, so there
+            # is no next name to resume from. Stopping is the only safe move:
+            # guessing one risks re-running the name that just killed the probe,
+            # and looping on it until the restart cap with nothing to show.
+            break
+        stopped_on.append(died_on)
+        results[died_on] = {"error": "no result: the probe stopped here and was restarted"}
+        remaining = remaining[remaining.index(died_on) + 1 :]
+        if not remaining or restart == MAX_RESTARTS:
+            break
+
+    # Anything still unattempted gets an entry of its own rather than being left
+    # out. A name missing from the results is counted as unreachable either way,
+    # so leaving it out would quietly turn "this tool gave up" into "this package
+    # cannot be exercised" - the one distinction this whole path exists to keep.
+    for name in remaining:
+        results[name] = {"error": "not attempted: the probe was restarted too many times"}
+    if stopped_on:
+        results["__stopped_on__"] = stopped_on
+    return results or None

@@ -157,18 +157,29 @@ def _strength(a: list, b: list) -> int:
 
 def behaviour_changes(
     old_dir, new_dir, stable: dict[str, str], timeout: float = 600.0
-) -> tuple[list[Change], int, int]:
-    """(silent changes, compared, unreachable).
+) -> tuple[list[Change], int, int, list[str]]:
+    """(silent changes, compared, unreachable, stopped_on).
 
     `compared` counts only functions that actually ran somewhere. A function that raised on
     every input in both versions was never exercised, so it is neither evidence of a change
     nor evidence of stability, and it is counted apart.
+
+    `stopped_on` names the functions the probe's interpreter died on and had to be
+    restarted past. They matter because they are not the same finding as the rest of
+    `unreachable`: a function nothing can call is a fact about the package, while a probe
+    that died is a fact about this tool, and both otherwise arrive as "could not be called".
     """
     payload = {name: argument_sets(sig) for name, sig in stable.items()}
     old_res = call(old_dir, payload, timeout)
     new_res = call(new_dir, payload, timeout)
+    stopped_on: list[str] = []
+    for res in (old_res, new_res):
+        if res:
+            for name in res.pop("__stopped_on__", []):
+                if name not in stopped_on:
+                    stopped_on.append(name)
     if old_res is None or new_res is None:
-        return [], 0, len(payload)
+        return [], 0, len(payload), stopped_on
 
     changes: list[Change] = []
     compared = unreachable = 0
@@ -214,7 +225,7 @@ def behaviour_changes(
                 },
             )
         )
-    return changes, compared, unreachable
+    return changes, compared, unreachable, stopped_on
 
 
 def find_call_sites(repo, package: str, changes: list[Change]) -> None:

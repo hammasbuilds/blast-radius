@@ -485,3 +485,137 @@ def test_a_method_on_a_constructible_class_is_bound_and_called(tmp_path):
 
     assert out is not None
     assert out["easy.Thing.plus"]["rows"][0] == ["ok", "15"]
+
+
+def test_a_hang_does_not_discard_the_functions_already_probed(tmp_path):
+    """Every function in a batch runs in one interpreter, and the whole batch
+    used to be reported through one line printed at the very end. So anything
+    that stopped that interpreter - a hang hitting the timeout, a C extension
+    segfaulting, os._exit - threw away the results of every function that had
+    already finished.
+
+    Measured on click 8.1.6 -> 8.1.7: 160 of its 234 stable callables are probed
+    in about a second, and something later in the list cost all 234.
+
+    Losing the hung function is correct. Losing the other 233 is not, and worse,
+    it is silent: `behaviour_changes` counts a missing name as unreachable, so
+    the report said the API was unreachable rather than that the probe died.
+    """
+    from blast_radius.probe import call
+
+    _pkg(
+        tmp_path,
+        "slowpoke",
+        "import time\n\n\ndef quick(x):\n    return x * 2\n\n\n"
+        "def hangs(x):\n    time.sleep(600)\n\n\ndef after(x):\n    return x + 1\n",
+    )
+    out = call(
+        tmp_path,
+        {"slowpoke.quick": ["(21,)"], "slowpoke.hangs": ["(1,)"], "slowpoke.after": ["(1,)"]},
+        timeout=10,
+    )
+
+    assert out is not None, "the timeout discarded everything"
+    assert out["slowpoke.quick"]["rows"][0] == ["ok", "42"], "work done before the hang was lost"
+    assert "rows" not in out["slowpoke.hangs"], "a function that never returned has no result"
+    assert out["slowpoke.after"]["rows"][0] == ["ok", "2"], "the hang stopped the rest of the batch"
+    assert out["__stopped_on__"] == ["slowpoke.hangs"]
+
+
+def test_a_function_that_reads_stdin_gets_eof_instead_of_blocking(tmp_path):
+    """The probe is a batch job with no one at a keyboard, so a function waiting
+    on stdin waits until the timeout and costs the whole batch.
+
+    This is not a hypothetical shape of function: `click.confirm` is exactly it,
+    and it is the reason the click run stopped after 141 of 234 callables.
+    Closing the descriptor turns an indefinite wait into an EOFError, which is a
+    real behaviour and comparable across versions like any other.
+    """
+    from blast_radius.probe import call
+
+    _pkg(
+        tmp_path,
+        "asker",
+        "def asks(x):\n    return input('are you sure? ')\n\n\ndef after(x):\n    return x + 1\n",
+    )
+    out = call(tmp_path, {"asker.asks": ["(1,)"], "asker.after": ["(1,)"]}, timeout=20)
+
+    assert out is not None
+    assert out["asker.asks"]["rows"][0][0] == "raise"
+    assert "EOFError" in out["asker.asks"]["rows"][0][1]
+    assert out["asker.after"]["rows"][0] == ["ok", "2"]
+    assert "__stopped_on__" not in out, "nothing should have had to be restarted past"
+
+
+def test_restarting_past_hangs_is_capped_and_the_rest_are_marked_unattempted(tmp_path):
+    """Each restart costs a full timeout, so a package that hangs everywhere must
+    be reported rather than waited on. What must not happen is the give-up going
+    unrecorded: a name left out of the results is counted as unreachable, which
+    would read as a fact about the package instead of about this tool.
+    """
+    from blast_radius.probe import MAX_RESTARTS, call
+
+    body = "import time\n\n\n" + "".join(
+        f"def h{i}(x):\n    time.sleep(600)\n\n\n" for i in range(MAX_RESTARTS + 2)
+    )
+    _pkg(tmp_path, "allhang", body)
+    names = [f"allhang.h{i}" for i in range(MAX_RESTARTS + 2)]
+    out = call(tmp_path, {n: ["(1,)"] for n in names}, timeout=3)
+
+    assert out is not None
+    assert out["__stopped_on__"] == names[: MAX_RESTARTS + 1], "should stop after the cap"
+    assert set(names) <= set(out), "a name it gave up on must still be accounted for"
+    assert "not attempted" in out[names[-1]]["error"]
+
+
+def test_a_probe_that_died_is_reported_apart_from_a_function_that_cannot_be_called(tmp_path):
+    """Both arrive at the report as a name with no result, and they mean opposite
+    things: one is a fact about the package, the other is a fact about this tool.
+    Folding them together lets a probe that stopped after two functions read as a
+    package whose API cannot be exercised.
+    """
+    from blast_radius.diff import behaviour_changes
+
+    body = (
+        "import time\n\n\ndef quick(x):\n    return x * 2\n\n\n"
+        "def hangs(x):\n    time.sleep(600)\n\n\ndef after(x):\n    return x + 1\n"
+    )
+    _pkg(tmp_path / "old", "twins", body)
+    _pkg(tmp_path / "new", "twins", body)
+    stable = {"twins.quick": "(x)", "twins.hangs": "(x)", "twins.after": "(x)"}
+
+    silent, compared, unreachable, stopped_on = behaviour_changes(
+        tmp_path / "old", tmp_path / "new", stable, timeout=10
+    )
+
+    assert stopped_on == ["twins.hangs"]
+    assert compared == 2, "only the hanging function should be lost"
+    assert unreachable == 1
+    assert silent == [], "the two versions are identical"
+
+
+def test_a_raw_byte_written_to_the_descriptor_does_not_lose_the_run(tmp_path):
+    """Anything a called function `print`s is captured and re-encoded as escaped
+    ASCII, so ordinary non-ASCII output is safe. A write straight to file
+    descriptor 1 is not: it goes around the capture and lands in the stream the
+    parent decodes.
+
+    The parent used to decode with the locale codec - cp1252 here - in which
+    0x90 is not a character at all. The decode runs in a reader thread, so it
+    raises UnicodeDecodeError rather than OSError and was not caught below, and
+    one such byte from one C extension decided whether ANY function in the batch
+    reported a result.
+    """
+    from blast_radius.probe import call
+
+    _pkg(
+        tmp_path,
+        "rawbytes",
+        "import os\n\n\ndef writes_a_raw_byte(x):\n"
+        "    os.write(1, b'\\x90\\x81\\xff')\n"
+        "    return x + 1\n",
+    )
+    out = call(tmp_path, {"rawbytes.writes_a_raw_byte": ["(1,)"]}, timeout=120)
+
+    assert out is not None, "three bytes from one function killed the whole batch"
+    assert out["rawbytes.writes_a_raw_byte"]["rows"][0] == ["ok", "2"]
