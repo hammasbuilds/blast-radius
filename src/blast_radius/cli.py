@@ -137,7 +137,15 @@ def cmd_check(args: argparse.Namespace) -> int:
                     f" restarted past them: {', '.join(stopped_on[:5])}"
                     + (" ..." if len(stopped_on) > 5 else "")
                 )
-                print("  they are counted as unreachable above. A longer --timeout may reach them.")
+                # Deliberately not "try a longer --timeout". These functions do not
+                # return - click.getchar and click.launch wait on the console and
+                # the desktop - so a longer timeout reaches nothing and costs that
+                # many more seconds per name. Each one costs one full --timeout,
+                # which is the knob that actually matters, in the other direction.
+                print(
+                    f"  they are counted as unreachable above, and cost {args.timeout:g}s each."
+                    " A shorter --timeout makes them cheaper, not fewer."
+                )
 
         if args.used_by:
             print(f"\nmatching against {args.used_by} ...")

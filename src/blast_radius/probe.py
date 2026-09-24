@@ -267,6 +267,26 @@ def scrub(text):
     return DECIMAL_ID.sub("@ id", ADDR.sub("0x...", text))
 
 
+def text_of(obj, hook):
+    # repr() and str() run the package's OWN code, which can raise like any other
+    # call - and this one runs while a result is being written down, outside any
+    # handler that expects to fail.
+    #
+    # click.ClickException.__str__ returns self.message unchanged, so `fail(1)`
+    # produces an exception whose str() raises TypeError. That TypeError was thrown
+    # from inside `except BaseException`, so it escaped the loop, ended the probe,
+    # and click.File.fail was reported as a function the probe could not get past.
+    # It was this line, not the function.
+    try:
+        return hook(obj)
+    except BaseException as exc:
+        return "<" + hook.__name__ + " raised " + type(exc).__name__ + ">"
+
+
+def describe(exc):
+    return scrub(type(exc).__name__ + ": " + text_of(exc, str)[:150])
+
+
 def render(value):
     # A lazy iterator reprs identically whatever it would yield, so it is drained first.
     # Without this, any function returning a generator compares equal across versions and
@@ -276,12 +296,12 @@ def render(value):
         try:
             for i, item in enumerate(value):
                 if i >= MAX_ITEMS:
-                    return repr(items) + "...(truncated)"
+                    return text_of(items, repr) + "...(truncated)"
                 items.append(item)
         except Exception as exc:
-            return repr(items) + "...then " + type(exc).__name__ + ": " + str(exc)[:120]
-        return repr(items)
-    return repr(value)
+            return text_of(items, repr) + "...then " + describe(exc)[:120]
+        return text_of(items, repr)
+    return text_of(value, repr)
 
 
 class NeedsInstance(Exception):
@@ -369,10 +389,10 @@ for qualname, argsets in payload.items():
         # Honest unreachability: the name exists and is callable, but only on an
         # object this tool cannot build. Kept separate from a resolve failure,
         # which means the name could not be found at all.
-        record(qualname, {"needs_instance": str(exc)[:150]})
+        record(qualname, {"needs_instance": text_of(exc, str)[:150]})
         continue
     except Exception as exc:
-        record(qualname, {"error": type(exc).__name__ + ": " + str(exc)[:150]})
+        record(qualname, {"error": describe(exc)})
         continue
     for src in argsets:
         try:
@@ -401,11 +421,11 @@ for qualname, argsets in payload.items():
         except SystemExit as exc:
             # Recorded, not fatal. A function that exits is a real behaviour and
             # worth comparing across versions like any other outcome.
-            rows.append(["exit", "SystemExit: " + str(exc.code)[:80]])
+            rows.append(["exit", "SystemExit: " + text_of(exc.code, str)[:80]])
         except KeyboardInterrupt:
             raise
         except BaseException as exc:
-            rows.append(["raise", scrub(type(exc).__name__ + ": " + str(exc)[:150])])
+            rows.append(["raise", describe(exc)])
     record(qualname, {"rows": rows})
 
 journal.close()

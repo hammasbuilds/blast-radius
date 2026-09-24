@@ -522,6 +522,62 @@ def test_a_hang_does_not_discard_the_functions_already_probed(tmp_path):
     assert out["__stopped_on__"] == ["slowpoke.hangs"]
 
 
+def test_an_exception_whose_str_raises_is_recorded_not_fatal(tmp_path):
+    """Writing a result down runs the package's own `__str__` and `__repr__`, and
+    those can raise like any other call - but they run inside `except`, where a
+    second exception escapes every handler and ends the probe.
+
+    Not hypothetical. `click.ClickException.__str__` returns `self.message`
+    unchanged, so `File.fail(1)` yields an exception whose `str()` raises
+    `TypeError: __str__ returned non-string`. That killed the run, and
+    `click.File.fail` was reported as a function the probe could not get past -
+    a finding about click that was really a defect here.
+    """
+    from blast_radius.probe import call
+
+    _pkg(
+        tmp_path,
+        "badstr",
+        "class Broken(Exception):\n"
+        "    def __str__(self):\n"
+        "        return 1\n\n\n"
+        "def raises_it(x):\n"
+        "    raise Broken(1)\n\n\n"
+        "def after(x):\n"
+        "    return x + 1\n",
+    )
+    out = call(tmp_path, {"badstr.raises_it": ["(1,)"], "badstr.after": ["(1,)"]}, timeout=60)
+
+    assert out is not None, "formatting the exception ended the probe"
+    assert out["badstr.raises_it"]["rows"][0][0] == "raise"
+    assert "Broken" in out["badstr.raises_it"]["rows"][0][1], "the type is still reported"
+    assert out["badstr.after"]["rows"][0] == ["ok", "2"], "work after it was lost"
+    assert "__stopped_on__" not in out
+
+
+def test_a_return_value_whose_repr_raises_is_recorded_not_fatal(tmp_path):
+    """The same hazard on the success path: the result is rendered with repr()."""
+    from blast_radius.probe import call
+
+    _pkg(
+        tmp_path,
+        "badrepr",
+        "class Thing:\n"
+        "    def __repr__(self):\n"
+        "        raise ValueError('no repr for you')\n\n\n"
+        "def returns_it(x):\n"
+        "    return Thing()\n\n\n"
+        "def after(x):\n"
+        "    return x + 1\n",
+    )
+    out = call(tmp_path, {"badrepr.returns_it": ["(1,)"], "badrepr.after": ["(1,)"]}, timeout=60)
+
+    assert out is not None
+    assert out["badrepr.returns_it"]["rows"][0][0] == "ok"
+    assert "ValueError" in out["badrepr.returns_it"]["rows"][0][1]
+    assert out["badrepr.after"]["rows"][0] == ["ok", "2"]
+
+
 def test_a_function_that_reads_stdin_gets_eof_instead_of_blocking(tmp_path):
     """The probe is a batch job with no one at a keyboard, so a function waiting
     on stdin waits until the timeout and costs the whole batch.
