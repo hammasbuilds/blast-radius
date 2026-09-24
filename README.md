@@ -17,7 +17,7 @@
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python">
   <img src="https://img.shields.io/badge/runtime%20deps-0-brightgreen" alt="zero dependencies">
   <img src="https://img.shields.io/badge/model-none%20required-success" alt="no model">
-  <img src="https://img.shields.io/badge/tests-32-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-37-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/upgrade%20pairs%20measured-27-blue" alt="pairs">
   <a href="https://github.com/hammasbuilds/blast-radius/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
 </p>

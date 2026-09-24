@@ -8,3 +8,7 @@ out/
 dist/
 build/
 *.egg-info/
+
+# Scratch from a one-off measurement, not part of the project.
+click_measure.log
+run_m.bat

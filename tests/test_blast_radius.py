@@ -12,6 +12,7 @@ So these tests are mostly about refusing to claim things.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -351,3 +352,136 @@ def test_paths_are_reported_relative_to_the_repo(tmp_path):
     find_call_sites(tmp_path, "packaging", changes)
     assert changes[0].used_at
     assert not Path(changes[0].used_at[0].split(":")[0]).is_absolute()
+
+
+# --- executing somebody else's code, safely -------------------------------------------
+#
+# The behaviour pass calls arbitrary functions from an installed package. Three
+# things those functions do are not exceptions, and each one silently destroyed
+# a whole run before it was handled.
+
+
+def _pkg(root, name, body):
+    pkg = root / name
+    pkg.mkdir(parents=True, exist_ok=True)
+    (pkg / "__init__.py").write_text(body, encoding="utf-8")
+    return pkg
+
+
+def test_a_function_that_exits_does_not_kill_the_run(tmp_path):
+    """SystemExit inherits from BaseException, not Exception.
+
+    `except Exception` does not catch it, so one function calling sys.exit()
+    ended the probe mid-run - no output, exit code 0, and the caller saw an
+    empty result indistinguishable from "this package has no stable functions".
+
+    This is why the published click comparison reported 0 functions exercised
+    and 400 unreachable. They were reachable. The first one to exit took the
+    process with it.
+    """
+    from blast_radius.probe import call
+
+    _pkg(
+        tmp_path,
+        "exiter",
+        "import sys\n\n\ndef quits(x):\n    sys.exit(3)\n\n\ndef fine(x):\n    return x + 1\n",
+    )
+    out = call(tmp_path, {"exiter.quits": ["(1,)"], "exiter.fine": ["(1,)"]}, timeout=120)
+
+    assert out is not None, "the probe died instead of recording the exit"
+    assert out["exiter.fine"]["rows"][0] == ["ok", "2"], "work after the exit was lost"
+    assert out["exiter.quits"]["rows"][0][0] == "exit"
+
+
+def test_a_function_that_prints_does_not_corrupt_the_results(tmp_path):
+    """Results cross the process boundary as one __BR_JSON__ line on stdout.
+
+    Anything the called function prints lands in the same stream. click's entry
+    points print their usage text, which is exactly what happened.
+    """
+    from blast_radius.probe import call
+
+    _pkg(tmp_path, "noisy", "def chatty(x):\n    print('usage: something')\n    return x * 2\n")
+    out = call(tmp_path, {"noisy.chatty": ["(21,)"]}, timeout=120)
+
+    assert out is not None
+    assert out["noisy.chatty"]["rows"][0] == ["ok", "42"]
+
+
+def test_a_large_payload_survives_the_command_line_limit(tmp_path):
+    """The payload used to be an argv entry.
+
+    Measured on this machine, passing the payload as an argv entry:
+
+        20 functions,  2,105 chars  ->  20 results
+        60 functions,  6,123 chars  ->  60 results
+       120 functions, 12,290 chars  ->   0 results, exit code 0
+       400 functions                ->  WinError 206, filename too long
+
+    The silent case is the dangerous one: the behaviour pass - the only part of
+    this tool that finds what nothing else warns you about - reported no silent
+    changes rather than reporting that it had not run. The default limit is 400
+    functions, so this was the default behaviour on Windows for any package big
+    enough to be worth checking.
+    """
+    from blast_radius.probe import call
+
+    body = "".join(f"def f{i}(x):\n    return x + {i}\n\n\n" for i in range(300))
+    _pkg(tmp_path, "wide", body)
+    payload = {f"wide.f{i}": ["(1,)", "(2,)", "(3,)", "(4,)"] for i in range(300)}
+    # Comfortably past 12,290, the size at which the old argv path went silent.
+    assert len(json.dumps(payload)) > 13_000, "fixture is too small to exercise the limit"
+
+    out = call(tmp_path, payload, timeout=300)
+    assert out is not None
+    assert len(out) == 300
+    assert out["wide.f7"]["rows"][0] == ["ok", "8"]
+
+
+def test_a_method_needing_an_instance_is_reported_not_faked(tmp_path):
+    """`getattr(SomeClass, "method")` is the unbound function, which still wants
+    `self` - while the signature is measured with `self` excluded, because a
+    caller writing `obj.method(x)` passes one argument.
+
+    Those two together meant the generated literal was bound to `self`: the tool
+    called `Argument.add_to_parser("a", "b")` with the string "a" as the
+    Argument. Most such calls raise and are merely noisy, but a method that
+    never touches `self` runs happily against a string, and the two versions are
+    then compared on a call no user could make.
+    """
+    from blast_radius.probe import call
+
+    _pkg(
+        tmp_path,
+        "needy",
+        "class Thing:\n"
+        "    def __init__(self, required):\n"
+        "        self.required = required\n\n"
+        "    def scaled(self, n):\n"
+        "        return self.required * n\n",
+    )
+    out = call(tmp_path, {"needy.Thing.scaled": ["(2,)"]}, timeout=120)
+
+    assert out is not None
+    assert "needs_instance" in out["needy.Thing.scaled"]
+    assert "rows" not in out["needy.Thing.scaled"]
+
+
+def test_a_method_on_a_constructible_class_is_bound_and_called(tmp_path):
+    """When the class takes no arguments there IS a real instance to use, and
+    the method is worth comparing like any other function."""
+    from blast_radius.probe import call
+
+    _pkg(
+        tmp_path,
+        "easy",
+        "class Thing:\n"
+        "    def __init__(self):\n"
+        "        self.base = 10\n\n"
+        "    def plus(self, n):\n"
+        "        return self.base + n\n",
+    )
+    out = call(tmp_path, {"easy.Thing.plus": ["(5,)"]}, timeout=120)
+
+    assert out is not None
+    assert out["easy.Thing.plus"]["rows"][0] == ["ok", "15"]
