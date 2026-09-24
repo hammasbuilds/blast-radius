@@ -229,7 +229,7 @@ print("__BR_JSON__" + json.dumps(final))
 """
 
 CALL = r"""
-import importlib, json, re, sys
+import contextlib, importlib, inspect, io, json, re, sys
 
 import os
 
@@ -237,7 +237,21 @@ if not os.path.isdir(sys.argv[1]):
     print("__BR_WRONGDIR__no such directory: " + sys.argv[1])
     raise SystemExit(0)
 sys.path.insert(0, sys.argv[1])
-payload = json.loads(sys.argv[2])
+
+# The payload arrives in a FILE, not on the command line.
+#
+# It used to be argv[2]. A command line has a length limit, and this payload is
+# one entry per stable function with four argument sets each. Measured on
+# Windows: 6,123 characters worked, 12,290 returned nothing at all with a zero
+# exit code, and a few hundred functions failed outright with
+# "[WinError 206] The filename or extension is too long".
+#
+# The default limit is 400 functions. So on Windows the behaviour pass - the
+# only part of this tool that finds what nothing else warns you about - did
+# nothing at all on any package big enough to be worth checking, and said so by
+# reporting zero silent changes.
+with open(sys.argv[2], "r", encoding="utf-8") as fh:
+    payload = json.load(fh)
 
 # Two shapes of object identity, both of which look like a behaviour change and are not.
 #   <Foo object at 0x7f...>   - the default repr
@@ -270,7 +284,31 @@ def render(value):
     return repr(value)
 
 
+class NeedsInstance(Exception):
+    # The name is a method and no instance could be made to call it on.
+    #
+    # A comment, not a docstring: this module is a triple-quoted template and a
+    # docstring here closes it. The SURFACE template above says the same thing
+    # for the same reason.
+    pass
+
+
 def resolve(qualname):
+    # Returns a CALLABLE THAT TAKES NO self.
+    #
+    # `getattr(SomeClass, "method")` hands back the plain function, which still
+    # wants `self` first - while `_params` deliberately excludes `self` from the
+    # count, because a caller writing `obj.method(x)` passes one argument. Those
+    # two facts together meant the generated literal was bound to `self`: the
+    # tool called `Argument.add_to_parser("a", "b")` with "a" as the Argument.
+    #
+    # That is worse than failing. Most such calls raise TypeError and are
+    # counted as unreachable, which is merely noisy - but a method that does not
+    # touch `self` will happily run against a string and return something, and
+    # the two versions then get compared on a call no user could ever make.
+    #
+    # So: build an instance when the class allows it and bind the method to it,
+    # and otherwise say the name needs an instance rather than inventing one.
     parts = qualname.split(".")
     for cut in range(len(parts) - 1, 0, -1):
         try:
@@ -278,8 +316,24 @@ def resolve(qualname):
         except Exception:
             continue
         obj = mod
+        owner = None
         for attr in parts[cut:]:
-            obj = getattr(obj, attr)
+            owner, obj = obj, getattr(obj, attr)
+
+        if inspect.isclass(owner) and inspect.isfunction(obj):
+            # A plain function on a class is an instance method. staticmethod
+            # and classmethod do not arrive here: getattr already returns them
+            # bound, or as a function with no `self` parameter.
+            first = next(iter(inspect.signature(obj).parameters), None)
+            if first in ("self", "cls"):
+                try:
+                    instance = owner()
+                except Exception as exc:
+                    raise NeedsInstance(
+                        owner.__name__ + "() takes constructor arguments: "
+                        + type(exc).__name__
+                    ) from None
+                return getattr(instance, parts[-1])
         return obj
     raise ImportError(qualname)
 
@@ -289,6 +343,12 @@ for qualname, argsets in payload.items():
     rows = []
     try:
         fn = resolve(qualname)
+    except NeedsInstance as exc:
+        # Honest unreachability: the name exists and is callable, but only on an
+        # object this tool cannot build. Kept separate from a resolve failure,
+        # which means the name could not be found at all.
+        results[qualname] = {"needs_instance": str(exc)[:150]}
+        continue
     except Exception as exc:
         results[qualname] = {"error": type(exc).__name__ + ": " + str(exc)[:150]}
         continue
@@ -298,9 +358,31 @@ for qualname, argsets in payload.items():
         except Exception as exc:
             rows.append(["badargs", type(exc).__name__])
             continue
+        # Two things a called function can do that are not exceptions.
+        #
+        # It can WRITE TO STDOUT. This channel carries the results as a single
+        # __BR_JSON__ line, so anything a function prints corrupts it. click's
+        # entry points print their usage text.
+        #
+        # It can EXIT. SystemExit inherits from BaseException, not Exception,
+        # so `except Exception` does not catch it and the interpreter simply
+        # stops - mid-run, with no output and a zero exit code. One click
+        # command calling sys.exit() ended the whole probe, which is why the
+        # published click comparison reported 0 functions exercised and 400
+        # unreachable. They were reachable. The first one to exit took the
+        # process with it and everything after it was never attempted.
+        buf_out, buf_err = io.StringIO(), io.StringIO()
         try:
-            rows.append(["ok", scrub(render(fn(*args)))])
-        except Exception as exc:
+            with contextlib.redirect_stdout(buf_out), contextlib.redirect_stderr(buf_err):
+                value = fn(*args)
+            rows.append(["ok", scrub(render(value))])
+        except SystemExit as exc:
+            # Recorded, not fatal. A function that exits is a real behaviour and
+            # worth comparing across versions like any other outcome.
+            rows.append(["exit", "SystemExit: " + str(exc.code)[:80]])
+        except KeyboardInterrupt:
+            raise
+        except BaseException as exc:
             rows.append(["raise", scrub(type(exc).__name__ + ": " + str(exc)[:150])])
     results[qualname] = {"rows": rows}
 
@@ -356,7 +438,17 @@ def surface(target_dir: Path, package: str, timeout: float = 180.0) -> dict | No
 
 
 def call(target_dir: Path, payload: dict[str, list[str]], timeout: float = 300.0) -> dict | None:
-    """Call each qualname on each argument set, and return what came back as strings."""
+    """Call each qualname on each argument set, and return what came back as strings.
+
+    The payload goes through a temporary file rather than the command line,
+    which has a length limit the payload routinely exceeded. See the comment at
+    the top of CALL.
+    """
     if not payload:
         return {}
-    return _run(CALL, [str(target_dir.resolve()), json.dumps(payload)], timeout)
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        blob = Path(tmp) / "payload.json"
+        blob.write_text(json.dumps(payload), encoding="utf-8")
+        return _run(CALL, [str(target_dir.resolve()), str(blob)], timeout)
