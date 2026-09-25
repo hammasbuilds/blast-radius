@@ -550,32 +550,52 @@ def _run(script: str, args: list[str], timeout: float, journal: Path | None = No
         path = Path(tmp) / "probe.py"
         # newline="" or Windows rewrites the newlines and breaks any continuation.
         path.write_text(script, encoding="utf-8", newline="")
+        # Output goes to FILES, not pipes, and this is the difference between a
+        # timeout and a hang.
+        #
+        # `capture_output=True` gives the child a pipe. A probed function is free to
+        # spawn a process that inherits it - click.edit opens an editor, click.launch
+        # a browser - and killing the child at the timeout does not close a pipe the
+        # grandchild still holds. subprocess.run then waits in communicate() for an
+        # EOF that will not come, so `timeout=60` becomes no timeout at all.
+        #
+        # Observed: a click 7.1.2 -> 8.1.7 comparison bounded to about twelve minutes
+        # sat for fifty-six, with Notepad.exe alive in the process tree holding the
+        # pipe. A file has no reader to block on: the child is killed, and whatever it
+        # had written is still there to read.
+        out_path, err_path = Path(tmp) / "out.txt", Path(tmp) / "err.txt"
+        timed_out = False
         try:
-            proc = subprocess.run(
-                [sys.executable, str(path), *args],
-                capture_output=True,
-                # No stdin. A function that reads from it - click.confirm, and
-                # every other prompt helper - otherwise blocks until the timeout
-                # and takes the batch with it. click.confirm is the function that
-                # was stopping the click run at 141 of 234. With the descriptor
-                # closed it gets EOF immediately and raises, which is a real
-                # behaviour worth comparing like any other.
-                stdin=subprocess.DEVNULL,
-                # Not text=True: that decodes with the locale codec, which on Windows is
-                # cp1252. The child writes UTF-8, and any probed function whose repr or
-                # output carries a non-cp1252 character then raises UnicodeDecodeError in
-                # the parent - out of a reader thread, so not an OSError, and not caught
-                # below. Decoding here with errors="replace" keeps a stray byte from
-                # deciding whether the whole run reports anything.
-                encoding="utf-8",
-                errors="replace",
-                timeout=timeout,
-                check=False,
-                cwd=tmp,
-            )
-        except (subprocess.TimeoutExpired, OSError):
+            with open(out_path, "wb") as out_fh, open(err_path, "wb") as err_fh:
+                subprocess.run(
+                    [sys.executable, str(path), *args],
+                    stdout=out_fh,
+                    stderr=err_fh,
+                    # No stdin. A function that reads from it - click.confirm, and
+                    # every other prompt helper - otherwise blocks until the timeout
+                    # and takes the batch with it. click.confirm is the function that
+                    # was stopping the click run at 141 of 234. With the descriptor
+                    # closed it gets EOF immediately and raises, which is a real
+                    # behaviour worth comparing like any other.
+                    stdin=subprocess.DEVNULL,
+                    timeout=timeout,
+                    check=False,
+                    cwd=tmp,
+                )
+        except subprocess.TimeoutExpired:
+            timed_out = True
+        except OSError:
             return _recover(journal) if journal else None
-    out = proc.stdout or ""
+        # Decoded here with errors="replace" rather than by text=True, which uses the
+        # locale codec - cp1252 on Windows. A probed function whose output carries one
+        # non-cp1252 byte would otherwise raise UnicodeDecodeError and decide whether
+        # the whole run reports anything.
+        try:
+            out = out_path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            out = ""
+        if timed_out and "__BR_JSON__" not in out:
+            return _recover(journal) if journal else None
     if "__BR_WRONGDIR__" in out:
         # Loud on purpose. Silently returning None here would look like "this version has
         # no public API", and the diff would then report every symbol as removed.

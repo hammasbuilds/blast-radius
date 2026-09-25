@@ -119,14 +119,32 @@ And **8 of the changes are referenced by `pypa/build`'s own source**, with file 
 An upgrade removing forty functions nobody calls is a non-event. The same upgrade touching
 one you call in a loop is an incident — so the report sorts by that before anything else.
 
-### And an honest failure
+### The run that was reported as an honest failure, and was not
 
-`click` 7.1.2 → 8.1.7: **0 functions exercised, 400 unreachable.**
+`click` 8.1.6 → 8.1.7: **116 of 234 stable callables exercised.**
 
-`packaging` is largely pure functions over strings, so generated values reach them. `click`
-is classes and decorators that need a constructed `Context` first, and a tool that calls
-functions with literals cannot get there. The report says *"could not be called"* rather
-than *"no changes found"*, because those are different claims.
+This page used to say *0 exercised, 400 unreachable*, and explained it: click is classes and
+decorators needing a constructed `Context`, so a tool calling functions with literals cannot
+get there. That explanation was wrong, and comfortable enough that it survived a while.
+
+Four defects were producing the zero, none of them about click:
+
+| | |
+|---|---|
+| the payload went on the **command line** | 12,290 characters returned nothing with exit code 0; 400 functions hit `WinError 206`. The default limit is 400, so on Windows the behaviour pass silently did nothing on any package worth checking. |
+| `SystemExit` was not caught | it inherits `BaseException`, so `except Exception` missed it, and one click command calling `sys.exit()` ended the whole run |
+| `_params` mis-parsed a **return annotation** | `(value: int, name: str = "x") -> bool` was read as taking ONE parameter, so every annotated function was called short and raised `TypeError`. click annotated its entire API in v8 |
+| a class needing a constructor argument was **refused** | 95 of 234, a larger bucket than the 54 the tool could then exercise |
+
+| | before | after |
+|---|---:|---:|
+| exercised | 54 | **116** |
+| needs an instance | 95 | **43** |
+| no generated argument reached it | 81 | 71 |
+
+The 71 is the honest remainder, and it is now reported as its own line rather than merged
+into "could not be called" — a function this tool never managed to hand a valid argument is
+a fact about the tool, and one that ran and refused is a fact about the package.
 
 See [docs/RESULTS.md](https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md) for both runs.
 
@@ -179,15 +197,21 @@ src/blast_radius/
 ## What this does NOT do
 
 - **It does not read changelogs.** Deliberately. The changelog is the claim being checked.
-- **It cannot reach every API.** Functions needing a constructed object are unreachable and
-  reported as such — on `click`, that was all of them.
-- **Generated arguments, not real ones.** A small pool of literals, varied one parameter at
-  a time. A behaviour change that only shows on a complex input will be missed.
+- **It cannot reach every API.** A class whose constructor takes an argument is built with a
+  generated one where the annotation allows a guess, and reported as needing an instance
+  where the guess fails. On `click` that is **43 of 234** stable callables — it used to be
+  all of them.
+- **Generated arguments, not real ones.** A pool of literals chosen per parameter from its
+  annotation, varied one at a time. A behaviour change that only shows on a complex input
+  will be missed, and **71 of click's 234** are functions no generated argument reached.
 - **Public surface only.** A project reaching into private names is not covered.
-- **Call-site matching over-reports.** It matches trailing names, so a project with its own
-  `parse` is credited with using `packaging.version.parse`. That is the right direction to
-  err: a missed call site is a break that reaches production, a spurious one costs ten
-  seconds.
+- **A function that never returns costs a full `--timeout`.** `click.getchar` and
+  `click.termui.hidden_prompt_func` read the console and never answer a batch job. The probe
+  restarts past each one and keeps everything it had already finished, but the waiting is
+  real: the click comparison spends most of its ten minutes on three functions.
+- **Two packages.** `packaging` and `click`. Two upgrades are not a general claim about
+  upgrades, and nothing here says how this behaves on a package shaped differently from
+  both.
 
 ## Problems hit while building this
 
