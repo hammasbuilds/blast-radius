@@ -121,13 +121,18 @@ def cmd_check(args: argparse.Namespace) -> int:
         if not args.no_behaviour:
             stable = stable_callables(old, new, limit=args.limit)
             print(f"\nexecuting {len(stable)} function(s) that kept both name and signature...")
-            silent, compared, unreachable, stopped_on = behaviour_changes(
+            silent, compared, unreachable, stopped_on, reasons = behaviour_changes(
                 workdir / args.old_version, workdir / args.new_version, stable, args.timeout
             )
             report.changes.extend(silent)
             report.compared = compared
             report.unreachable = unreachable
             print(f"  {compared} exercised, {unreachable} could not be called in either")
+            # Broken out because "could not be called" covers two opposite things:
+            # an argument this tool could not generate, and a function that ran and
+            # refused. Only the second is a fact about the package.
+            for why, n in sorted(reasons.items(), key=lambda kv: -kv[1]):
+                print(f"      {n:>4}  {why}")
             if stopped_on:
                 # Said out loud, because the count above cannot distinguish "the
                 # package has functions nothing can call" from "this tool stopped

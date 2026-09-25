@@ -275,8 +275,8 @@ def _strength(a: list, b: list) -> int:
 
 def behaviour_changes(
     old_dir, new_dir, stable: dict[str, str], timeout: float = 600.0
-) -> tuple[list[Change], int, int, list[str]]:
-    """(silent changes, compared, unreachable, stopped_on).
+) -> tuple[list[Change], int, int, list[str], dict[str, int]]:
+    """(silent changes, compared, unreachable, stopped_on, reasons).
 
     `compared` counts only functions that actually ran somewhere. A function that raised on
     every input in both versions was never exercised, so it is neither evidence of a change
@@ -297,19 +297,37 @@ def behaviour_changes(
                 if name not in stopped_on:
                     stopped_on.append(name)
     if old_res is None or new_res is None:
-        return [], 0, len(payload), stopped_on
+        return [], 0, len(payload), stopped_on, {"the probe produced nothing": len(payload)}
 
     changes: list[Change] = []
     compared = unreachable = 0
+    # Why each unreachable name was unreachable. "Could not be called" covers two
+    # opposite situations and the report used to give one number for both: a
+    # function nothing can construct an argument for is a fact about THIS TOOL,
+    # and a function that rejects everything it is handed is a fact about the
+    # PACKAGE. Measured on click, the bucket was 71 names and there was no way to
+    # tell from the output which kind they were.
+    reasons: dict[str, int] = {}
+
+    def unreached(why: str) -> None:
+        nonlocal unreachable
+        unreachable += 1
+        reasons[why] = reasons.get(why, 0) + 1
 
     for name, argsets in payload.items():
         a, b = old_res.get(name, {}), new_res.get(name, {})
         if "rows" not in a or "rows" not in b:
-            unreachable += 1
+            missing = a if "rows" not in a else b
+            if "needs_instance" in missing:
+                unreached("needs an instance this tool could not build")
+            elif "error" in missing:
+                unreached("could not be resolved or the probe stopped there")
+            else:
+                unreached("no result from one of the two versions")
             continue
         rows_a, rows_b = a["rows"], b["rows"]
         if len(rows_a) != len(rows_b):
-            unreachable += 1
+            unreached("the two versions produced different numbers of rows")
             continue
 
         exercised = [
@@ -318,7 +336,16 @@ def behaviour_changes(
             if ra[0] == "ok" or rb[0] == "ok"
         ]
         if not exercised:
-            unreachable += 1
+            # Every attempt raised. TypeError on every one means the arguments were
+            # the wrong shape and this tool never actually reached the function -
+            # fixable here, by generating better arguments. Anything else means the
+            # function ran and refused, which is the package's own behaviour and
+            # nothing to fix.
+            every = [r[1] for r in rows_a + rows_b]
+            if every and all(t.startswith("TypeError") for t in every):
+                unreached("never validly called - every argument set was the wrong type")
+            else:
+                unreached("called, and rejected every input")
             continue
         compared += 1
 
@@ -343,7 +370,7 @@ def behaviour_changes(
                 },
             )
         )
-    return changes, compared, unreachable, stopped_on
+    return changes, compared, unreachable, stopped_on, reasons
 
 
 def find_call_sites(repo, package: str, changes: list[Change]) -> None:

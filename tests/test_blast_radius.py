@@ -670,7 +670,7 @@ def test_a_probe_that_died_is_reported_apart_from_a_function_that_cannot_be_call
     _pkg(tmp_path / "new", "twins", body)
     stable = {"twins.quick": "(x)", "twins.hangs": "(x)", "twins.after": "(x)"}
 
-    silent, compared, unreachable, stopped_on = behaviour_changes(
+    silent, compared, unreachable, stopped_on, reasons = behaviour_changes(
         tmp_path / "old", tmp_path / "new", stable, timeout=10
     )
 
@@ -678,6 +678,7 @@ def test_a_probe_that_died_is_reported_apart_from_a_function_that_cannot_be_call
     assert compared == 2, "only the hanging function should be lost"
     assert unreachable == 1
     assert silent == [], "the two versions are identical"
+    assert sum(reasons.values()) == unreachable, "every unreachable name needs a reason"
 
 
 def test_a_raw_byte_written_to_the_descriptor_does_not_lose_the_run(tmp_path):
@@ -740,3 +741,35 @@ def test_a_temp_directory_that_cannot_be_removed_does_not_lose_the_run(tmp_path,
     assert seen["n"] >= 1, "the patched rmdir was never reached"
     assert out is not None, "a cleanup failure destroyed the result"
     assert out["cleanly.twice"]["rows"][0] == ["ok", "42"]
+
+
+def test_calling_a_function_wrongly_is_not_the_same_as_it_rejecting_input(tmp_path):
+    """"Could not be called" covered two opposite situations under one number.
+
+    A function this tool never managed to hand a valid argument to is a fact about
+    THIS TOOL, and fixable here. A function that ran and refused what it was given
+    is a fact about the package, and nothing to fix. On click the merged bucket was
+    71 names, with nothing in the output to tell them apart.
+    """
+    from blast_radius.diff import behaviour_changes
+
+    # Five parameters. Generation caps at three, so every call is short by two and
+    # raises TypeError before the body runs - the tool never reached the function.
+    body = (
+        "def wants_five(a, b, c, d, e):\n"
+        "    return a\n\n\n"
+        "def refuses_everything(x):\n"
+        "    raise ValueError('no')\n"
+    )
+    _pkg(tmp_path / "old", "twokinds", body)
+    _pkg(tmp_path / "new", "twokinds", body)
+    stable = {"twokinds.wants_five": "(a, b, c, d, e)", "twokinds.refuses_everything": "(x)"}
+
+    _silent, _compared, unreachable, _stopped, reasons = behaviour_changes(
+        tmp_path / "old", tmp_path / "new", stable, timeout=120
+    )
+
+    assert unreachable == 2
+    assert sum(reasons.values()) == 2
+    assert reasons.get("never validly called - every argument set was the wrong type") == 1
+    assert reasons.get("called, and rejected every input") == 1
