@@ -448,6 +448,11 @@ def test_a_method_needing_an_instance_is_reported_not_faked(tmp_path):
     Argument. Most such calls raise and are merely noisy, but a method that
     never touches `self` runs happily against a string, and the two versions are
     then compared on a call no user could make.
+
+    A constructor taking one ordinary argument is now built rather than refused,
+    so this asserts the binding is right instead of asserting it gave up: the
+    result has to show the method ran ON THE INSTANCE, with the generated value
+    reaching the parameter and not `self`.
     """
     from blast_radius.probe import call
 
@@ -463,8 +468,33 @@ def test_a_method_needing_an_instance_is_reported_not_faked(tmp_path):
     out = call(tmp_path, {"needy.Thing.scaled": ["(2,)"]}, timeout=120)
 
     assert out is not None
-    assert "needs_instance" in out["needy.Thing.scaled"]
-    assert "rows" not in out["needy.Thing.scaled"]
+    row = out["needy.Thing.scaled"]["rows"][0]
+    # "x" is the constructor's argument and 2 is the method's. Bound the other way
+    # round, `self` would be 2 and the call would raise.
+    assert row == ["ok", "'xx'"], "the literal must reach `n`, not `self`"
+
+
+def test_a_class_that_cannot_be_built_is_still_reported_not_faked(tmp_path):
+    """Guessing a constructor argument can only turn a refusal into a comparison.
+    Where the guess is wrong the constructor raises, and the name must come back
+    as needing an instance rather than as a function that failed."""
+    from blast_radius.probe import call
+
+    _pkg(
+        tmp_path,
+        "fussy",
+        "class Fussy:\n"
+        "    def __init__(self, connection):\n"
+        "        connection.connect()\n\n"
+        "    def use(self, n):\n"
+        "        return n\n",
+    )
+    out = call(tmp_path, {"fussy.Fussy.use": ["(1,)"]}, timeout=120)
+
+    assert out is not None
+    assert "needs_instance" in out["fussy.Fussy.use"]
+    assert "AttributeError" in out["fussy.Fussy.use"]["needs_instance"]
+    assert "rows" not in out["fussy.Fussy.use"]
 
 
 def test_a_method_on_a_constructible_class_is_bound_and_called(tmp_path):

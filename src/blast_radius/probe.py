@@ -313,6 +313,75 @@ class NeedsInstance(Exception):
     pass
 
 
+ARG_BY_TYPE = {
+    "int": 1, "float": 1.0, "bool": True, "str": "x", "bytes": b"x",
+    "list": [], "tuple": (), "dict": {}, "set": set(),
+}
+
+
+def value_for(parameter):
+    # A plausible argument for one constructor parameter.
+    #
+    # Only used to BUILD AN INSTANCE so a method can be called on it, never to
+    # produce a result that gets compared. If the guess is wrong the constructor
+    # raises and the name is reported as needing an instance, exactly as before -
+    # so this can only turn a refusal into a comparison, never a comparison into
+    # a wrong answer.
+    annotation = parameter.annotation
+    if annotation is not inspect.Parameter.empty:
+        # The annotation may be a real class or a string (from __future__
+        # annotations). Both are handled by name, because resolving a string
+        # annotation means eval in the package's namespace and that is a larger
+        # risk than guessing wrong.
+        text = getattr(annotation, "__name__", None) or str(annotation)
+        text = text.lower()
+        for name, value in ARG_BY_TYPE.items():
+            if name in text:
+                return value
+    return "x"
+
+
+def build_instance(owner):
+    # An instance of `owner`, or NeedsInstance if one cannot be made.
+    #
+    # This used to be a bare `owner()`, so any class whose __init__ took an
+    # argument was reported as unreachable. On click 8.1.6 -> 8.1.7 that was 95 of
+    # 234 stable callables - a larger bucket than the 54 the tool could actually
+    # exercise - and most of them are the ParamType family, whose constructors
+    # take a name or a list of choices.
+    try:
+        return owner()
+    except Exception:
+        pass
+    try:
+        signature = inspect.signature(owner)
+    except (TypeError, ValueError) as exc:
+        raise NeedsInstance(
+            owner.__name__ + " has no inspectable constructor: " + type(exc).__name__
+        ) from None
+    args = []
+    for name, parameter in signature.parameters.items():
+        if name in ("self", "cls"):
+            continue
+        if parameter.kind in (parameter.VAR_POSITIONAL, parameter.VAR_KEYWORD):
+            continue
+        if parameter.default is not parameter.empty:
+            # It has a default and `owner()` already failed, so something earlier
+            # in the list is what is missing. Stop rather than override a default
+            # the class chose for itself.
+            break
+        args.append(value_for(parameter))
+    if args:
+        try:
+            return owner(*args)
+        except Exception as exc:
+            raise NeedsInstance(
+                owner.__name__ + "(" + ", ".join(repr(a) for a in args) + ") raised "
+                + type(exc).__name__
+            ) from None
+    raise NeedsInstance(owner.__name__ + "() takes constructor arguments")
+
+
 def resolve(qualname):
     # Returns a CALLABLE THAT TAKES NO self.
     #
@@ -346,14 +415,7 @@ def resolve(qualname):
             # bound, or as a function with no `self` parameter.
             first = next(iter(inspect.signature(obj).parameters), None)
             if first in ("self", "cls"):
-                try:
-                    instance = owner()
-                except Exception as exc:
-                    raise NeedsInstance(
-                        owner.__name__ + "() takes constructor arguments: "
-                        + type(exc).__name__
-                    ) from None
-                return getattr(instance, parts[-1])
+                return getattr(build_instance(owner), parts[-1])
         return obj
     raise ImportError(qualname)
 

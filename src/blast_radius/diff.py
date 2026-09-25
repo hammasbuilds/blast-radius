@@ -42,31 +42,147 @@ POOL = [
 ]
 
 
-def _params(signature: str) -> int:
-    """How many positional parameters a signature takes, `self` excluded."""
-    inner = signature.strip()[1:-1] if signature.startswith("(") else signature
-    if not inner.strip():
-        return 0
-    depth, count, current = 0, 0, ""
-    for ch in inner:
+# Per-annotation pools. The generic POOL above is tried against every parameter,
+# which means a parameter annotated `int` gets `""` first and raises TypeError -
+# and that raise is indistinguishable in the report from a function that rejects
+# its input. Measured on click 8.1.6 -> 8.1.7: of 234 stable callables, 81 raised
+# on every generated argument set. Most of those are this, not the package.
+#
+# `call_shape` deliberately ignores annotations when deciding whether two
+# signatures match, because adding a type hint cannot break a caller. That is a
+# statement about COMPARISON. It is not a reason to ignore them when choosing
+# what to pass, which is what this fixes.
+TYPED_POOL: dict[str, list[str]] = {
+    "int": ["1", "0", "-1", "2"],
+    "float": ["1.0", "0.0", "-1.5"],
+    "complex": ["1j"],
+    "bool": ["True", "False"],
+    "str": ['"x"', '""', '"a b"', '"1.0"'],
+    "bytes": ['b"x"', 'b""'],
+    "list": ["[]", "[1, 2]"],
+    "tuple": ["()", "(1, 2)"],
+    "set": ["set()", "{1, 2}"],
+    "frozenset": ["frozenset()"],
+    "dict": ["{}", '{"a": 1}'],
+    "sequence": ["[]", "[1, 2]"],
+    "iterable": ["[]", "[1, 2]"],
+    "iterator": ["iter([])", "iter([1, 2])"],
+    "mapping": ["{}", '{"a": 1}'],
+    "callable": ["(lambda *a, **k: None)"],
+    "path": ['__import__("pathlib").Path(".")', '"."'],
+    "none": ["None"],
+}
+
+
+def _pool_for(annotation: str | None) -> list[str]:
+    """Values worth passing to a parameter annotated like this.
+
+    Matching is on substrings of the annotation text rather than on resolved
+    types, because the parent process never imports the package - it only has the
+    signature string the probe reported. `dict[str, int]`, `Mapping[str, Any]` and
+    `Optional[Dict]` all have to be recognised from their spelling.
+    """
+    if not annotation:
+        return POOL
+    text = annotation.strip().lower()
+    # `None` and `Optional` are stripped BEFORE matching, not matched alongside.
+    # Otherwise `str | None` matches the "none" key - which is four characters and
+    # so sorts ahead of "str" - and the parameter is offered nothing but None.
+    optional = bool(re.search(r"\bnone\b|\boptional\b", text))
+    if optional:
+        text = re.sub(r"\boptional\b|\bnone\b", " ", text)
+    # Longest key first, so "frozenset" is not matched as "set".
+    for key in sorted(TYPED_POOL, key=len, reverse=True):
+        if key == "none":
+            continue
+        if re.search(rf"\b{key}\b", text):
+            values = list(TYPED_POOL[key])
+            if optional:
+                values.append("None")
+            return values
+    return ["None", *POOL] if optional else POOL
+
+
+def _param_annotations(signature: str) -> list[str | None]:
+    """The annotation text of each positional parameter, `self` excluded.
+
+    Parsed from the signature STRING because that is all that crosses the process
+    boundary. A real `inspect.Parameter` would be easier and would require
+    importing the package here, which is the one thing this design does not do.
+    """
+    text = signature.strip()
+    if text.startswith("("):
+        # Find the paren that closes the parameter list rather than assuming it is
+        # the last character. "(value: int) -> bool" ends in "l", and slicing
+        # [1:-1] silently dropped the final parameter.
+        depth = 0
+        for i, ch in enumerate(text):
+            if ch == "(":
+                depth += 1
+            elif ch == ")":
+                depth -= 1
+                if depth == 0:
+                    inner = text[1:i]
+                    break
+        else:
+            inner = text[1:]
+    else:
+        inner = text.split("->")[0]
+    out: list[str | None] = []
+    depth, current = 0, ""
+    for ch in inner + ",":
         if ch in "([{":
             depth += 1
         elif ch in ")]}":
             depth -= 1
         if ch == "," and depth == 0:
-            count += 1
+            piece = current.strip()
             current = ""
+            if not piece or piece == "/":
+                # "/" marks the end of positional-only parameters. The ones before
+                # it are still positional, so keep going.
+                continue
+            if piece.startswith("*"):
+                # A bare "*", "*args" or "**kwargs": everything after this point is
+                # keyword-only and cannot be passed positionally. Stop rather than
+                # skip, or a keyword-only parameter gets counted as positional and
+                # every generated call raises TypeError.
+                break
+            name, _, rest = piece.partition(":")
+            if name.strip() in ("self", "cls"):
+                continue
+            annotation = rest.split("=")[0].strip() if rest else None
+            out.append(annotation or None)
             continue
         current += ch
-    count += 1 if inner.strip() else 0
-    names = [p.strip() for p in re.split(r",(?![^\[\]()]*[\]\)])", inner)]
-    names = [n for n in names if n and not n.startswith("*")]
-    names = [n for n in names if n.split(":")[0].strip() not in ("self", "cls")]
-    return len(names)
+    return out
+
+
+def _params(signature: str) -> int:
+    """How many positional parameters a signature takes, `self` excluded.
+
+    One parser, not two. This used to split the parameter list with its own regex
+    and its own `[1:-1]` slice, and both were wrong about the same thing: a return
+    annotation. On `(value: int, name: str = "x") -> bool` the slice left a stray
+    `)` in the text, the regex read the comma as being inside brackets, and the
+    function was reported as taking ONE parameter.
+
+    Every annotated function with two or more parameters was therefore called with
+    too few arguments, raised TypeError on every attempt, and was counted as a
+    function that rejects all input. click annotated its entire public API in
+    version 8.
+    """
+    return len(_param_annotations(signature))
 
 
 def argument_sets(signature: str, cap: int = 12) -> list[str]:
-    """Call strings for a signature, varying one parameter at a time around a baseline."""
+    """Call strings for a signature, varying one parameter at a time around a baseline.
+
+    Each parameter draws from a pool chosen for its annotation where it has one, so
+    a parameter annotated `int` is never offered `""` first. Unannotated
+    parameters fall back to the generic pool, which is what every parameter used
+    to get.
+    """
     n = _params(signature)
     if n == 0:
         return ["()"]
@@ -74,10 +190,12 @@ def argument_sets(signature: str, cap: int = 12) -> list[str]:
         # Beyond three parameters the baseline is unlikely to be valid for any of them,
         # and a call that raises on both sides establishes nothing.
         n = 3
-    baseline = [POOL[0]] * n
+    annotations = _param_annotations(signature)
+    pools = [_pool_for(annotations[i] if i < len(annotations) else None) for i in range(n)]
+    baseline = [pool[0] for pool in pools]
     out = ["(" + ", ".join(baseline) + ",)"]
     for i in range(n):
-        for value in POOL[1:]:
+        for value in pools[i][1:]:
             args = list(baseline)
             args[i] = value
             out.append("(" + ", ".join(args) + ",)")
