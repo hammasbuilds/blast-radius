@@ -539,7 +539,14 @@ def _recover(journal: Path) -> dict | None:
 def _run(script: str, args: list[str], timeout: float, journal: Path | None = None) -> dict | None:
     import tempfile
 
-    with tempfile.TemporaryDirectory() as tmp:
+    # ignore_cleanup_errors, because the probe runs arbitrary code with this
+    # directory as its cwd. On Windows a directory cannot be removed while any
+    # process holds it, and a probed function is free to spawn one that outlives
+    # the timeout - click.launch opens a browser, click.edit an editor. Without
+    # this, cleanup raises PermissionError [WinError 32] and takes down a run that
+    # had already finished its work. Leaving a temp directory behind is a smaller
+    # cost than losing the measurement.
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         path = Path(tmp) / "probe.py"
         # newline="" or Windows rewrites the newlines and breaks any continuation.
         path.write_text(script, encoding="utf-8", newline="")
@@ -602,7 +609,14 @@ MAX_RESTARTS = 5
 def _attempt(target_dir: Path, payload: dict[str, list[str]], timeout: float) -> dict | None:
     import tempfile
 
-    with tempfile.TemporaryDirectory() as tmp:
+    # ignore_cleanup_errors, because the probe runs arbitrary code with this
+    # directory as its cwd. On Windows a directory cannot be removed while any
+    # process holds it, and a probed function is free to spawn one that outlives
+    # the timeout - click.launch opens a browser, click.edit an editor. Without
+    # this, cleanup raises PermissionError [WinError 32] and takes down a run that
+    # had already finished its work. Leaving a temp directory behind is a smaller
+    # cost than losing the measurement.
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         blob = Path(tmp) / "payload.json"
         blob.write_text(json.dumps(payload), encoding="utf-8")
         journal = Path(tmp) / "journal.jsonl"

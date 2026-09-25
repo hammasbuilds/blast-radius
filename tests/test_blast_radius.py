@@ -705,3 +705,38 @@ def test_a_raw_byte_written_to_the_descriptor_does_not_lose_the_run(tmp_path):
 
     assert out is not None, "three bytes from one function killed the whole batch"
     assert out["rawbytes.writes_a_raw_byte"]["rows"][0] == ["ok", "2"]
+
+
+def test_a_temp_directory_that_cannot_be_removed_does_not_lose_the_run(tmp_path, monkeypatch):
+    """The probe runs arbitrary code with a temp directory as its cwd, and that code
+    may leave a process or an open handle behind. On Windows the directory then
+    cannot be removed, `os.rmdir` raises PermissionError [WinError 32] inside
+    `TemporaryDirectory.__exit__`, and the run dies in its cleanup path - after the
+    work is finished and the answer is in hand.
+
+    Measured: it killed a click 7.1.2 -> 8.1.7 comparison that had already read both
+    surfaces and completed most of the behaviour pass. click.launch opens a browser,
+    click.edit an editor, and either can outlive the timeout that killed the probe.
+    """
+    import os
+
+    from blast_radius.probe import call
+
+    _pkg(tmp_path, "cleanly", "def twice(x):\n    return x * 2\n")
+
+    seen = {"n": 0}
+
+    def refuse(path, *a, **kw):
+        # Refuses EVERY time, which is what a held directory does. Refusing once is
+        # not a reproduction: TemporaryDirectory resets permissions and retries, so
+        # a single refusal is swallowed whether the fix is present or not - which is
+        # how the first version of this test passed against the unfixed code.
+        seen["n"] += 1
+        raise PermissionError(32, "The process cannot access the file")
+
+    monkeypatch.setattr(os, "rmdir", refuse)
+    out = call(tmp_path, {"cleanly.twice": ["(21,)"]}, timeout=120)
+
+    assert seen["n"] >= 1, "the patched rmdir was never reached"
+    assert out is not None, "a cleanup failure destroyed the result"
+    assert out["cleanly.twice"]["rows"][0] == ["ok", "42"]
