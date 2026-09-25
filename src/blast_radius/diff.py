@@ -373,6 +373,63 @@ def behaviour_changes(
     return changes, compared, unreachable, stopped_on, reasons
 
 
+def _bindings(tree: ast.Module, package: str) -> tuple[dict[str, str], set[str]]:
+    """Local name -> the dotted path in `package` it refers to, from this file's imports.
+
+    This is what makes a call site a fact rather than a coincidence. Matching on the
+    trailing attribute name alone credits any project that happens to define its own
+    `parse` with calling `packaging.version.parse` - and a report that names files
+    which do not use the package is a report people stop reading.
+
+    Resolution is complete for the ways a symbol can actually arrive:
+
+        import packaging.version              packaging.version -> packaging.version
+        import packaging.version as v         v                 -> packaging.version
+        from packaging import version         version           -> packaging.version
+        from packaging.version import parse   parse             -> packaging.version.parse
+        from packaging.version import parse as p   p            -> packaging.version.parse
+
+    What it does not cover is dynamic access - getattr on a module, importlib by
+    string - which no static pass can see and which is rare in call sites that
+    matter.
+    """
+    root = package.split(".")[0]
+    out: dict[str, str] = {}
+    starred: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == root or alias.name.startswith(root + "."):
+                    out[alias.asname or alias.name] = alias.name
+        elif isinstance(node, ast.ImportFrom):
+            if node.level or not node.module:
+                continue  # a relative import cannot reach a third-party package
+            if node.module != root and not node.module.startswith(root + "."):
+                continue
+            for alias in node.names:
+                if alias.name == "*":
+                    # `from packaging.version import *` binds every public name in
+                    # that module and there is no way to know which from here. The
+                    # module is recorded so bare names can be tried against it.
+                    starred.add(node.module)
+                    out[node.module] = node.module
+                    continue
+                out[alias.asname or alias.name] = f"{node.module}.{alias.name}"
+    return out, starred
+
+
+def _dotted(node: ast.AST) -> str | None:
+    """"a.b.c" for an attribute chain rooted in a plain name, else None."""
+    parts: list[str] = []
+    while isinstance(node, ast.Attribute):
+        parts.append(node.attr)
+        node = node.value
+    if not isinstance(node, ast.Name):
+        return None
+    parts.append(node.id)
+    return ".".join(reversed(parts))
+
+
 def find_call_sites(repo, package: str, changes: list[Change]) -> None:
     """Fill in `used_at` for every change the target project actually references.
 
@@ -399,14 +456,77 @@ def find_call_sites(repo, package: str, changes: list[Change]) -> None:
         if package.split(".")[0] not in src:
             continue  # the module never mentions the package at all
         rel = str(p.relative_to(repo)).replace("\\", "/")
+        bound, starred = _bindings(tree, package)
+        if not bound:
+            # It mentions the package in a string or a comment but imports nothing
+            # from it. Nothing in this file can be a call site.
+            continue
+        by_qualname = {c.qualname: c for c in changes}
+
+        # The import line is a call site in its own right, and the earliest one: a
+        # removed name fails at import, before any of the code that uses it runs.
+        # `from packaging.version import *` has no other site to find, since the
+        # names it binds cannot be enumerated from here.
         for node in ast.walk(tree):
-            name = None
-            if isinstance(node, ast.Attribute):
-                name = node.attr
-            elif isinstance(node, ast.Name):
-                name = node.id
-            if name and name in wanted:
-                for c in wanted[name]:
+            if not isinstance(node, ast.Import | ast.ImportFrom):
+                continue
+            imported: list[str] = []
+            if isinstance(node, ast.Import):
+                imported = [a.name for a in node.names]
+            elif node.module and not node.level:
+                imported = [node.module] + [
+                    f"{node.module}.{a.name}" for a in node.names if a.name != "*"
+                ]
+            for name in imported:
+                change = by_qualname.get(name)
+                if change is not None:
                     site = f"{rel}:{getattr(node, 'lineno', 0)}"
-                    if site not in c.used_at:
-                        c.used_at.append(site)
+                    if site not in change.used_at:
+                        change.used_at.append(site)
+
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Name | ast.Attribute):
+                continue
+            path = _dotted(node)
+            if path is None:
+                continue
+            # Resolve the LONGEST bound prefix, not the first segment. `import
+            # packaging.version` binds the dotted name "packaging.version", so
+            # splitting `packaging.version.parse` at the first dot looks up
+            # "packaging" and finds nothing.
+            resolved = None
+            parts = path.split(".")
+            for cut in range(len(parts), 0, -1):
+                target = bound.get(".".join(parts[:cut]))
+                if target is not None:
+                    rest = parts[cut:]
+                    resolved = ".".join([target, *rest]) if rest else target
+                    break
+            if resolved is None:
+                # A bare name under `from pkg.mod import *`. The star binds names
+                # this pass cannot enumerate, so the only honest resolution is to
+                # try it against the modules that were star-imported - which is
+                # narrow enough to stay precise, and the alternative is dropping
+                # the file entirely.
+                if isinstance(node, ast.Name):
+                    for mod in starred:
+                        if f"{mod}.{node.id}" in by_qualname:
+                            resolved = f"{mod}.{node.id}"
+                            break
+                if resolved is None:
+                    continue
+            change = by_qualname.get(resolved)
+            if change is None:
+                # Also accept a change whose reported name is a shorter public path
+                # for the same object: the probe reports `coverage.CoverageData` while
+                # a caller may write `coverage.sqldata.CoverageData`.
+                change = next(
+                    (c for c in changes if c.qualname.rpartition(".")[2] == resolved.rpartition(".")[2]
+                     and resolved.startswith(package.split(".")[0])),
+                    None,
+                )
+            if change is None:
+                continue
+            site = f"{rel}:{getattr(node, 'lineno', 0)}"
+            if site not in change.used_at:
+                change.used_at.append(site)
