@@ -291,7 +291,16 @@ def test_no_behaviour_does_not_claim_nothing_behaved_differently():
 def test_a_behaviour_pass_that_ran_still_says_so():
     report = _report()
     report.behaviour_checked = True
+    report.compared = 3
     assert "nothing behaved differently" in summary(report)
+
+
+def test_a_behaviour_pass_that_exercised_nothing_does_not_claim_stability():
+    report = _report()
+    report.behaviour_checked = True
+    text = summary(report)
+    assert "nothing behaved differently" not in text
+    assert "behaviour is unknown" in text
 
 
 def test_long_witnesses_are_cut_around_the_difference():

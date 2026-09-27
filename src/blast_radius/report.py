@@ -161,15 +161,19 @@ def summary(report: Report) -> str:
         lines.append("\n  Pass --used-by <your repo> to see which of these your code references.")
 
     if not report.changes:
-        tail = (
-            "and nothing behaved differently\n  on the inputs tried"
+        first = (
+            "\n  Nothing changed in the public surface, and nothing behaved differently\n"
+            "  on the inputs tried."
+            if report.behaviour_checked and report.compared
+            else "\n  Nothing changed in the public surface. No function could be exercised,\n"
+            "  so behaviour is unknown."
             if report.behaviour_checked
-            else "(behaviour was not compared)"
+            else "\n  Nothing changed in the public surface. Behaviour was not compared\n"
+            "  (--no-behaviour)."
         )
         lines.append(
-            f"\n  Nothing changed in the public surface, {tail}. That is a statement about\n"
-            "  this comparison, not a guarantee: private APIs, and anything not exercised,\n"
-            "  are not covered."
+            first + " That is a statement about this comparison, not a guarantee:\n"
+            "  private APIs, and anything not exercised, are not covered."
         )
 
     lines.append(f"\n  took {report.seconds:.0f}s")
