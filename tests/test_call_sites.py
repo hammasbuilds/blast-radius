@@ -48,9 +48,9 @@ def test_every_way_the_symbol_can_arrive_is_resolved(tmp_path):
     reason the old behaviour erred the other way."""
     forms = {
         "direct.py": "from packaging.version import parse\n\n\ndef go():\n    return parse('1')\n",
-        "aliased.py": "from packaging.version import parse as p\n\n\ndef go():\n    return p('1')\n",
-        "module.py": "from packaging import version\n\n\ndef go():\n    return version.parse('1')\n",
-        "full.py": "import packaging.version\n\n\ndef go():\n    return packaging.version.parse('1')\n",
+        "aliased.py": "from packaging.version import parse as p\n\n\ndef go():\n    return p('1')\n",  # noqa: E501
+        "module.py": "from packaging import version\n\n\ndef go():\n    return version.parse('1')\n",  # noqa: E501
+        "full.py": "import packaging.version\n\n\ndef go():\n    return packaging.version.parse('1')\n",  # noqa: E501
         "modalias.py": "import packaging.version as v\n\n\ndef go():\n    return v.parse('1')\n",
     }
     for name, body in forms.items():
@@ -85,13 +85,7 @@ def test_a_relative_import_cannot_reach_a_third_party_package(tmp_path):
     (pkg / "__init__.py").write_text("", encoding="utf-8")
     (pkg / "version.py").write_text("def parse(x):\n    return x\n", encoding="utf-8")
     (pkg / "app.py").write_text(
-        "import packaging\n"
-        "\n"
-        "from .version import parse\n"
-        "\n"
-        "\n"
-        "def go():\n"
-        "    return parse('1')\n",
+        "import packaging\n\nfrom .version import parse\n\n\ndef go():\n    return parse('1')\n",
         encoding="utf-8",
     )
     changes = [Change(Kind.GONE, "packaging.version.parse")]

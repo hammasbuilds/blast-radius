@@ -633,23 +633,29 @@ def test_a_function_that_reads_stdin_gets_eof_instead_of_blocking(tmp_path):
     assert "__stopped_on__" not in out, "nothing should have had to be restarted past"
 
 
-def test_restarting_past_hangs_is_capped_and_the_rest_are_marked_unattempted(tmp_path):
+def test_restarting_past_hangs_is_capped_and_the_rest_are_marked_unattempted(tmp_path, monkeypatch):
     """Each restart costs a full timeout, so a package that hangs everywhere must
     be reported rather than waited on. What must not happen is the give-up going
     unrecorded: a name left out of the results is counted as unreachable, which
     would read as a fact about the package instead of about this tool.
-    """
-    from blast_radius.probe import MAX_RESTARTS, call
 
+    The cap is lowered to 2 so the timeout can be generous. This used to run six
+    attempts at 3 seconds each, and on a loaded machine an interpreter that had not
+    even finished starting inside 3 seconds made the test fail at random.
+    """
+    from blast_radius import probe
+
+    monkeypatch.setattr(probe, "MAX_RESTARTS", 2)
+    cap = probe.MAX_RESTARTS
     body = "import time\n\n\n" + "".join(
-        f"def h{i}(x):\n    time.sleep(600)\n\n\n" for i in range(MAX_RESTARTS + 2)
+        f"def h{i}(x):\n    time.sleep(600)\n\n\n" for i in range(cap + 2)
     )
     _pkg(tmp_path, "allhang", body)
-    names = [f"allhang.h{i}" for i in range(MAX_RESTARTS + 2)]
-    out = call(tmp_path, {n: ["(1,)"] for n in names}, timeout=3)
+    names = [f"allhang.h{i}" for i in range(cap + 2)]
+    out = probe.call(tmp_path, {n: ["(1,)"] for n in names}, timeout=12)
 
     assert out is not None
-    assert out["__stopped_on__"] == names[: MAX_RESTARTS + 1], "should stop after the cap"
+    assert out["__stopped_on__"] == names[: cap + 1], "should stop after the cap"
     assert set(names) <= set(out), "a name it gave up on must still be accounted for"
     assert "not attempted" in out[names[-1]]["error"]
 
@@ -744,7 +750,7 @@ def test_a_temp_directory_that_cannot_be_removed_does_not_lose_the_run(tmp_path,
 
 
 def test_calling_a_function_wrongly_is_not_the_same_as_it_rejecting_input(tmp_path):
-    """"Could not be called" covered two opposite situations under one number.
+    """ "Could not be called" covered two opposite situations under one number.
 
     A function this tool never managed to hand a valid argument to is a fact about
     THIS TOOL, and fixable here. A function that ran and refused what it was given
