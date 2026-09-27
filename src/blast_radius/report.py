@@ -103,6 +103,15 @@ def summary(report: Report) -> str:
         if len(silent) > 10:
             lines.append(f"  ... and {len(silent) - 10} more (--out writes them all)")
 
+    if report.weak:
+        names = ", ".join(c.qualname for c in report.weak[:6])
+        more = " ..." if len(report.weak) > 6 else ""
+        lines.append(
+            f"\n  Not counted: {len(report.weak)} function(s) differ only where one version"
+            " rejects a generated\n  argument as the wrong type (TypeError/AttributeError)"
+            f" - no real caller passes those.\n    {names}{more}"
+        )
+
     for kind in (Kind.GONE, Kind.RESHAPED):
         items = _by_severity(report.of(kind))
         if not items:
@@ -181,6 +190,7 @@ def write_json(report: Report, path: Path) -> None:
                 "reaching_you": len(report.reaching_you),
                 "seconds": round(report.seconds, 1),
                 "changes": [c.as_row() for c in report.sorted()],
+                "weak_differences": [c.as_row() for c in report.weak],
             },
             indent=2,
         ),
@@ -242,6 +252,24 @@ def write_markdown(report: Report, path: Path) -> None:
             out.append(
                 f"| `{c.qualname}` | `{_esc(w.get('args'))}` | `{_esc(old, 80)}` | "
                 f"`{_esc(new, 80)}` | {_used(c)} |"
+            )
+        out.append("")
+
+    if report.weak:
+        out += [
+            f"## Not counted: differences only on wrong-typed arguments ({len(report.weak)})",
+            "",
+            "One version raised TypeError or AttributeError on a generated argument no real",
+            "caller would pass. Listed for completeness; not a silent change.",
+            "",
+            f"| function | input | {report.old_version} | {report.new_version} |",
+            "|---|---|---|---|",
+        ]
+        for c in report.weak:
+            w = c.witness or {}
+            out.append(
+                f"| `{c.qualname}` | `{_esc(w.get('args'))}` | `{_esc(w.get('old'), 80)}` | "
+                f"`{_esc(w.get('new'), 80)}` |"
             )
         out.append("")
 

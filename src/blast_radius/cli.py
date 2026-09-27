@@ -117,9 +117,7 @@ def pick_import_name(target: Path, distribution: str) -> tuple[str | None, list[
 
 # uv draws its errors with box-drawing glyphs. On a console with a legacy code page they
 # print as "???" and take the structure of the message with them; ASCII survives anywhere.
-_GLYPHS = str.maketrans(
-    {"×": "x", "╰": "", "─": "-", "▶": ">", "│": "|", "├": "|"}
-)
+_GLYPHS = str.maketrans({"×": "x", "╰": "", "─": "-", "▶": ">", "│": "|", "├": "|"})
 
 
 def _plain(text: str) -> str:
@@ -293,7 +291,7 @@ def cmd_check(args: argparse.Namespace) -> int:
             stable = stable_callables(old, new, limit=args.limit)
             widened = {c.qualname for c in report.of(Kind.WIDENED)}
             _say(f"\nexecuting {len(stable)} function(s) whose existing calls still bind...")
-            silent, compared, unreachable, stopped_on, reasons = behaviour_changes(
+            silent, compared, unreachable, stopped_on, reasons, weak = behaviour_changes(
                 workdir / args.old_version,
                 workdir / args.new_version,
                 stable,
@@ -301,6 +299,7 @@ def cmd_check(args: argparse.Namespace) -> int:
                 widened=widened,
             )
             report.changes.extend(silent)
+            report.weak = weak
             report.compared = compared
             report.unreachable = unreachable
             _say(f"  {compared} exercised, {unreachable} could not be called in either")
@@ -318,7 +317,8 @@ def cmd_check(args: argparse.Namespace) -> int:
                 # Deliberately not "try a longer --timeout". These functions do not
                 # return, so a longer timeout reaches nothing and costs more per name.
                 _say(
-                    f"  they are counted as unreachable above, and cost {args.timeout:g}s each."
+                    "  they are counted as unreachable above, and cost"
+                    f" {args.timeout:g}s each per version."
                     " A shorter --timeout makes them cheaper, not fewer."
                 )
 
@@ -433,10 +433,10 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument(
         "--timeout",
         type=float,
-        default=600.0,
+        default=60.0,
         metavar="SECONDS",
-        help="seconds allowed for each behaviour-pass run of one version; a function that "
-        "never returns costs this once and is skipped",
+        help="seconds one function may run in the behaviour pass before it is abandoned and "
+        "counted as unreachable; a function that never returns costs this once per version",
     )
     c.add_argument(
         "--install-timeout",

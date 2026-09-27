@@ -8,7 +8,6 @@ None of them installs anything or reaches the network.
 from __future__ import annotations
 
 import subprocess
-import sys
 
 import pytest
 
@@ -320,16 +319,13 @@ def test_report_md_names_every_gone_and_reshaped_symbol(tmp_path):
     assert "(x) -> (x, y)" in text
 
 
-def test_version_flag():
-    out = subprocess.run(
-        [sys.executable, "-m", "blast_radius.cli", "--version"],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
+def test_version_flag(capsys):
     from blast_radius import __version__
 
-    assert out.stdout.strip() == f"blast-radius {__version__}"
+    with pytest.raises(SystemExit) as exc:
+        cli.main(["--version"])
+    assert exc.value.code == 0
+    assert capsys.readouterr().out.strip() == f"blast-radius {__version__}"
 
 
 def test_help_describes_the_tool_and_every_option_has_help():
@@ -445,3 +441,59 @@ def test_a_reshaped_signature_is_shown_around_what_changed():
 def test_uv_box_drawing_is_made_ascii():
     raw = "  × No solution found\n  ╰─▶ Because x"
     assert cli._plain(raw) == "  x No solution found\n  -> Because x"
+
+
+# --- what counts as a silent change -----------------------------------------------------------
+
+
+def _twin(root, name, old_body, new_body):
+    for sub, body in (("old", old_body), ("new", new_body)):
+        pkg = root / sub / name
+        pkg.mkdir(parents=True)
+        (pkg / "__init__.py").write_text(body, encoding="utf-8")
+
+
+def test_a_difference_only_on_a_wrong_typed_argument_is_not_silent(tmp_path):
+    """click 7.1.2 ignored `ctx` in Argument.get_default and 8.1.7 uses it, so passing
+    the string "" went from None to AttributeError. No caller passes a string there."""
+    from blast_radius.diff import behaviour_changes
+
+    _twin(
+        tmp_path,
+        "tw",
+        "def uses_ctx(ctx):\n    return None\n\n\ndef real(x):\n    return 1\n",
+        "def uses_ctx(ctx):\n    return ctx.lookup_default\n\n\ndef real(x):\n    return 2\n",
+    )
+    stable = {"tw.uses_ctx": "(ctx)", "tw.real": "(x)"}
+    silent, _c, _u, _s, _r, weak = behaviour_changes(
+        tmp_path / "old", tmp_path / "new", stable, timeout=30
+    )
+    assert [c.qualname for c in silent] == ["tw.real"]
+    assert [c.qualname for c in weak] == ["tw.uses_ctx"]
+
+
+def test_a_closure_built_by_a_different_helper_is_not_a_behaviour_change(tmp_path):
+    """click 8 routes help_option through option(), so the returned decorator reprs as
+    option.<locals>.decorator. That is a refactor, not a behaviour."""
+    from blast_radius.diff import behaviour_changes
+
+    old = "def help_option():\n    def decorator(f):\n        return f\n    return decorator\n"
+    new = (
+        "def option():\n    def decorator(f):\n        return f\n    return decorator\n\n\n"
+        "def help_option():\n    return option()\n"
+    )
+    _twin(tmp_path, "cl", old, new)
+    silent, compared, *_ = behaviour_changes(
+        tmp_path / "old", tmp_path / "new", {"cl.help_option": "()"}, timeout=30
+    )
+    assert compared == 1
+    assert silent == []
+
+
+def test_weak_differences_are_listed_apart_and_not_counted():
+    report = _report()
+    report.behaviour_checked = True
+    report.weak = [Change(Kind.SILENT, "p.f", witness={"args": "('',)", "old": "ok", "new": "x"})]
+    text = summary(report)
+    assert "Not counted: 1 function(s)" in text
+    assert report.counts() == {}

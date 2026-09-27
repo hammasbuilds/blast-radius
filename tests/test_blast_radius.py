@@ -676,7 +676,7 @@ def test_a_probe_that_died_is_reported_apart_from_a_function_that_cannot_be_call
     _pkg(tmp_path / "new", "twins", body)
     stable = {"twins.quick": "(x)", "twins.hangs": "(x)", "twins.after": "(x)"}
 
-    silent, compared, unreachable, stopped_on, reasons = behaviour_changes(
+    silent, compared, unreachable, stopped_on, reasons, _weak = behaviour_changes(
         tmp_path / "old", tmp_path / "new", stable, timeout=10
     )
 
@@ -771,7 +771,7 @@ def test_calling_a_function_wrongly_is_not_the_same_as_it_rejecting_input(tmp_pa
     _pkg(tmp_path / "new", "twokinds", body)
     stable = {"twokinds.wants_five": "(a, b, c, d, e)", "twokinds.refuses_everything": "(x)"}
 
-    _silent, _compared, unreachable, _stopped, reasons = behaviour_changes(
+    _silent, _compared, unreachable, _stopped, reasons, _weak = behaviour_changes(
         tmp_path / "old", tmp_path / "new", stable, timeout=120
     )
 

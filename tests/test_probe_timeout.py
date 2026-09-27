@@ -101,3 +101,22 @@ if sys.platform == "win32":  # pragma: no cover - a note, not a test
     # On POSIX the same deadlock exists and is easier to hit, because a shell in the
     # middle of a pipeline keeps the descriptor too. Nothing here is Windows-specific.
     pass
+
+
+def test_the_timeout_bounds_each_function_not_the_whole_batch(tmp_path):
+    """Five functions of 1.5 seconds each under a 4-second timeout.
+
+    As a bound on the whole batch this lost the tail of every large package unless
+    the timeout was huge - and a huge timeout made each function that never returns
+    cost that much. Per function, all five finish and nothing is restarted.
+    """
+    body = "import time\n\n\n" + "".join(
+        f"def slow{i}(x):\n    time.sleep(1.5)\n    return x + {i}\n\n\n" for i in range(5)
+    )
+    _pkg(tmp_path, "slowpkg", body)
+    names = [f"slowpkg.slow{i}" for i in range(5)]
+    out = call(tmp_path, {n: ["(1,)"] for n in names}, timeout=4)
+
+    assert out is not None
+    assert "__stopped_on__" not in out
+    assert [out[n]["rows"][0] for n in names] == [["ok", str(1 + i)] for i in range(5)]

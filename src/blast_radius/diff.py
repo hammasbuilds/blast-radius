@@ -384,14 +384,29 @@ def _strength(a: list, b: list) -> int:
     return 1 if (ca or cb) else 2
 
 
+_WRONG_TYPE = ("TypeError", "AttributeError")
+
+
+def _wrong_type(a: list, b: list) -> bool:
+    """Does one side of this disagreement reject the argument as the wrong type?"""
+    return any(row[0] == "raise" and str(row[1]).startswith(_WRONG_TYPE) for row in (a, b))
+
+
 def behaviour_changes(
     old_dir,
     new_dir,
     stable: dict[str, str],
-    timeout: float = 600.0,
+    timeout: float = 60.0,
     widened: set[str] | frozenset[str] = frozenset(),
-) -> tuple[list[Change], int, int, list[str], dict[str, int]]:
-    """(silent changes, compared, unreachable, stopped_on, reasons).
+) -> tuple[list[Change], int, int, list[str], dict[str, int], list[Change]]:
+    """(silent changes, compared, unreachable, stopped_on, reasons, weak).
+
+    `weak` holds functions whose ONLY disagreements are on inputs one version rejects as
+    the wrong type - a TypeError or AttributeError on a generated argument, such as a
+    string passed where a `Context` belongs. Measured on click 7.1.2 -> 8.1.7, six of the
+    fourteen functions first reported as silent changes were this: 7.1.2 ignored a
+    parameter that 8.1.7 uses, so `get_default("")` went from None to AttributeError.
+    That is a difference no real caller can see, and it is reported apart, never as SILENT.
 
     `compared` counts only functions that actually ran somewhere. A function that raised on
     every input in both versions was never exercised, so it is neither evidence of a change
@@ -412,9 +427,10 @@ def behaviour_changes(
                 if name not in stopped_on:
                     stopped_on.append(name)
     if old_res is None or new_res is None:
-        return [], 0, len(payload), stopped_on, {"the probe produced nothing": len(payload)}
+        return [], 0, len(payload), stopped_on, {"the probe produced nothing": len(payload)}, []
 
     changes: list[Change] = []
+    weak: list[Change] = []
     compared = unreachable = 0
     # Why each unreachable name was unreachable. "Could not be called" covers two
     # opposite situations and the report used to give one number for both: a
@@ -471,8 +487,9 @@ def behaviour_changes(
         # Lead with a disagreement where both sides returned a value: two differing
         # results are unarguable, where two differing exception types on an argument
         # neither version wanted mostly says the argument was wrong.
-        best = min(diffs, key=lambda i: _strength(rows_a[i], rows_b[i]))
-        changes.append(
+        strong = [i for i in diffs if not _wrong_type(rows_a[i], rows_b[i])]
+        best = min(strong or diffs, key=lambda i: _strength(rows_a[i], rows_b[i]))
+        (changes if strong else weak).append(
             Change(
                 Kind.SILENT,
                 name,
@@ -481,7 +498,7 @@ def behaviour_changes(
                     if name in widened
                     else f"same signature {stable[name]}"
                 )
-                + f"; {len(diffs)} of {len(exercised)} exercised inputs disagree",
+                + f"; {len(strong or diffs)} of {len(exercised)} exercised inputs disagree",
                 witness={
                     "args": argsets[best],
                     "old": f"{rows_a[best][0]}: {rows_a[best][1]}",
@@ -489,7 +506,7 @@ def behaviour_changes(
                 },
             )
         )
-    return changes, compared, unreachable, stopped_on, reasons
+    return changes, compared, unreachable, stopped_on, reasons, weak
 
 
 def _bindings(tree: ast.Module, package: str) -> tuple[dict[str, str], set[str]]:

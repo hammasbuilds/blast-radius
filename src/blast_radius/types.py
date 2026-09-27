@@ -118,6 +118,10 @@ class Report:
 
     seconds: float = 0.0
 
+    weak: list[Change] = field(default_factory=list)
+    """Functions that differ ONLY where one version rejects a generated argument as the
+    wrong type. Kept out of `changes`: not SILENT, not counted, never fails a gate."""
+
     used_by: str | None = None
     """The path given to --used-by, or None when no project was matched against."""
 

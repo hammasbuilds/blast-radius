@@ -12,9 +12,11 @@ behaviour difference waiting to be mistaken for the package's.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 SURFACE = r"""
@@ -265,11 +267,17 @@ with open(sys.argv[2], "r", encoding="utf-8") as fh:
 # identical tag lists as four silent behaviour changes.
 ADDR = re.compile(r"0x[0-9a-fA-F]{4,}")
 DECIMAL_ID = re.compile(r"@ ?\d{7,}")
+# A closure's repr names the function that happened to build it. click 8 routes
+# help_option, version_option and friends through option(), so the decorator they
+# return reprs as `option.<locals>.decorator` instead of `help_option.<locals>...` -
+# four "silent behaviour changes" that were one internal refactor.
+CLOSURE = re.compile(r"<function [\w.]*<locals>\.[\w.<>]+ at 0x\.\.\.>")
 MAX_ITEMS = 64
 
 
 def scrub(text):
-    return DECIMAL_ID.sub("@ id", ADDR.sub("0x...", text))
+    text = DECIMAL_ID.sub("@ id", ADDR.sub("0x...", text))
+    return CLOSURE.sub("<function (a closure)>", text)
 
 
 def text_of(obj, hook):
@@ -541,6 +549,44 @@ def _recover(journal: Path) -> dict | None:
     return done or None
 
 
+def _wait(proc: subprocess.Popen, timeout: float, journal: Path | None) -> bool:
+    """Wait for the child; kill it and return True if it overran.
+
+    Without a journal, `timeout` bounds the whole run. With one it bounds each
+    FUNCTION: the journal grows every time a function starts or finishes, so a
+    journal that has not grown for `timeout` seconds means one call is stuck.
+
+    It used to bound the whole batch. The default was ten minutes so that a large
+    package could finish, which meant each function that never returns - click has
+    four - cost ten minutes per version: click 7.1.2 -> 8.1.7 took over an hour, most
+    of it waiting on `click.getchar`.
+    """
+    start = last_change = time.monotonic()
+    last_size = -1
+    while True:
+        try:
+            proc.wait(timeout=0.2)
+            return False
+        except subprocess.TimeoutExpired:
+            pass
+        now = time.monotonic()
+        if journal is not None:
+            try:
+                size = journal.stat().st_size
+            except OSError:
+                size = 0
+            if size != last_size:
+                last_size, last_change = size, now
+            overran = now - last_change > timeout
+        else:
+            overran = now - start > timeout
+        if overran:
+            proc.kill()
+            with contextlib.suppress(subprocess.TimeoutExpired):
+                proc.wait(timeout=10)
+            return True
+
+
 def _run(script: str, args: list[str], timeout: float, journal: Path | None = None) -> dict | None:
     import tempfile
 
@@ -572,7 +618,7 @@ def _run(script: str, args: list[str], timeout: float, journal: Path | None = No
         timed_out = False
         try:
             with open(out_path, "wb") as out_fh, open(err_path, "wb") as err_fh:
-                subprocess.run(
+                proc = subprocess.Popen(
                     [sys.executable, str(path), *args],
                     stdout=out_fh,
                     stderr=err_fh,
@@ -583,12 +629,9 @@ def _run(script: str, args: list[str], timeout: float, journal: Path | None = No
                     # closed it gets EOF immediately and raises, which is a real
                     # behaviour worth comparing like any other.
                     stdin=subprocess.DEVNULL,
-                    timeout=timeout,
-                    check=False,
                     cwd=tmp,
                 )
-        except subprocess.TimeoutExpired:
-            timed_out = True
+                timed_out = _wait(proc, timeout, journal)
         except OSError:
             return _recover(journal) if journal else None
         # Decoded here with errors="replace" rather than by text=True, which uses the
@@ -653,8 +696,11 @@ def _attempt(target_dir: Path, payload: dict[str, list[str]], timeout: float) ->
         )
 
 
-def call(target_dir: Path, payload: dict[str, list[str]], timeout: float = 300.0) -> dict | None:
+def call(target_dir: Path, payload: dict[str, list[str]], timeout: float = 60.0) -> dict | None:
     """Call each qualname on each argument set, and return what came back as strings.
+
+    `timeout` is per function: one that runs longer is abandoned and the batch
+    restarts after it.
 
     The payload goes through a temporary file rather than the command line,
     which has a length limit the payload routinely exceeded. See the comment at
