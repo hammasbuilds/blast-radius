@@ -14,10 +14,15 @@ how this report would become another changelog.
 from __future__ import annotations
 
 import ast
+import os
 import re
+import tokenize
+from dataclasses import dataclass
+from dataclasses import field as dc_field
+from pathlib import Path
 
 from blast_radius.probe import call
-from blast_radius.types import Change, Kind
+from blast_radius.types import BREAKING, Change, Kind
 
 # Values chosen to exercise the shapes a public API usually takes. The pool is deliberately
 # small: the point is to detect a difference, not to explore an input space.
@@ -204,36 +209,144 @@ def argument_sets(signature: str, cap: int = 12) -> list[str]:
     return out
 
 
+def _parse_shape(shape: str) -> list[tuple[str, str, bool]]:
+    """`name:KIND[:d],...` (the probe's call shape) -> [(name, kind, has_default)]."""
+    out = []
+    for part in shape.split(","):
+        if not part:
+            continue
+        bits = part.split(":")
+        out.append((bits[0], bits[1] if len(bits) > 1 else "", len(bits) > 2 and bits[2] == "d"))
+    return out
+
+
+_POSITIONAL = ("POSITIONAL_ONLY", "POSITIONAL_OR_KEYWORD")
+_KINDS = frozenset({*_POSITIONAL, "VAR_POSITIONAL", "KEYWORD_ONLY", "VAR_KEYWORD"})
+
+
+def compatible(old_shape: str, new_shape: str) -> bool:
+    """Does every call that binds against the old shape bind the same way against the new?
+
+    True for the changes semver calls additive: a new parameter with a default at the end
+    or keyword-only, a positional-only parameter that may now also be passed by name, a
+    required parameter that gained a default, a new `*args` or `**kwargs`. These used to
+    be reported as RESHAPED under "a type checker would catch these", which is wrong -
+    there is nothing to catch - and was the largest single source of noise in the report.
+
+    False for anything a caller could trip on: a parameter removed or renamed, one
+    inserted before an existing positional one, a default taken away, a keyword-only
+    parameter with no default, positional-or-keyword turned keyword-only. Also False when
+    either shape is unknown, because "could not read it" must never read as "safe".
+    """
+    if old_shape == new_shape:
+        return True
+    if not old_shape or not new_shape:
+        return False
+    old, new = _parse_shape(old_shape), _parse_shape(new_shape)
+    if any(kind not in _KINDS for _, kind, _ in old + new):
+        return False  # not a call shape (an old surface carrying signature text only)
+    new_by_name = {name: (kind, d) for name, kind, d in new}
+    old_pos = [p for p in old if p[1] in _POSITIONAL]
+    new_pos = [p for p in new if p[1] in _POSITIONAL]
+    old_kinds = {kind for _, kind, _ in old}
+    new_kinds = {kind for _, kind, _ in new}
+
+    # Positional parameters must line up one for one, at the same index.
+    if len(new_pos) < len(old_pos):
+        return False
+    for (oname, okind, odef), (nname, nkind, ndef) in zip(old_pos, new_pos, strict=False):
+        if odef and not ndef:
+            return False
+        if okind == "POSITIONAL_OR_KEYWORD" and (nkind != okind or nname != oname):
+            return False  # somebody may be passing it by name
+    # An extra positional slot swallows what `*args` used to receive.
+    if "VAR_POSITIONAL" in old_kinds and len(new_pos) != len(old_pos):
+        return False
+    for _, _, ndef in new_pos[len(old_pos) :]:
+        if not ndef:
+            return False
+
+    # Keyword-only parameters must still be accepted by name, and keep their default.
+    for oname, okind, odef in old:
+        if okind != "KEYWORD_ONLY":
+            continue
+        got = new_by_name.get(oname)
+        if got is None:
+            if "VAR_KEYWORD" in new_kinds:
+                continue  # still accepted, by **kwargs
+            return False
+        nkind, ndef = got
+        if nkind not in ("KEYWORD_ONLY", "POSITIONAL_OR_KEYWORD") or (odef and not ndef):
+            return False
+    old_names = {name for name, _, _ in old}
+    for nname, nkind, ndef in new:
+        if nkind == "KEYWORD_ONLY" and nname not in old_names and not ndef:
+            return False  # a new required keyword: every existing call now fails
+
+    for var in ("VAR_POSITIONAL", "VAR_KEYWORD"):
+        if var in old_kinds and var not in new_kinds:
+            return False
+    return True
+
+
+def _shape(info: dict) -> str:
+    return info.get("shape", info.get("signature", ""))
+
+
 def api_changes(old: dict, new: dict) -> list[Change]:
-    """GONE, RESHAPED and ADDED - everything readable without running anything."""
+    """GONE, RESHAPED, WIDENED and ADDED - everything readable without running anything."""
     old_syms = {k: v for k, v in old.items() if k != "__meta__"}
     new_syms = {k: v for k, v in new.items() if k != "__meta__"}
     out: list[Change] = []
 
+    def aliases(name: str, *infos: dict) -> list[str]:
+        seen = {a for info in infos for a in info.get("aliases", [])}
+        return sorted(seen - {name})
+
     for name, info in sorted(old_syms.items()):
         if name not in new_syms:
-            out.append(Change(Kind.GONE, name, f"a {info['kind']} that no longer exists"))
-        elif info.get("shape", info["signature"]) != new_syms[name].get(
-            "shape", new_syms[name]["signature"]
-        ):
             out.append(
                 Change(
-                    Kind.RESHAPED,
+                    Kind.GONE,
                     name,
-                    f"{info['signature'] or '(unknown)'} -> "
-                    f"{new_syms[name]['signature'] or '(unknown)'}",
+                    f"a {info['kind']} that no longer exists",
+                    aliases=aliases(name, info),
                 )
             )
+            continue
+        other = new_syms[name]
+        if _shape(info) == _shape(other):
+            continue
+        kind = Kind.WIDENED if compatible(_shape(info), _shape(other)) else Kind.RESHAPED
+        out.append(
+            Change(
+                kind,
+                name,
+                f"{info['signature'] or '(unknown)'} -> {other['signature'] or '(unknown)'}",
+                aliases=aliases(name, info, other),
+                before=info["signature"] or "(unknown)",
+                after=other["signature"] or "(unknown)",
+            )
+        )
     for name in sorted(set(new_syms) - set(old_syms)):
-        out.append(Change(Kind.ADDED, name, f"new {new_syms[name]['kind']}"))
+        out.append(
+            Change(
+                Kind.ADDED,
+                name,
+                f"new {new_syms[name]['kind']}",
+                aliases=aliases(name, new_syms[name]),
+            )
+        )
     return out
 
 
 def stable_callables(old: dict, new: dict, limit: int | None = None) -> dict[str, str]:
-    """Functions present in both versions with an identical signature.
+    """Functions present in both versions that every old call still binds against.
 
-    These are the only ones worth executing. Anything whose shape changed has already been
-    reported, and a behaviour difference there would be explained by the shape.
+    These are the only ones worth executing. A function whose shape changed incompatibly
+    has already been reported, and a behaviour difference there would be explained by the
+    shape. A WIDENED one is run on calls built from the OLD signature, which bind
+    identically in both - so any difference is behaviour, not shape.
     """
     out: dict[str, str] = {}
     for name, info in sorted(old.items()):
@@ -243,9 +356,7 @@ def stable_callables(old: dict, new: dict, limit: int | None = None) -> dict[str
         # Same CALL SHAPE, not same signature string. A function that gained type hints
         # and nothing else is still callable exactly as before, and is precisely the kind
         # whose behaviour is worth comparing.
-        if not other or other.get("shape", other["signature"]) != info.get(
-            "shape", info["signature"]
-        ):
+        if not other or not compatible(_shape(info), _shape(other)):
             continue
         out[name] = info["signature"]
         if limit and len(out) >= limit:
@@ -274,7 +385,11 @@ def _strength(a: list, b: list) -> int:
 
 
 def behaviour_changes(
-    old_dir, new_dir, stable: dict[str, str], timeout: float = 600.0
+    old_dir,
+    new_dir,
+    stable: dict[str, str],
+    timeout: float = 600.0,
+    widened: set[str] | frozenset[str] = frozenset(),
 ) -> tuple[list[Change], int, int, list[str], dict[str, int]]:
     """(silent changes, compared, unreachable, stopped_on, reasons).
 
@@ -361,8 +476,12 @@ def behaviour_changes(
             Change(
                 Kind.SILENT,
                 name,
-                f"same signature {stable[name]}; {len(diffs)} of {len(exercised)} "
-                "exercised inputs disagree",
+                (
+                    f"old calls still bind (signature widened from {stable[name]})"
+                    if name in widened
+                    else f"same signature {stable[name]}"
+                )
+                + f"; {len(diffs)} of {len(exercised)} exercised inputs disagree",
                 witness={
                     "args": argsets[best],
                     "old": f"{rows_a[best][0]}: {rows_a[best][1]}",
@@ -419,7 +538,7 @@ def _bindings(tree: ast.Module, package: str) -> tuple[dict[str, str], set[str]]
 
 
 def _dotted(node: ast.AST) -> str | None:
-    """"a.b.c" for an attribute chain rooted in a plain name, else None."""
+    """ "a.b.c" for an attribute chain rooted in a plain name, else None."""
     parts: list[str] = []
     while isinstance(node, ast.Attribute):
         parts.append(node.attr)
@@ -430,38 +549,112 @@ def _dotted(node: ast.AST) -> str | None:
     return ".".join(reversed(parts))
 
 
-def find_call_sites(repo, package: str, changes: list[Change]) -> None:
+# Directories that hold somebody else's code. Anything under them is a dependency, a build
+# product or a cache, and crediting it as "your code" puts a vendored copy of the package
+# itself at the top of the report. A directory holding `pyvenv.cfg` is a virtualenv whatever
+# it is called, and is skipped by that test rather than by name.
+SKIP_DIRS = frozenset(
+    {
+        ".git", ".hg", ".svn", "__pycache__", "node_modules",
+        ".venv", "venv", ".env", "virtualenv", ".virtualenv",
+        "site-packages", "dist-packages", "__pypackages__",
+        ".eggs", ".tox", ".nox",
+        ".mypy_cache", ".pytest_cache", ".ruff_cache", ".hypothesis",
+    }
+)  # fmt: skip
+
+# Skipped only when they are NOT a Python package. `build/` is usually setuptools output,
+# but pypa/build keeps its own source in src/build/ - skipping that by name dropped the
+# very project the README uses as its example, and reported that it used nothing.
+SKIP_UNLESS_PACKAGE = frozenset({"build", "dist", "env"})
+
+
+def _skip_dir(parent: Path, name: str) -> bool:
+    if name in SKIP_DIRS or name.endswith(".egg-info"):
+        return True
+    here = parent / name
+    if (here / "pyvenv.cfg").exists():
+        return True  # a virtualenv, whatever it is called
+    return name in SKIP_UNLESS_PACKAGE and not (here / "__init__.py").exists()
+
+
+@dataclass
+class Scan:
+    """What `find_call_sites` looked at, so the caller can say what it could NOT read."""
+
+    files: int = 0
+    unreadable: list[str] = dc_field(default_factory=list)
+
+
+def _python_files(root: Path) -> list[Path]:
+    if root.is_file():
+        return [root]
+    out: list[Path] = []
+    for here, dirs, files in os.walk(root):
+        dirs[:] = sorted(d for d in dirs if not _skip_dir(Path(here), d))
+        out.extend(Path(here) / f for f in sorted(files) if f.endswith((".py", ".pyi")))
+    return out
+
+
+def _read_source(path: Path) -> str:
+    """The file's text, decoded the way Python itself would decode it.
+
+    `tokenize.open` honours a PEP 263 coding cookie and a UTF-8 BOM. Reading everything as
+    UTF-8 silently dropped any file declaring `# -*- coding: latin-1 -*-`, and a dropped
+    file is a call site nobody is told about.
+    """
+    with tokenize.open(path) as fh:
+        return fh.read()
+
+
+def find_call_sites(repo, package: str, changes: list[Change]) -> Scan:
     """Fill in `used_at` for every change the target project actually references.
 
-    Matching is on the trailing attribute name, which over-reports: a project with its own
-    `parse` is credited with using `packaging.version.parse`. Over-reporting is the right
-    direction here - a missed call site is a break that reaches production, a spurious one
-    costs somebody ten seconds.
+    `repo` may be a directory or a single `.py` file. Returns what was scanned, including
+    the files that could not be read or parsed - those are reported rather than silently
+    dropped, because an unread file is exactly where a missed call site would be.
     """
-    from pathlib import Path
-
     repo = Path(repo)
-    wanted: dict[str, list[Change]] = {}
+    root_pkg = package.split(".")[0]
+    scan = Scan()
+    by_qualname: dict[str, Change] = {}
     for c in changes:
-        wanted.setdefault(c.qualname.rpartition(".")[2], []).append(c)
+        for name in (c.qualname, *c.aliases):
+            by_qualname.setdefault(name, c)
+    base = repo.parent if repo.is_file() else repo
+    # Methods by their bare name, for calls on an object whose type is not static.
+    methods: dict[str, list[Change]] = {}
+    for c in changes:
+        owner, _, leaf = c.qualname.rpartition(".")
+        # Breaking kinds only: a possible call to a method that merely gained a
+        # parameter is noise, not a warning.
+        if (
+            c.kind in BREAKING
+            and owner.rpartition(".")[2][:1].isupper()
+            and not leaf.startswith("_")
+        ):
+            methods.setdefault(leaf, []).append(c)
 
-    for p in sorted(repo.rglob("*.py")):
-        if any(part in {".git", ".venv", "__pycache__", "node_modules"} for part in p.parts):
-            continue
+    for p in _python_files(repo):
+        rel = str(p.relative_to(base)).replace("\\", "/")
         try:
-            src = p.read_text(encoding="utf-8")
-            tree = ast.parse(src)
-        except (SyntaxError, UnicodeDecodeError, OSError):
+            src = _read_source(p)
+        except (SyntaxError, UnicodeDecodeError, LookupError, OSError):
+            scan.unreadable.append(rel)
             continue
-        if package.split(".")[0] not in src:
+        scan.files += 1
+        if root_pkg not in src:
             continue  # the module never mentions the package at all
-        rel = str(p.relative_to(repo)).replace("\\", "/")
+        try:
+            tree = ast.parse(src, filename=str(p))
+        except (SyntaxError, ValueError):
+            scan.unreadable.append(rel)
+            continue
         bound, starred = _bindings(tree, package)
         if not bound:
             # It mentions the package in a string or a comment but imports nothing
             # from it. Nothing in this file can be a call site.
             continue
-        by_qualname = {c.qualname: c for c in changes}
 
         # The import line is a call site in its own right, and the earliest one: a
         # removed name fails at import, before any of the code that uses it runs.
@@ -484,11 +677,24 @@ def find_call_sites(repo, package: str, changes: list[Change]) -> None:
                     if site not in change.used_at:
                         change.used_at.append(site)
 
+        def maybe(node: ast.AST, rel: str = rel) -> None:
+            # `req.specifier.contains(...)`: a method called on an object whose
+            # type only exists at runtime. It cannot be proven to be the package's,
+            # and it cannot be ignored either - pypa/build calls a silently changed
+            # SpecifierSet.contains exactly like this. Recorded as possible, and
+            # only in a file that imports the package.
+            if isinstance(node, ast.Attribute) and node.attr in methods:
+                site = f"{rel}:{getattr(node, 'lineno', 0)}"
+                for c in methods[node.attr]:
+                    if site not in c.maybe_at:
+                        c.maybe_at.append(site)
+
         for node in ast.walk(tree):
             if not isinstance(node, ast.Name | ast.Attribute):
                 continue
             path = _dotted(node)
             if path is None:
+                maybe(node)
                 continue
             # Resolve the LONGEST bound prefix, not the first segment. `import
             # packaging.version` binds the dotted name "packaging.version", so
@@ -514,15 +720,17 @@ def find_call_sites(repo, package: str, changes: list[Change]) -> None:
                             resolved = f"{mod}.{node.id}"
                             break
                 if resolved is None:
+                    maybe(node)
                     continue
             change = by_qualname.get(resolved)
-            if change is None:
-                # Also accept a change whose reported name is a shorter public path
-                # for the same object: the probe reports `coverage.CoverageData` while
-                # a caller may write `coverage.sqldata.CoverageData`.
+            if change is None and any(p.startswith("_") for p in resolved.split(".")[1:]):
+                # Every public path to an object is already in `by_qualname`, as an
+                # alias. What is left is a caller reaching in through a private
+                # module (`pkg._impl.Thing`), which the probe never walks - matched
+                # on the final name, the only handle there is.
+                leaf = resolved.rpartition(".")[2]
                 change = next(
-                    (c for c in changes if c.qualname.rpartition(".")[2] == resolved.rpartition(".")[2]
-                     and resolved.startswith(package.split(".")[0])),
+                    (c for c in changes if c.qualname.rpartition(".")[2] == leaf),
                     None,
                 )
             if change is None:
@@ -530,3 +738,4 @@ def find_call_sites(repo, package: str, changes: list[Change]) -> None:
             site = f"{rel}:{getattr(node, 'lineno', 0)}"
             if site not in change.used_at:
                 change.used_at.append(site)
+    return scan

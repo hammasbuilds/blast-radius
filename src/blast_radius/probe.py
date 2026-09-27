@@ -58,14 +58,19 @@ def call_shape(sig):
     return ",".join(parts)
 
 
-def better_path(new, old):
+def better_path(new, old, home=""):
     # Which of two import paths for the same object is the one a user would write?
     # The shorter the better: `coverage.CoverageData` over
-    # `coverage.sqldata.CoverageData`. Ties go to the shorter string, then
-    # alphabetically, so the choice is deterministic across versions - which it has
-    # to be, or a stable symbol reads as removed under one name and added under
-    # another.
-    return (new.count("."), len(new), new) < (old.count("."), len(old), old)
+    # `coverage.sqldata.CoverageData`. Between two equally deep paths the one where
+    # the object is DEFINED wins: packaging.version.Version, not
+    # packaging.utils.Version, which is only an import inside utils. Then the
+    # shorter string, then alphabetically, so the choice is deterministic across
+    # versions - which it has to be, or a stable symbol reads as removed under one
+    # name and added under another.
+    def rank(path):
+        return (path.count("."), path != home, len(path), path)
+
+    return rank(new) < rank(old)
 
 
 def identity(obj, fallback):
@@ -92,7 +97,7 @@ def describe(obj, qualname, exported=False):
     existing = out.get(key)
     if existing is not None:
         existing["aliases"] = sorted(set(existing["aliases"]) | {qualname})
-        if better_path(qualname, existing["name"]):
+        if better_path(qualname, existing["name"], key):
             existing["name"] = qualname
         # Reachable as public under ANY path is public: a class defined in an
         # internal module and re-exported from the package root is part of the
