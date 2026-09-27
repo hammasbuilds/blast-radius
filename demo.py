@@ -44,9 +44,13 @@ def from_committed() -> int:
     print(f"  {data['package']} {data['old_version']} -> {data['new_version']}", flush=True)
     for kind, n in data["counts"].items():
         print(f"    {kind:<10}{n:>4}", flush=True)
-    print(
-        f"    {data['reaching_you']} of them are referenced by pypa/build's own source", flush=True
-    )
+    used = [c for c in data["changes"] if c["used_at"]]
+    maybe = [c for c in data["changes"] if c.get("maybe_at") and not c["used_at"]]
+    print(f"    pypa/build's own source references {len(used)} of them:", flush=True)
+    for c in used:
+        print(f"      [{c['kind']}] {c['qualname']}  {c['used_at'][0]}", flush=True)
+    for c in maybe:
+        print(f"      [{c['kind']}] {c['qualname']}  possibly {c['maybe_at'][0]}", flush=True)
     return 0
 
 

@@ -1,71 +1,136 @@
 # Results
 
-Two upgrades, run with:
+Three upgrades of two packages, run with:
 
 ```bash
-blast-radius check packaging 21.3 24.0 --used-by /path/to/pypa-build
+blast-radius check packaging 21.3 24.0 --used-by path/to/pypa-build
 blast-radius check click 7.1.2 8.1.7
+blast-radius check click 8.1.6 8.1.7
 ```
 
-No language model anywhere. Every number below is read out of `docs/*.json`.
+No language model anywhere. Every number below is read out of `docs/*.json`, re-generated
+on 2026-09-27 (Python 3.14, Windows) after the call-site and signature-compatibility fixes.
 
 ## `packaging` 21.3 -> 24.0
 
 | | count | who tells you |
 |---|---:|---|
-| gone | 12 | an `ImportError` at startup |
-| reshaped | 5 | a type checker, if you run one |
-| **silent** | **2** | **nothing** |
-| added | 10 | - |
+| gone | 2 | an `ImportError` at startup |
+| reshaped | 0 | a type checker, if you run one |
+| **silent** | **4** | **nothing** |
+| widened | 3 | nobody needs to - existing calls still work |
+| added | 9 | - |
 
-Behaviour was compared on 7 function(s); 15 could not be
-called in either version.
+Behaviour was compared on 14 functions; 8 could not be called in either version (5 need an
+instance this tool could not build, 3 rejected every generated input).
+
+### Why this page used to say gone 12, reshaped 5, silent 2
+
+Those numbers were from the first version of the probe and were wrong, each in a way that
+inflated them:
+
+- **gone 12 -> 2.** What is actually gone is `LegacySpecifier` and `LegacyVersion`. Of the
+  other ten, six were inherited methods counted once per class and path:
+  `LegacySpecifier.contains` *is* `_IndividualSpecifier.contains`, which `Specifier` still
+  has, so its removal is the removal of `LegacySpecifier`, already counted. The other four
+  were **incidental import paths** - `packaging.requirements.Specifier`,
+  `packaging.requirements.LegacySpecifier`, `packaging.specifiers.parse`,
+  `packaging.specifiers.LegacyVersion` - names 21.3 happened to import into a second module.
+  Those paths really do stop working in 24.0 (`from packaging.requirements import
+  Specifier` raises), and the tool no longer lists that as `gone`: symbols are keyed on the
+  object, not on every module that imported it. Code that imports through such a path is
+  still matched to the object's change. This is a deliberate trade, listed under Limits.
+- **reshaped 5 -> 0.** Two were aliases again. The other three - `canonicalize_name`,
+  `canonicalize_version`, `SpecifierSet.contains` - only *gained* parameters with defaults,
+  which no existing call can trip on. They are now `widened`.
+- **silent 2 -> 4.** Because `widened` functions are still executed (on calls built from the
+  old signature, which bind identically in both), `SpecifierSet.contains` got run - and it
+  changed. `generic_tags` is the other addition; the first run exercised 7 functions, this
+  one 14.
 
 ### The one that matters
 
 ```
 packaging.version.parse
-  same signature (version: str)
-  input : ("",)
-   21.3 : ok: <LegacyVersion('')>
-   24.0 : raise: InvalidVersion: Invalid version: ''
+  same signature (version: str) -> ForwardRef('LegacyVersion') | ForwardRef('Version'); 3 of 4 exercised inputs disagree
+  input : ("x",)
+     21.3 : ok: <LegacyVersion('x')>
+     24.0 : raise: InvalidVersion: Invalid version: 'x'
 ```
 
-`parse("")` returned a `LegacyVersion` and now raises. Same name, same signature. No import
-fails and no type checker complains - this is the category the tool exists for, and it takes
-execution to find.
+`parse("x")` returned a `LegacyVersion` and now raises. Same name, same signature. No import
+fails and no type checker complains - this is the category the tool exists for, and it
+takes execution to find.
 
 ### What reaches a real consumer
 
-Pointed at [`pypa/build`](https://github.com/pypa/build) with `--used-by`,
-**8 of the changes are referenced by its source**, with file and line:
+Pointed at a checkout of [`pypa/build`](https://github.com/pypa/build) with `--used-by`
+(36 Python files read):
 
-| kind | symbol | where |
-|---|---|---|
-| `gone` | `packaging.requirements.LegacySpecifier.contains` | `src/build/_util.py:66` |
-| `gone` | `packaging.requirements.Specifier.contains` | `src/build/_util.py:66` |
-| `gone` | `packaging.specifiers.LegacySpecifier.contains` | `src/build/_util.py:66` |
-| `reshaped` | `packaging.requirements.SpecifierSet.contains` | `src/build/_util.py:66` |
-| `reshaped` | `packaging.specifiers.SpecifierSet.contains` | `src/build/_util.py:66` |
-| `reshaped` | `packaging.utils.canonicalize_name` | `src/build/env.py:241` |
-| `added` | `packaging.metadata.parse_email` | `src/build/__main__.py:485` |
-| `added` | `packaging.requirements.canonicalize_name` | `src/build/env.py:241` |
+| kind | symbol | where | |
+|---|---|---|---|
+| `silent` | `packaging.specifiers.SpecifierSet.contains` | `src/build/_util.py:66` | **possible** |
+| `widened` | `packaging.utils.canonicalize_name` | `src/build/env.py:38`, `:211`, `:241` | proven |
+| `added` | `packaging.metadata.parse_email` | `src/build/__main__.py:485` | proven |
 
-An upgrade removing forty functions nobody calls is a non-event. The same upgrade touching
-one you call in a loop is an incident, and that is why the report sorts by this before
-anything else.
+The proven references cannot break pypa/build: one function gained an optional keyword,
+the other is new. The one that can is the *possible* one. pypa/build calls
+`req.specifier.contains(dist.version, prereleases=True)`, and in 24.0
+`SpecifierSet.contains("x", prereleases=True)` raises `InvalidVersion` where 21.3 returned
+`True` - so an installed distribution with a non-PEP 440 version now raises there. The line
+is only "possible" because `req.specifier` is an object whose type exists at runtime; a
+static pass cannot prove it is a `SpecifierSet`, so it is listed separately and does not
+trip `--fail-on used`.
+
+The previous version of this page listed eight references, including
+`[gone] LegacySpecifier.contains at src/build/_util.py:66`. That was the old matcher crediting
+any `.contains` to every class with a `contains` method - three "gone" and two "reshaped"
+entries for one line of code, none of them the class actually being called.
 
 ## `click` 7.1.2 -> 8.1.7
 
 | | count |
 |---|---:|
-| gone | 50 |
-| reshaped | 68 |
-| silent | 0 |
-| added | 292 |
+| gone | 15 |
+| reshaped | 13 |
+| **silent** | **4** |
+| widened | 14 |
+| added | 51 |
 
-**Behaviour compared on 116 of 234 stable callables** (measured on 8.1.6 -> 8.1.7, where the
-stable set is largest).
+Behaviour compared on 94 of 183 functions whose existing calls still bind; 492 seconds, of
+which about 480 were four functions that never return (`click.edit`, `click.getchar`,
+`click.launch`, `click.termui.hidden_prompt_func`) costing the 60-second `--timeout` once
+per version.
+
+The four silent changes, each a real difference in what click 8 returns:
+
+| function | input | 7.1.2 | 8.1.7 |
+|---|---|---|---|
+| `click.Choice.get_missing_message` | `("",)` | `'Choose from:\n\tx.'` | `'Choose from:\n\tx'` |
+| `click.FileError.format_message` | `()` | `'Could not open file x: unknown error'` | `"Could not open file 'x': unknown error"` |
+| `click.NoSuchOption.format_message` | `()` | `'no such option: x'` | `'No such option: x'` |
+| `click.types.StringParamType.convert` | `(0, "", "")` | `0` | `'0'` |
+
+The first run of this comparison with widened functions included reported **14**. The other
+ten were not behaviour, and finding out why is two more fixes:
+
+- four were `help_option`, `version_option`, `password_option` and `confirmation_option`
+  returning a decorator that now reprs as `option.<locals>.decorator`, because click 8 builds
+  them through `option()`. Closure reprs are now normalised.
+- six differed only where one version raised `TypeError` or `AttributeError` on a generated
+  argument - `Argument.get_default("")` passes a string where a `Context` belongs, and 7.1.2
+  happened to ignore it. They are listed under "not counted" in the report and never count
+  as silent.
+
+The old numbers on this page (gone 50, reshaped 68, added 292) were from the first probe,
+before aliases were de-duplicated and before additive signature changes became `widened`.
+
+## `click` 8.1.6 -> 8.1.7
+
+**124 of 234 stable callables exercised**, one silent change: `BashComplete.source`, where
+8.1.6 raises `RuntimeError: Couldn't detect Bash version` on this machine and 8.1.7 returns
+the completion script. 410 seconds, nearly all of it `click.getchar`, `click.prompt` and
+`click.termui.hidden_prompt_func` waiting on a console, once per version.
 
 This page used to report **0 exercised, 400 unreachable**, and explained it: click is classes
 and decorators needing a constructed `Context`, so a tool calling functions with literals
@@ -79,20 +144,12 @@ Four defects were producing the zero, and none of them was about click:
 | `_params` mis-parsed a return annotation | `(value: int, name: str = "x") -> bool` read as ONE parameter, so every annotated function was called short and raised `TypeError`. click annotated its entire API in v8 |
 | a class needing a constructor argument was refused outright | 95 of 234 - a larger bucket than the 54 the tool could then exercise |
 
-| | before | after |
+| | before the fixes | now |
 |---|---:|---:|
-| exercised | 54 | **116** |
-| needs an instance | 95 | **43** |
-| no generated argument reached it | 81 | 71 |
-
-The remaining 71 is the honest limit, and it is now reported as its own line rather than
-folded into "could not be called": a function this tool never handed a valid argument to is a
-fact about the tool, and one that ran and refused is a fact about the package.
-
-Three functions still cannot be reached at all - `click.getchar`, `click.prompt` and
-`click.termui.hidden_prompt_func` read the console directly, so closing stdin does not stop
-them. The probe restarts past each and keeps everything already finished; the cost is one
-full `--timeout` per function.
+| exercised | 54 | **124** |
+| needs an instance this tool could not build | 95 | **40** |
+| raised on every generated input | 81 | 67 (60 ran and refused, 7 never got an argument of the right type) |
+| never returned, restarted past | - | 3 |
 
 ## What this cost to learn
 
@@ -142,14 +199,15 @@ worse than none, because the run looks like it is still working.
 
 ## Limits
 
-- **Two upgrades.** One found a silent change, one could not be executed at all. Neither is
-  a general claim about upgrades.
+- **Two packages.** `packaging` and `click`. Neither is a general claim about upgrades.
 - **Generated arguments, not real ones.** A function is called with literals from a small
   pool, chosen per parameter from its annotation. A class whose constructor takes an argument
   is built with a generated one where the annotation allows a guess, and reported as needing
   an instance where the guess fails.
 - **Public surface only.** Private names are skipped; a project reaching into them is not
   covered.
+- **A vanished import path is not `gone` if the object survives.** See the packaging
+  section: `packaging.requirements.Specifier` stopped resolving in 24.0 and is not listed.
 - **Call-site matching resolves imports.** A name is credited only where the file imports it,
   so a project with its own `parse` is no longer counted as using `packaging.version.parse`.
   What this still cannot see is dynamic access - `getattr` on a module, `importlib` by string.

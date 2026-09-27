@@ -1,22 +1,27 @@
 # How often does a patch release break public API?
 
-[<- back to README](../README.md)
+[<- back to README](https://github.com/hammasbuilds/blast-radius#readme)
 
 Semantic versioning makes two promises. A **patch** release changes nothing a caller can
 see. A **minor** release only adds.
 
 This is a measurement of both, across 27 real upgrade pairs of widely-pinned packages.
-Reproduce it with `blast-radius check <package> <old> <new> --no-behaviour`.
+Reproduce it with [`scripts/semver_sweep.py`](../scripts/semver_sweep.py), or one pair at a
+time with `blast-radius check <package> <old> <new> --no-behaviour`. Last re-run
+2026-09-27, after additive signature changes stopped being counted as breaks.
 
 ## The result
 
 | Bump | Pairs | Broke exported API | Exported symbols removed or reshaped |
 |---|---:|---:|---:|
 | **patch** | 15 | **2 (13%)** | 3 |
-| **minor** | 9 | **4 (44%)** | 16 |
-| major | 3 | 2 (67%) | 47 |
+| **minor** | 9 | **2 (22%)** | 7 |
+| major | 3 | 2 (67%) | 32 |
 
-Semver says the patch row should be 0% and the minor row should be 0%.
+Semver says the patch row should be 0% and the minor row should be 0%. A further 2 minor
+pairs (`anyio`, `filelock`) changed exported signatures only *additively* - new parameters
+with defaults - which every existing call survives. They are reported as `widened` and
+not counted.
 
 Both numbers are small enough to name every instance, which is the point - a percentage
 with no names behind it is not checkable.
@@ -54,12 +59,25 @@ in internal modules (`coverage.parser`, `coverage.phystokens`, `coverage.regions
 
 `beautifulsoup4`, `charset-normalizer`, `click`, `filelock`, `httpx`, `jinja2`,
 `markupsafe`, `platformdirs`, `pytest`, `requests`, `rich`, `tqdm`, `typer` - all clean on
-exported API. `beautifulsoup4` and `typer` changed internals only.
+exported API. `beautifulsoup4` and `typer` only widened internal signatures.
 
-## Three corrections, each of which lowered the number
+## Four corrections, each of which lowered a number
 
 The first version of this sweep reported **38% of patch releases break public API**. Every
-correction below moved it down, and the final figure is 13%.
+correction below moved a number down: patch settled at 13%, and the fourth correction took
+the minor row from **44% to 22%**.
+
+### 4. An added optional parameter was counted as a break
+
+Any change to a signature's call shape was `reshaped`, including a new parameter with a
+default. `filelock` 3.13 -> 3.15 added a `blocking=True` keyword to its lock constructors
+and was reported as four broken exported symbols; `anyio` 4.1 -> 4.4 added `walk_up=False`
+to `Path.relative_to`. No existing call can fail on either. Signatures are now checked for
+compatibility - every call that binds against the old one must bind the same way against
+the new - and the additive ones are reported as `widened`, never as breaking. That took two
+of the four minor pairs out of the "broke" column, and `click` 8.0 -> 8.1 from 9 exported
+breaks to 5 (the other four were `click.option`, `click.argument`, `click.group` and
+`click.Path` gaining optional parameters).
 
 ### 1. The same object was counted once per module that imported it
 
@@ -100,48 +118,50 @@ violation.
 
 ## Full table
 
-Exported-symbol counts are of the *old* version.
+Exported-symbol counts are of the *old* version. "Broken" is gone + reshaped; "widened" is
+additive and not a break.
 
-| Package | From | To | Bump | Exported symbols | Exported broken | Internal broken |
-|---|---|---|---|---:|---:|---:|
-| `beautifulsoup4` | 4.12.2 | 4.12.3 | patch | 88 | 0 | 1 |
-| `charset-normalizer` | 3.3.0 | 3.3.2 | patch | 15 | 0 | 0 |
-| `click` | 8.1.6 | 8.1.7 | patch | 197 | 0 | 0 |
-| `coverage` | 7.5.0 | 7.5.4 | patch | 80 | **1** | 10 |
-| `filelock` | 3.15.1 | 3.15.4 | patch | 16 | 0 | 0 |
-| `httpx` | 0.27.0 | 0.27.2 | patch | 156 | 0 | 0 |
-| `jinja2` | 3.1.2 | 3.1.4 | patch | 96 | 0 | 0 |
-| `markupsafe` | 2.1.3 | 2.1.5 | patch | 35 | 0 | 0 |
-| `platformdirs` | 4.2.0 | 4.2.2 | patch | 47 | 0 | 0 |
-| `pytest` | 8.2.0 | 8.2.2 | patch | 13 | 0 | 0 |
-| `requests` | 2.32.2 | 2.32.3 | patch | 63 | 0 | 0 |
-| `rich` | 13.7.0 | 13.7.1 | patch | 6 | 0 | 0 |
-| `tqdm` | 4.66.1 | 4.66.4 | patch | 91 | 0 | 0 |
-| `typer` | 0.12.0 | 0.12.3 | patch | 13 | 0 | 2 |
-| `urllib3` | 2.2.1 | 2.2.2 | patch | 92 | **2** | 0 |
-| `anyio` | 4.1.0 | 4.4.0 | minor | 155 | **1** | 0 |
-| `click` | 8.0.4 | 8.1.7 | minor | 200 | **9** | 1 |
-| `filelock` | 3.13.1 | 3.15.4 | minor | 9 | **4** | 0 |
-| `httpx` | 0.26.0 | 0.27.0 | minor | 156 | 0 | 0 |
-| `pluggy` | 1.4.0 | 1.5.0 | minor | 45 | 0 | 0 |
-| `rich` | 13.0.1 | 13.7.1 | minor | 6 | 0 | 18 |
-| `starlette` | 0.35.1 | 0.37.2 | minor | 2 | 0 | 0 |
-| `typer` | 0.9.0 | 0.12.3 | minor | 13 | 0 | 4 |
-| `urllib3` | 2.1.0 | 2.2.2 | minor | 90 | **2** | 0 |
-| `click` | 7.1.2 | 8.1.7 | major | 177 | **29** | 14 |
-| `rich` | 12.6.0 | 13.7.1 | major | 6 | 0 | 20 |
-| `urllib3` | 1.26.18 | 2.2.2 | major | 79 | **18** | 71 |
+| Package | From | To | Bump | Exported symbols | Exported broken | Exported widened | Internal broken |
+|---|---|---|---|---:|---:|---:|---:|
+| `beautifulsoup4` | 4.12.2 | 4.12.3 | patch | 88 | 0 | 0 | 0 |
+| `charset-normalizer` | 3.3.0 | 3.3.2 | patch | 15 | 0 | 0 | 0 |
+| `click` | 8.1.6 | 8.1.7 | patch | 197 | 0 | 0 | 0 |
+| `coverage` | 7.5.0 | 7.5.4 | patch | 80 | **1** | 0 | 10 |
+| `filelock` | 3.15.1 | 3.15.4 | patch | 16 | 0 | 0 | 0 |
+| `httpx` | 0.27.0 | 0.27.2 | patch | 157 | 0 | 0 | 0 |
+| `jinja2` | 3.1.2 | 3.1.4 | patch | 96 | 0 | 0 | 0 |
+| `markupsafe` | 2.1.3 | 2.1.5 | patch | 35 | 0 | 0 | 0 |
+| `platformdirs` | 4.2.0 | 4.2.2 | patch | 47 | 0 | 0 | 0 |
+| `pytest` | 8.2.0 | 8.2.2 | patch | 13 | 0 | 0 | 0 |
+| `requests` | 2.32.2 | 2.32.3 | patch | 63 | 0 | 0 | 0 |
+| `rich` | 13.7.0 | 13.7.1 | patch | 6 | 0 | 0 | 0 |
+| `tqdm` | 4.66.1 | 4.66.4 | patch | 77 | 0 | 0 | 0 |
+| `typer` | 0.12.0 | 0.12.3 | patch | 13 | 0 | 0 | 0 |
+| `urllib3` | 2.2.1 | 2.2.2 | patch | 92 | **2** | 0 | 0 |
+| `anyio` | 4.1.0 | 4.4.0 | minor | 155 | 0 | 1 | 0 |
+| `click` | 8.0.4 | 8.1.7 | minor | 200 | **5** | 4 | 1 |
+| `filelock` | 3.13.1 | 3.15.4 | minor | 9 | 0 | 4 | 0 |
+| `httpx` | 0.26.0 | 0.27.0 | minor | 157 | 0 | 0 | 0 |
+| `pluggy` | 1.4.0 | 1.5.0 | minor | 45 | 0 | 0 | 0 |
+| `rich` | 13.0.1 | 13.7.1 | minor | 6 | 0 | 0 | 11 |
+| `starlette` | 0.35.1 | 0.37.2 | minor | 2 | 0 | 0 | 0 |
+| `typer` | 0.9.0 | 0.12.3 | minor | 13 | 0 | 0 | 3 |
+| `urllib3` | 2.1.0 | 2.2.2 | minor | 90 | **2** | 0 | 0 |
+| `click` | 7.1.2 | 8.1.7 | major | 177 | **16** | 13 | 12 |
+| `rich` | 12.6.0 | 13.7.1 | major | 6 | 0 | 0 | 13 |
+| `urllib3` | 1.26.18 | 2.2.2 | major | 79 | **16** | 2 | 65 |
 
-The minor row is the one worth acting on. `click` 8.0 → 8.1 removed `get_os_args`,
-`get_terminal_size` and `Group.resultcallback` and reshaped six more exported symbols, all
-under a bump that promises additions only.
+The minor row is the one worth acting on. `click` 8.0 -> 8.1 removed `get_os_args`,
+`get_terminal_size` and `Group.resultcallback` and reshaped `Parameter` and
+`Path.coerce_path_result`, all under a bump that promises additions only. `urllib3`
+2.1 -> 2.2 carries the same required `version_string` parameter as the 2.2.1 -> 2.2.2 patch.
 
 ## What this measures, and what it does not
 
 **API surface only.** This sweep ran with `--no-behaviour`, so it says nothing about the
 category the tool exists for: same name, same signature, different answer. That requires
 executing both versions and is much slower. The two published comparisons in
-[RESULTS.md](RESULTS.md) do include it.
+[RESULTS.md](https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md) do include it.
 
 **`rich` reports 6 exported symbols** because it declares almost nothing at the package
 root and uses `__all__` sparsely. The exported count is a measure of what a package

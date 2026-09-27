@@ -2,14 +2,14 @@
 <p align="center"><i>What a dependency upgrade actually changes — including what nothing warns you about</i></p>
 
 <p align="center">
-  <a href="#the-through-line">The through-line</a> &middot;
-  <a href="#the-result">The result</a> &middot;
+  <a href="https://github.com/hammasbuilds/blast-radius#the-through-line">The through-line</a> &middot;
+  <a href="https://github.com/hammasbuilds/blast-radius#the-result">The result</a> &middot;
   <a href="https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md">The semver sweep</a> &middot;
   <a href="https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md">Full results</a> &middot;
-  <a href="#how-it-works">How it works</a> &middot;
-  <a href="#run-it">Run it</a> &middot;
-  <a href="#what-this-does-not-do">What it does NOT do</a> &middot;
-  <a href="#problems-hit-while-building-this">Problems hit</a>
+  <a href="https://github.com/hammasbuilds/blast-radius#how-it-works">How it works</a> &middot;
+  <a href="https://github.com/hammasbuilds/blast-radius#run-it">Run it</a> &middot;
+  <a href="https://github.com/hammasbuilds/blast-radius#what-this-does-not-do">What it does NOT do</a> &middot;
+  <a href="https://github.com/hammasbuilds/blast-radius#problems-hit-while-building-this">Problems hit</a>
 </p>
 
 <p align="center">
@@ -17,7 +17,7 @@
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python">
   <img src="https://img.shields.io/badge/runtime%20deps-0-brightgreen" alt="zero dependencies">
   <img src="https://img.shields.io/badge/model-none%20required-success" alt="no model">
-  <img src="https://img.shields.io/badge/tests-54-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-125-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/upgrade%20pairs%20measured-27-blue" alt="pairs">
   <a href="https://github.com/hammasbuilds/blast-radius/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
 </p>
@@ -26,17 +26,12 @@
 
 ## The through-line
 
-```mermaid
-flowchart LR
-    I["install BOTH<br/>versions"] --> S["read both<br/>public surfaces"]
-    S --> G["GONE<br/>an ImportError<br/>tells you"]
-    S --> R["RESHAPED<br/>a type checker<br/>tells you"]
-    S --> E["same name,<br/>same shape?"]
-    E --> X["EXECUTE both<br/>on the same inputs"]
-    X --> Q["SILENT<br/>nothing tells you"]
-
-    style X fill:#2563eb,color:#fff
-    style Q fill:#b91c1c,color:#fff
+```text
+ install BOTH versions ──> read both public surfaces ──┬──> GONE      an ImportError tells you
+                                                       ├──> RESHAPED  a type checker tells you
+                                                       ├──> WIDENED   nothing to tell: old calls still work
+                                                       └──> same shape? ──> EXECUTE both on the same inputs
+                                                                                   └──> SILENT  nothing tells you
 ```
 
 A dependency bump arrives as a version number and a changelog. Neither is evidence. This
@@ -44,9 +39,10 @@ sorts what actually changed by **how likely it is to reach production unnoticed*
 
 | | who tells you |
 |---|---|
-| a name that vanished | an `ImportError`, at startup, on any CI run |
-| a signature that changed | a type checker, if you run one against a typed dependency |
-| **same name, same signature, different answer** | **nothing** |
+| a name that vanished (`gone`) | an `ImportError`, at startup, on any CI run |
+| a signature that changed incompatibly (`reshaped`) | a type checker, if you run one against a typed dependency |
+| a signature that only grew (`widened`) | nobody needs to: every existing call still works |
+| **same name, same signature, different answer (`SILENT`)** | **nothing** |
 
 > **A changelog is a claim. This is the diff.**
 
@@ -60,8 +56,8 @@ release only adds. Measured across widely-pinned packages:
 | Bump | Pairs | Broke exported API | Exported symbols removed or reshaped |
 |---|---:|---:|---:|
 | **patch** | 15 | **2 (13%)** | 3 |
-| **minor** | 9 | **4 (44%)** | 16 |
-| major | 3 | 2 (67%) | 47 |
+| **minor** | 9 | **2 (22%)** | 7 |
+| major | 3 | 2 (67%) | 32 |
 
 Small enough to name every instance, which is the point — a percentage with no names behind
 it is not checkable.
@@ -78,50 +74,70 @@ Every subclass calling `super().__init__(...)` now raises `TypeError`. `HTTPResp
 the same parameter positionally, so positional callers have `reason` land silently in
 `version_string`.
 
-The first version of this sweep said **38%**. Three bugs in the probe were inflating it —
-aliased symbols counted once per importing module, internal module moves read as removals,
-and internal churn weighed the same as published API. Every correction moved the number
+The first version of this sweep said **38%** for patch releases. Three bugs in the probe
+were inflating it — aliased symbols counted once per importing module, internal module moves
+read as removals, and internal churn weighed the same as published API. A fourth took the
+minor row from **44% to 22%**: an added *optional* parameter was being counted as a break.
+It cannot break a caller, and is now reported as `widened`. Every correction moved a number
 down.
 
 &#128202; **[The full sweep, every break named, and the three corrections &rarr;](https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md)**
 
 ### One upgrade in depth
 
-`packaging` 21.3 → 24.0, with call sites matched against [`pypa/build`](https://github.com/pypa/build):
+`packaging` 21.3 → 24.0, with call sites matched against a checkout of
+[`pypa/build`](https://github.com/pypa/build):
 
 ```
-gone         12   an ImportError at startup
-reshaped      5   a type checker would catch these
-SILENT        2   nothing catches these
-added        10
+blast-radius check packaging 21.3 24.0 --used-by path/to/pypa-build
+
+  gone          2   an import error at startup
+  reshaped      0   a type checker would catch these
+  SILENT        4   nothing catches these
+  widened       3   not breaking: existing calls still work
+  added         9
 ```
 
 The one worth the whole tool:
 
 ```
 packaging.version.parse
-  same signature (version: str)
-  input : ("",)
-   21.3 : ok: <LegacyVersion('')>
-   24.0 : raise: InvalidVersion: Invalid version: ''
+  same signature (version: str) -> ForwardRef('LegacyVersion') | ForwardRef('Version'); 3 of 4 exercised inputs disagree
+  input : ("x",)
+     21.3 : ok: <LegacyVersion('x')>
+     24.0 : raise: InvalidVersion: Invalid version: 'x'
 ```
 
-`parse("")` returned a value and now raises. Same name, same signature. No import fails and
+`parse("x")` returned a value and now raises. Same name, same signature. No import fails and
 no type checker complains — it takes running both versions to find.
 
-And **8 of the changes are referenced by `pypa/build`'s own source**, with file and line:
+And one that pypa/build is exposed to. `SpecifierSet.contains` only *gained* an optional
+parameter, so it is `widened`, not breaking — but because old calls still bind, the
+behaviour pass ran it, and it changed underneath:
 
 ```
-[gone    ] packaging.specifiers.LegacySpecifier.contains   src/build/_util.py:66
-[reshaped] packaging.utils.canonicalize_name               src/build/env.py:241
+packaging.specifiers.SpecifierSet.contains
+  input : ("x", True,)
+     21.3 : ok: True
+     24.0 : raise: InvalidVersion: Invalid version: 'x'
+  you may call it at: src/build/_util.py:66
 ```
+
+pypa/build calls it as `req.specifier.contains(dist.version, prereleases=True)`. The
+receiver's type only exists at runtime, so that line is reported as a **possible** call
+site, ranked below the proven ones and never enough on its own to fail `--fail-on used`.
+The proven ones are `packaging.utils.canonicalize_name` (widened, 3 sites, e.g.
+`src/build/env.py:38`) and `packaging.metadata.parse_email` (added,
+`src/build/__main__.py:485`) — neither of which can break it.
 
 An upgrade removing forty functions nobody calls is a non-event. The same upgrade touching
 one you call in a loop is an incident — so the report sorts by that before anything else.
 
 ### The run that was reported as an honest failure, and was not
 
-`click` 8.1.6 → 8.1.7: **116 of 234 stable callables exercised.**
+`click` 8.1.6 → 8.1.7: **124 of 234 stable callables exercised**, one silent change found
+(`BashComplete.source`: on this machine 8.1.6 raises *Couldn't detect Bash version* and
+8.1.7 returns the completion script).
 
 This page used to say *0 exercised, 400 unreachable*, and explained it: click is classes and
 decorators needing a constructed `Context`, so a tool calling functions with literals cannot
@@ -136,15 +152,16 @@ Four defects were producing the zero, none of them about click:
 | `_params` mis-parsed a **return annotation** | `(value: int, name: str = "x") -> bool` was read as taking ONE parameter, so every annotated function was called short and raised `TypeError`. click annotated its entire API in v8 |
 | a class needing a constructor argument was **refused** | 95 of 234, a larger bucket than the 54 the tool could then exercise |
 
-| | before | after |
+| | before the fixes | now (2026-09-27 run) |
 |---|---:|---:|
-| exercised | 54 | **116** |
-| needs an instance | 95 | **43** |
-| no generated argument reached it | 81 | 71 |
+| exercised | 54 | **124** |
+| needs an instance this tool could not build | 95 | **40** |
+| raised on every generated input | 81 | 67 — 60 ran and refused, 7 never got an argument of the right type |
+| never returned, restarted past | - | 3 |
 
-The 71 is the honest remainder, and it is now reported as its own line rather than merged
-into "could not be called" — a function this tool never managed to hand a valid argument is
-a fact about the tool, and one that ran and refused is a fact about the package.
+The 110 not exercised are reported by reason rather than as one "could not be called"
+number — a function this tool never managed to hand a valid argument is a fact about the
+tool, and one that ran and refused is a fact about the package.
 
 See [docs/RESULTS.md](https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md) for both runs.
 
@@ -162,27 +179,65 @@ imports included. Symbols are filtered by `__module__`.
 names, kinds and defaults match. Annotations are excluded on purpose: adding a type hint
 cannot break a caller.
 
-**Then execute what survived unchanged.** Only functions that kept both name and call shape
-are run, on the same generated inputs, in both versions. Comparing behaviour across a
-signature change would find differences the signature already explained.
+**Compatible, not merely different.** A changed call shape is `reshaped` only if some
+existing call could trip on it: a parameter removed, renamed, reordered, a default taken
+away, a new required keyword. A new parameter with a default, or a positional-only one that
+may now be passed by name, is `widened` — listed, never counted as breaking.
+
+**Then execute what every old call still reaches.** Functions that kept their name and a
+compatible call shape are run, on the same generated inputs built from the *old*
+signature, in both versions. Comparing behaviour across an incompatible signature change
+would find differences the signature already explained.
+
+**Your code, not your dependencies.** `--used-by` resolves each file's imports, so a
+project's own `parse()` is not credited to `packaging`. It skips virtualenvs (any directory
+holding `pyvenv.cfg`), `site-packages`, `node_modules`, `.tox`, and `build/` or `dist/`
+output that is not itself a package. Files are decoded the way Python decodes them
+(PEP 263 coding cookies included), and any file it cannot read or parse is counted and
+named in the output rather than skipped in silence.
 
 ## Run it
 
 ```bash
-git clone https://github.com/hammasbuilds/blast-radius
-cd blast-radius
-uv venv && uv pip install -e ".[dev]"
+pip install blast-radius          # or: uv tool install blast-radius / pipx install blast-radius
 
 blast-radius check packaging 21.3 24.0
-blast-radius check packaging 21.3 24.0 --used-by /path/to/your/repo
-blast-radius check requests 2.28.0 2.31.0 --no-behaviour   # API diff only, fast
-
-# in CI, on a dependency bump PR
-blast-radius check some-lib 1.2.0 1.3.0 --used-by . --fail-on-silent
+blast-radius check packaging 21.3 24.0 --used-by path/to/your/repo
+blast-radius check requests 2.28.0 2.31.0 --no-behaviour    # API diff only, fast
+blast-radius check packaging 21.3 24.0 --out report/         # also writes REPORT.md + JSON
 ```
 
 Needs no model, no API key, no GPU. It installs both versions itself, with `uv` if present
-and `pip` otherwise, into throwaway directories it cleans up.
+and `pip` otherwise, into throwaway directories it cleans up. The name you install and the
+name you import may differ (`beautifulsoup4` is `bs4`); it reads the right one from the
+package's metadata, and `--import-name` overrides.
+
+### In CI
+
+```bash
+# fail the dependency-bump PR if your code references anything that broke
+blast-radius check some-lib 1.2.0 1.3.0 --used-by . --fail-on used
+```
+
+`--fail-on` takes `gone`, `reshaped`, `silent`, `any` (all three) or `used` (any of the
+three that your `--used-by` code references), comma-separated or repeated. `widened` and
+`added` never fail a run: they cannot break a caller.
+
+| exit | meaning |
+|---:|---|
+| 0 | finished; no `--fail-on` condition met |
+| 1 | finished; a `--fail-on` condition was met |
+| 2 | could not finish: bad arguments, a missing `--used-by` path, an install or import failure |
+
+### From source
+
+```bash
+git clone https://github.com/hammasbuilds/blast-radius
+cd blast-radius
+uv sync                     # the package plus the dev group (pytest, ruff)
+uv run pytest -q
+uv run python demo.py
+```
 
 ## Layout
 
@@ -191,7 +246,9 @@ src/blast_radius/
   probe.py    import one version in a subprocess; PROVE which file it loaded
   diff.py     gone / reshaped / added, then execute what survived unchanged
   report.py   sorted by what can reach you, silent changes first
-  types.py    the three kinds, and why they are ordered that way
+  types.py    the kinds of change, and why they are ordered that way
+scripts/
+  semver_sweep.py   re-runs the 27-pair measurement behind docs/SEMVER.md
 ```
 
 ## What this does NOT do
@@ -199,23 +256,35 @@ src/blast_radius/
 - **It does not read changelogs.** Deliberately. The changelog is the claim being checked.
 - **It cannot reach every API.** A class whose constructor takes an argument is built with a
   generated one where the annotation allows a guess, and reported as needing an instance
-  where the guess fails. On `click` that is **43 of 234** stable callables — it used to be
-  all of them.
+  where the guess fails. On `click` 8.1.6 → 8.1.7 that is **40 of 234** stable callables.
 - **Generated arguments, not real ones.** A pool of literals chosen per parameter from its
   annotation, varied one at a time. A behaviour change that only shows on a complex input
-  will be missed, and **71 of click's 234** are functions no generated argument reached.
+  will be missed. On click, **60 of 234** rejected every generated input and **7** were
+  never handed an argument of the right type.
 - **Public surface only.** A project reaching into private names is not covered.
-- **A function that never returns costs a full `--timeout`.** `click.getchar` and
-  `click.termui.hidden_prompt_func` read the console and never answer a batch job. The probe
-  restarts past each one and keeps everything it had already finished, but the waiting is
-  real: the click comparison spends most of its ten minutes on three functions.
+- **It runs the package's code.** The behaviour pass calls public functions with generated
+  arguments, in a subprocess whose working directory is a throwaway temp dir and whose stdin
+  is closed. That is not a sandbox: a function that deletes, opens a window or makes a
+  network call will do so. Run it on packages you would install anyway, or in CI.
+- **Method calls on runtime objects are "possible", not proven.** `obj.contains(...)`
+  cannot be tied to a class without running the code, so such sites are listed separately
+  and do not trip `--fail-on used`.
+- **An import path that disappears while the object survives is not reported.** Symbols
+  are keyed on the object, so `packaging.specifiers.parse` (21.3 imported `parse` into that
+  module; 24.0 does not) is folded into `packaging.version.parse`. Code importing through
+  such an incidental path is still matched, but the path's removal is not listed as `gone`.
+- **A function that never returns costs one `--timeout`, per version.** `click.getchar`,
+  `click.prompt` and `click.termui.hidden_prompt_func` read the console and never answer a
+  batch job. The probe abandons each after `--timeout` seconds (default 60) and carries on,
+  but the waiting is real: most of the click 8.1.6 → 8.1.7 run's 410 seconds is those three
+  functions, twice.
 - **Two packages.** `packaging` and `click`. Two upgrades are not a general claim about
   upgrades, and nothing here says how this behaves on a package shaped differently from
   both.
 
 ## Problems hit while building this
 
-Seven sources of *confident wrong answers*. Not one of them raised an error.
+Eleven sources of *confident wrong answers*. Not one of them raised an error.
 
 - **Both probes loaded the same copy, and it reported "nothing changed".** Python silently
   ignores a `sys.path` entry that does not exist, so a non-native path meant the import fell
@@ -248,12 +317,27 @@ Seven sources of *confident wrong answers*. Not one of them raised an error.
   pip never happened. Fixed by decoding UTF-8 explicitly; `install()` now also reports
   **why** it failed instead of returning a bare `False`.
 
+- **An additive release read as a breaking one.** Any change to a call shape was
+  `reshaped`, including a new parameter with a default. That put `filelock` 3.13 -> 3.15 and
+  `anyio` 4.1 -> 4.4 in the "minor releases that broke API" column, where neither belongs,
+  and the headline said 44% instead of 22%. Signatures are now checked for compatibility.
+- **pypa/build "used none of the changes".** `--used-by` skipped every directory called
+  `build`, to avoid setuptools output - and pypa/build keeps its source in `src/build/`.
+  Build and dist directories are now skipped only when they are not a Python package.
+- **A typo made CI green forever.** `--used-by /no/such/dir` scanned nothing, reported that
+  nothing was matched and exited 0. It is now an error, raised before anything is installed.
+- **A refactor read as four behaviour changes.** click 8 builds `help_option` and three
+  siblings through `option()`, so the decorator they return reprs as
+  `option.<locals>.decorator`. Closure reprs are normalised, and a difference that only
+  shows where one version rejects a generated argument as the wrong type (a string passed
+  as a `Context`) is listed apart instead of counted as silent.
+
 ## Also worth reading
 
 | | |
 |---|---|
 | &#128200; **[The semver sweep](https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md)** | 27 upgrade pairs, every break named |
-| &#128202; **[Results](https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md)** | Both upgrades in full, with the limits |
+| &#128202; **[Results](https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md)** | All three runs in full, with the limits |
 | **[suite-auditor](https://github.com/hammasbuilds/suite-auditor)** | The same differential idea, pointed at a test suite |
 | **[pr-referee](https://github.com/hammasbuilds/pr-referee)** | And pointed at a diff |
 | **[repo-surgeon](https://github.com/hammasbuilds/repo-surgeon)** | And at a migration, refusing what it cannot prove |

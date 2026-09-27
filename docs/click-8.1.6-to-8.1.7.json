@@ -1,0 +1,28 @@
+{
+  "package": "click",
+  "old_version": "8.1.6",
+  "new_version": "8.1.7",
+  "counts": {
+    "silent": 1
+  },
+  "behaviour_checked": true,
+  "compared": 124,
+  "unreachable": 110,
+  "reaching_you": 0,
+  "seconds": 409.6,
+  "changes": [
+    {
+      "kind": "silent",
+      "qualname": "click.shell_completion.BashComplete.source",
+      "detail": "same signature (self) -> str; 1 of 1 exercised inputs disagree",
+      "witness": {
+        "args": "()",
+        "old": "raise: RuntimeError: Couldn't detect Bash version, shell completion is not supported.",
+        "new": "ok: '_x_completion() {\\n    local IFS=$\\'\\\\n\\'\\n    local response\\n\\n    response=$(env COMP_WORDS=\"${COMP_WORDS[*]}\" COMP_CWORD=$COMP_CWORD x=bash_complete $1)\\n\\n    for completion in $response; do\\n        IFS=\\',\\' read type value <<< \"$completion\"\\n\\n        if [[ $type == \\'dir\\' ]]; then\\n            COMPREPLY=()\\n            compopt -o dirnames\\n        elif [[ $type == \\'file\\' ]]; then\\n            COMPREPLY=()\\n            compopt -o default\\n        elif [[ $type == \\'plain\\' ]]; then\\n            COMPREPLY+=($value)\\n        fi\\n    done\\n\\n    return 0\\n}\\n\\n_x_completion_setup() {\\n    complete -o nosort -F _x_completion x\\n}\\n\\n_x_completion_setup;\\n'"
+      },
+      "used_at": [],
+      "maybe_at": []
+    }
+  ],
+  "weak_differences": []
+}
