@@ -17,8 +17,8 @@ jobs:
 
       - name: Lint
         run: |
-          uv run ruff check src tests
-          uv run ruff format --check src tests
+          uv run ruff check src tests scripts demo.py
+          uv run ruff format --check src tests scripts demo.py
 
       # The suite installs nothing and reaches no network: everything under test is the
       # code that decides what counts as a change.

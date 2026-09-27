@@ -8,67 +8,275 @@ twice. So each version is probed in its own subprocess with its own directory fi
 That is also why the probe returns *strings*. A repr crosses a process boundary; a live
 object does not, and serialising one would mean choosing an encoding that is itself a
 behaviour difference waiting to be mistaken for the package's.
+
+Every probe runs inside a sandbox (see SANDBOX below). The behaviour pass calls the
+package's public functions with generated arguments, and before the sandbox existed a run
+against click opened four Explorer windows and left Notepad open: `click.launch` and
+`click.edit` did exactly what they are for.
 """
 
 from __future__ import annotations
 
 import contextlib
 import json
+import os
 import subprocess
 import sys
 import time
+from collections.abc import Callable
 from pathlib import Path
 
-SURFACE = r"""
-import importlib, inspect, json, pkgutil, sys
+# Installed into every probe before any package code runs. Comments, not docstrings,
+# throughout the templates: each is a triple-quoted string and a docstring would close it.
+SANDBOX = r"""
+import os as _os
+import sys as _sys
 
-sys.path.insert(0, sys.argv[1])
-package = sys.argv[2]
+
+def _br_sandbox():
+    # What a probed function is NOT allowed to do, whatever its name.
+    #
+    # The name filter in diff.py keeps obviously dangerous functions (launch, edit,
+    # delete, ...) out of the behaviour pass entirely. This is the second line: a
+    # function with an innocent name that opens a browser, starts a process, reaches
+    # the network, reads the console or writes outside the probe's own temp directory
+    # gets a PermissionError instead - in both versions alike, so it compares as a
+    # refusal rather than doing the thing.
+    #
+    # It is not a security boundary against hostile code (ctypes can do anything). It
+    # is a guard against ordinary library code doing ordinary things to the machine of
+    # somebody who only asked for a diff.
+    import builtins
+    import io
+    import socket
+    import subprocess
+
+    root = _os.path.normcase(_os.path.realpath(_os.environ.get("BR_SANDBOX") or _os.getcwd()))
+
+    def inside(path):
+        try:
+            if isinstance(path, int):
+                return True  # an already-open descriptor
+            text = _os.fsdecode(_os.fspath(path))
+            full = _os.path.normcase(_os.path.realpath(text))
+        except Exception:
+            return False
+        return full == root or full.startswith(root + _os.sep)
+
+    def deny(what):
+        def blocked(*args, **kwargs):
+            raise PermissionError("blocked by the blast-radius sandbox: " + what)
+
+        blocked.__name__ = "blocked"
+        return blocked
+
+    real_open = builtins.open
+
+    def guarded_open(file, mode="r", *args, **kwargs):
+        if any(c in str(mode) for c in "wax+") and not inside(file):
+            raise PermissionError("blocked by the blast-radius sandbox: write to " + str(file))
+        return real_open(file, mode, *args, **kwargs)
+
+    builtins.open = guarded_open
+    io.open = guarded_open
+
+    write_flags = 0
+    for flag in ("O_WRONLY", "O_RDWR", "O_CREAT", "O_APPEND", "O_TRUNC"):
+        write_flags |= getattr(_os, flag, 0)
+    real_os_open = _os.open
+
+    def guarded_os_open(path, flags, *args, **kwargs):
+        if flags & write_flags and not inside(path):
+            raise PermissionError("blocked by the blast-radius sandbox: write to " + str(path))
+        return real_os_open(path, flags, *args, **kwargs)
+
+    _os.open = guarded_os_open
+
+    def paths_inside(name, count):
+        real = getattr(_os, name, None)
+        if real is None:
+            return
+
+        def guarded(*args, **kwargs):
+            for p in args[:count]:
+                if not inside(p):
+                    raise PermissionError(
+                        "blocked by the blast-radius sandbox: " + name + " " + str(p)
+                    )
+            return real(*args, **kwargs)
+
+        setattr(_os, name, guarded)
+
+    for name in ("remove", "unlink", "rmdir", "mkdir", "chmod", "truncate", "utime"):
+        paths_inside(name, 1)
+    for name in ("rename", "replace", "link", "symlink"):
+        paths_inside(name, 2)
+
+    for name in (
+        "system", "popen", "startfile", "fork", "forkpty", "kill", "killpg",
+        "posix_spawn", "posix_spawnp", "execv", "execve", "execl", "execle", "execlp",
+        "execlpe", "execvp", "execvpe", "spawnl", "spawnle", "spawnlp", "spawnlpe",
+        "spawnv", "spawnve", "spawnvp", "spawnvpe",
+    ):  # fmt: skip
+        if hasattr(_os, name):
+            setattr(_os, name, deny("os." + name))
+    subprocess.Popen.__init__ = deny("starting a process")
+    for mod_name, attr in (("_winapi", "CreateProcess"), ("_posixsubprocess", "fork_exec")):
+        mod = _sys.modules.get(mod_name)
+        if mod is not None and hasattr(mod, attr):
+            setattr(mod, attr, deny("starting a process"))
+
+    # Loopback stays open: asyncio builds its self-pipe from a socketpair, which on
+    # Windows is a bind and a connect on 127.0.0.1. Anything else is the network.
+    loopback = {"127.0.0.1", "::1", "localhost", "", None}
+
+    def host_of(address):
+        if isinstance(address, tuple) and address:
+            return address[0]
+        return address if isinstance(address, str) else None
+
+    def local_only(real, what):
+        def guarded(self, address, *args, **kwargs):
+            if isinstance(address, tuple) and host_of(address) not in loopback:
+                raise PermissionError("blocked by the blast-radius sandbox: " + what)
+            return real(self, address, *args, **kwargs)
+
+        return guarded
+
+    for name in ("connect", "connect_ex", "bind"):
+        setattr(socket.socket, name, local_only(getattr(socket.socket, name), "network"))
+    socket.socket.sendto = deny("network")
+    real_getaddrinfo = socket.getaddrinfo
+
+    def guarded_getaddrinfo(host, *args, **kwargs):
+        if host not in loopback:
+            raise PermissionError("blocked by the blast-radius sandbox: network lookup")
+        return real_getaddrinfo(host, *args, **kwargs)
+
+    socket.getaddrinfo = guarded_getaddrinfo
+    for name in ("create_connection", "gethostbyname", "gethostbyname_ex", "gethostbyaddr"):
+        setattr(socket, name, deny("network"))
+
+    try:
+        import webbrowser
+
+        for name in ("open", "open_new", "open_new_tab", "get"):
+            setattr(webbrowser, name, deny("opening a browser"))
+    except Exception:
+        pass
+
+    def no_console(*args, **kwargs):
+        raise EOFError("no console in the blast-radius sandbox")
+
+    builtins.input = no_console
+    try:
+        import getpass
+
+        getpass.getpass = no_console
+    except Exception:
+        pass
+    try:
+        import msvcrt
+
+        for name in ("getch", "getwch", "getche", "getwche"):
+            if hasattr(msvcrt, name):
+                setattr(msvcrt, name, no_console)
+        if hasattr(msvcrt, "kbhit"):
+            msvcrt.kbhit = lambda: False
+    except ImportError:
+        pass
+
+    _sys._br_real_exit = _os._exit
+
+    def soft_exit(code=0):
+        raise SystemExit(code)
+
+    _os._exit = soft_exit
+"""
+
+COMMON = r"""
+import importlib, inspect, json, os, pkgutil, sys, warnings
+
+warnings.simplefilter("ignore")
+
+
+def call_shape(obj):
+    # The part of a signature that decides whether existing call sites still work:
+    # parameter names, their kinds, and whether each has a default. Annotations are
+    # excluded deliberately - adding a type hint does not break a caller.
+    #
+    # None means UNKNOWN (a C function with no text signature). An empty string means
+    # a function that takes no arguments. They used to be the same "", so every
+    # f() -> f(x=None) read as "could not compare" and was reported as breaking.
+    try:
+        sig = inspect.signature(obj)
+    except (ValueError, TypeError):
+        return None, ""
+    parts = []
+    for name, p in sig.parameters.items():
+        parts.append(name + ":" + p.kind.name + (":d" if p.default is not p.empty else ""))
+    return ",".join(parts), str(sig)
+
+
+def kind_of(obj):
+    return (
+        "class" if inspect.isclass(obj)
+        else "function" if inspect.isroutine(obj)
+        else "module" if inspect.ismodule(obj)
+        else "other"
+    )
+"""
+
+SURFACE = r"""
+_br_sandbox()
+target = sys.argv[1]
+sys.path.insert(0, target)
+with open(sys.argv[2], encoding="utf-8") as fh:
+    config = json.load(fh)
+modules = config["modules"]
+owned = config["owned"]
+
+# Segments that mark a module as not part of anyone's API. numpy ships its test suite
+# inside the package, so without this 184 of the 218 names reported as "gone" between
+# numpy 2.2 and 2.5 were numpy.*.tests.* modules. `testing` is excluded only below the
+# top level: numpy.testing is published API, numpy._core.tests.testing is not.
+EXCLUDED = {"tests", "test", "conftest", "vendor", "vendored", "benchmarks", "benchmark"}
 
 out = {}
 
 
-def owned_by(obj, package):
-    # Is this symbol part of the package, or merely imported into its namespace?
+def is_excluded(dotted):
+    parts = dotted.split(".")
+    for i, part in enumerate(parts):
+        if i and part.startswith("_"):
+            return True
+        if part in EXCLUDED or (part == "testing" and i >= 2):
+            return True
+    return False
+
+
+def owned_by(obj):
+    # Is this symbol part of the distribution, or merely imported into its namespace?
     #
-    # dir(a_module) returns everything reachable, third-party names included. packaging
-    # 21.3 does `from pyparsing import ...`, so a naive walk credits packaging with
-    # pyparsing's whole API - and dropping pyparsing in 22.0 then reads as 455 removed
-    # "packaging" symbols. They were never packaging's to remove.
+    # "Part of the distribution" means defined in ANY module the distribution installs,
+    # not only under the import name. pytest.fixture is defined in _pytest.fixtures and
+    # attrs.define in attr._next_gen; checking only the import name's prefix found 13
+    # symbols in pytest and 0 in attrs, and reported "nothing changed".
     #
-    # (Comments, not a docstring: this module is itself a triple-quoted template, and a
-    # docstring here would terminate it.)
+    # Third-party names still do not count: packaging 21.3 does `from pyparsing import
+    # ...`, and crediting packaging with pyparsing's API turned dropping that dependency
+    # into 455 removed symbols.
     mod = getattr(obj, "__module__", None)
-    if not mod:
+    if not isinstance(mod, str) or not mod:
         return False
-    root = package.split(".")[0]
-    return mod == root or mod.startswith(root + ".")
-
-
-def call_shape(sig):
-    # The part of a signature that decides whether existing call sites still work:
-    # parameter names, their kinds, and whether each has a default. Annotations are
-    # excluded deliberately.
-    #
-    # click 8 annotated its entire API, so comparing signature STRINGS reported 795
-    # "reshaped" functions and left nothing stable - which meant the behaviour pass, the
-    # only part of this tool that finds what nothing else warns you about, ran on zero
-    # functions. Adding a type hint does not break a caller.
-    parts = []
-    for name, p in sig.parameters.items():
-        parts.append(name + ":" + str(p.kind) + (":d" if p.default is not p.empty else ""))
-    return ",".join(parts)
+    return any(mod == p or mod.startswith(p + ".") for p in owned)
 
 
 def better_path(new, old, home=""):
     # Which of two import paths for the same object is the one a user would write?
-    # The shorter the better: `coverage.CoverageData` over
-    # `coverage.sqldata.CoverageData`. Between two equally deep paths the one where
-    # the object is DEFINED wins: packaging.version.Version, not
-    # packaging.utils.Version, which is only an import inside utils. Then the
-    # shorter string, then alphabetically, so the choice is deterministic across
-    # versions - which it has to be, or a stable symbol reads as removed under one
-    # name and added under another.
+    # Fewer dots first, then the defining module, then the shorter string, then
+    # alphabetical - deterministic, or a stable symbol reads as removed under one name
+    # and added under another.
     def rank(path):
         return (path.count("."), path != home, len(path), path)
 
@@ -76,75 +284,42 @@ def better_path(new, old, home=""):
 
 
 def identity(obj, fallback):
-    # Where the object actually lives, regardless of who imported it.
     mod = getattr(obj, "__module__", "") or ""
     qual = getattr(obj, "__qualname__", "") or ""
-    return (mod + "." + qual) if (mod and qual) else fallback
+    if isinstance(mod, str) and mod and isinstance(qual, str) and qual:
+        return mod + "." + qual
+    return fallback
 
 
 def describe(obj, qualname, exported=False):
     # One object, one entry - keyed by where it is DEFINED, reported under the
-    # shortest path it can be reached by.
-    #
-    # walk() visits every module in the package, so a class imported into several of
-    # them used to be recorded once per module. coverage.CoverageData is imported
-    # into collector, control, data, html and sqldata, so a single signature change
-    # to `update` was counted six times. Six is not a measurement of anything.
-    #
-    # Keying on the definition site also means a class moved between two internal
-    # modules is no longer a removal plus an addition, as long as the public name
-    # people import still resolves. That move is invisible to callers and should be
-    # invisible here.
+    # shortest path it can be reached by. Every other path is kept as an alias, so a
+    # method that moved to a base class (bs4 4.13 moved BeautifulSoup.append to Tag)
+    # is still found under the name callers write.
     key = identity(obj, qualname)
     existing = out.get(key)
     if existing is not None:
         existing["aliases"] = sorted(set(existing["aliases"]) | {qualname})
         if better_path(qualname, existing["name"], key):
             existing["name"] = qualname
-        # Reachable as public under ANY path is public: a class defined in an
-        # internal module and re-exported from the package root is part of the
-        # published API under that second name.
         existing["exported"] = existing["exported"] or exported
         return
-
-    shape = ""
-    try:
-        signature = inspect.signature(obj)
-        sig = str(signature)
-        shape = call_shape(signature)
-    except (ValueError, TypeError):
-        sig = ""
+    shape, sig = call_shape(obj)
     doc = (inspect.getdoc(obj) or "").strip().splitlines()
-    kind = (
-        "class" if inspect.isclass(obj)
-        else "function" if inspect.isroutine(obj)
-        else "other"
-    )
     out[key] = {
         "name": qualname,
         "aliases": [qualname],
         "exported": exported,
-        "kind": kind,
+        "kind": kind_of(obj),
         "signature": sig,
         "shape": shape,
         "doc": doc[0][:120] if doc else "",
     }
 
 
-def walk(mod, prefix):
+def walk(mod, prefix, top):
     allowed = getattr(mod, "__all__", None)
-    # Did the author say this module has a public surface, and is this name on it?
-    #
-    # Without this everything reachable counts equally, so coverage.parser.join_regex
-    # - an internal helper in an internal module - weighs the same as
-    # coverage.CoverageData.update. A release that reshuffles its internals then
-    # looks exactly like one that breaks its users.
-    #
-    # Two things count as the author saying "public": the name is in a module's
-    # __all__, or it sits directly in the package's own namespace (`coverage.X`),
-    # which is the import path people actually write.
     for name in dir(mod):
-        # `_name` is private by convention; `__all__` is honoured when a module defines it.
         if name.startswith("_"):
             continue
         if allowed is not None and name not in allowed:
@@ -153,10 +328,10 @@ def walk(mod, prefix):
             obj = getattr(mod, name)
         except Exception:
             continue
-        if not owned_by(obj, package):
+        if not owned_by(obj):
             continue
         qual = prefix + "." + name
-        exported = allowed is not None or prefix == package
+        exported = allowed is not None or prefix == top
         if inspect.isroutine(obj) or inspect.isclass(obj):
             describe(obj, qual, exported)
         if inspect.isclass(obj):
@@ -167,129 +342,201 @@ def walk(mod, prefix):
                     m = getattr(obj, mname)
                 except Exception:
                     continue
-                if inspect.isroutine(m) and owned_by(m, package):
-                    # A method is as public as the class that carries it.
+                if inspect.isroutine(m) and owned_by(m):
                     describe(m, qual + "." + mname, exported)
 
 
-try:
-    root = importlib.import_module(package)
-except Exception as exc:
-    print("__BR_FAIL__" + type(exc).__name__ + ": " + str(exc)[:200])
-    raise SystemExit(0)
-
-# Prove the import came from the directory we were pointed at.
-#
-# Python silently ignores a sys.path entry that does not exist, so a mistyped or
-# non-native path means the import quietly falls through to whatever the interpreter
-# already has. The probe then compares a version against itself and reports, with
-# complete confidence, that nothing changed between them.
-origin = getattr(root, "__file__", "") or ""
-import os
-if not os.path.abspath(origin).startswith(os.path.abspath(sys.argv[1])):
-    print("__BR_WRONGDIR__" + origin)
-    raise SystemExit(0)
-
-out["__meta__"] = {
-    "kind": "meta",
-    "signature": "",
-    "doc": "",
-    "origin": origin,
-    "version": str(getattr(root, "__version__", "")),
-}
-
-walk(root, package)
-for info in pkgutil.walk_packages(getattr(root, "__path__", []), package + "."):
-    if any(p.startswith("_") for p in info.name.split(".")[1:]):
-        continue
+def submodules(name, path):
+    # Our own walk rather than pkgutil.walk_packages, which imports every package it
+    # finds in order to recurse - including the tests packages being skipped, and
+    # whatever those import.
     try:
-        walk(importlib.import_module(info.name), info.name)
+        found = list(pkgutil.iter_modules(path, name + "."))
     except Exception:
-        continue
+        return
+    for info in sorted(found, key=lambda i: i.name):
+        if is_excluded(info.name):
+            continue
+        try:
+            sub = importlib.import_module(info.name)
+        except BaseException:
+            continue
+        yield info.name, sub
+        if info.ispkg:
+            yield from submodules(info.name, getattr(sub, "__path__", []))
 
-# Re-key from definition site to public name.
-#
-# The walk keys on where an object is defined, because that is what makes two
-# aliases of one object the same object. But the DIFF has to key on the name a
-# caller writes, or moving a class between internal modules reads as one symbol
-# removed and another added - a breaking change that breaks nobody.
-#
-# coverage 7.5.0 -> 7.5.4 moved PathAliases out of coverage.sqldata. Keyed on the
-# definition site that is 4 removals; keyed on the public name it is nothing,
-# which is correct, because `from coverage import PathAliases` still works.
+
+def origin_of(module):
+    origin = getattr(module, "__file__", None)
+    if origin:
+        return [origin]
+    # A namespace package (jaraco.functools's `jaraco`) has no __file__, only a
+    # __path__ that may span several directories.
+    return [str(p) for p in getattr(module, "__path__", [])]
+
+
+meta = {"kind": "meta", "signature": "", "doc": "", "origin": "", "version": "",
+        "modules": [], "failed": {}}
+here = os.path.normcase(os.path.abspath(target))
+for top in modules:
+    try:
+        root = importlib.import_module(top)
+    except BaseException as exc:
+        meta["failed"][top] = type(exc).__name__ + ": " + str(exc)[:200]
+        continue
+    # Prove the import came from the directory we were pointed at. Python silently
+    # ignores a sys.path entry that does not exist, so a mistyped path means the import
+    # falls through to whatever the interpreter already has - and two probes of one
+    # copy agree perfectly that nothing changed.
+    origins = origin_of(root)
+    norm = [os.path.normcase(os.path.abspath(o)) for o in origins]
+    if not any(o.startswith(here) for o in norm):
+        print("__BR_WRONGDIR__" + (origins[0] if origins else top + " (no file or path)"))
+        sys.exit(0)
+    meta["modules"].append(top)
+    if not meta["origin"]:
+        meta["origin"] = origins[0] if origins else ""
+    if not meta["version"]:
+        meta["version"] = str(getattr(root, "__version__", "") or "")
+    walk(root, top, top)
+    for name, sub in submodules(top, getattr(root, "__path__", [])):
+        walk(sub, name, top)
+
+if not meta["modules"]:
+    # Nothing imported. Reported with the reasons rather than as an empty surface,
+    # which would read as "this version has no API" and every symbol as gone.
+    print("__BR_JSON__" + json.dumps({"__meta__": meta}))
+    sys.exit(0)
+
+# Re-key from definition site to public name, so moving a class between internal
+# modules is not one removal plus one addition.
 final = {}
 for record in out.values():
-    if record.get("kind") == "meta":
-        continue
     name = record["name"]
     previous = final.get(name)
-    # Two distinct objects under one public name can only happen if a package
-    # rebinds it; keep the first and note the collision rather than silently
-    # dropping one.
     if previous is not None:
         previous["shadowed"] = True
         continue
     final[name] = record
-final["__meta__"] = out["__meta__"]
-
+final["__meta__"] = meta
 print("__BR_JSON__" + json.dumps(final))
 """
 
-CALL = r"""
-import contextlib, importlib, inspect, io, json, re, sys
+RESOLVE = r"""
+_br_sandbox()
+sys.path.insert(0, sys.argv[1])
+with open(sys.argv[2], encoding="utf-8") as fh:
+    names = json.load(fh)
 
-import os
+# Does each name still resolve - import the longest module prefix that imports, then
+# getattr the rest, inherited attributes included? A name the surface walk did not see
+# may still work: pydantic 2 serves pydantic.json.pydantic_encoder through a module
+# __getattr__ that dir() cannot list, and bs4 moved methods onto a base class. Calling
+# those "gone" is telling a user their import will fail when it will not.
+found = {}
+for qualname in names:
+    parts = qualname.split(".")
+    for cut in range(len(parts), 0, -1):
+        try:
+            obj = importlib.import_module(".".join(parts[:cut]))
+        except BaseException:
+            continue
+        try:
+            for attr in parts[cut:]:
+                obj = getattr(obj, attr)
+        except BaseException:
+            continue
+        shape, sig = call_shape(obj) if callable(obj) else (None, "")
+        found[qualname] = {
+            "name": qualname, "aliases": [qualname], "exported": False,
+            "kind": kind_of(obj), "signature": sig, "shape": shape, "doc": "",
+            "resolved": True, "callable": callable(obj),
+        }
+        break
+print("__BR_JSON__" + json.dumps(found))
+"""
+
+CALL = r"""
+import contextlib, io, re, tempfile
 
 if not os.path.isdir(sys.argv[1]):
     print("__BR_WRONGDIR__no such directory: " + sys.argv[1])
     raise SystemExit(0)
-sys.path.insert(0, sys.argv[1])
+target = sys.argv[1]
+sys.path.insert(0, target)
 
-# The payload arrives in a FILE, not on the command line.
-#
-# It used to be argv[2]. A command line has a length limit, and this payload is
-# one entry per stable function with four argument sets each. Measured on
-# Windows: 6,123 characters worked, 12,290 returned nothing at all with a zero
-# exit code, and a few hundred functions failed outright with
-# "[WinError 206] The filename or extension is too long".
-#
-# The default limit is 400 functions. So on Windows the behaviour pass - the
-# only part of this tool that finds what nothing else warns you about - did
-# nothing at all on any package big enough to be worth checking, and said so by
-# reporting zero silent changes.
+# The payload arrives in a FILE, not on the command line: a command line has a length
+# limit, and on Windows a payload past ~12k characters returned nothing with exit 0.
 with open(sys.argv[2], "r", encoding="utf-8") as fh:
     payload = json.load(fh)
+calls = payload["calls"]
 
-# Two shapes of object identity, both of which look like a behaviour change and are not.
-#   <Foo object at 0x7f...>   - the default repr
-#   <py314-none-win @ 2380956229248>  - a custom __repr__ embedding id(self) in DECIMAL
-# packaging.tags.Tag uses the second, and normalising only the first reported four
-# identical tag lists as four silent behaviour changes.
+# Results are journalled as they are produced, so anything that stops this
+# interpreter - a hang, a segfault - costs only the function in flight.
+journal = open(sys.argv[3], "a", encoding="utf-8")
+_br_sandbox()
+
+# What makes two runs differ without the package behaving differently.
+#   <Foo object at 0x7f...>            the default repr
+#   <py314-none-win @ 2380956229248>   id(self) in decimal (packaging.tags.Tag)
+#   <Template memory:2707908b560>      id(self) in bare hex (jinja2)
+#   option.<locals>.decorator          a closure named after whichever helper built it
+#   C:\...\blast-x\2023.11.17\certifi  the directory each version was installed into
+#   python-requests/2.31.0             the package's own version string
 ADDR = re.compile(r"0x[0-9a-fA-F]{4,}")
 DECIMAL_ID = re.compile(r"@ ?\d{7,}")
-# A closure's repr names the function that happened to build it. click 8 routes
-# help_option, version_option and friends through option(), so the decorator they
-# return reprs as `option.<locals>.decorator` instead of `help_option.<locals>...` -
-# four "silent behaviour changes" that were one internal refactor.
+BARE_HEX_ID = re.compile(
+    r"(?<![0-9A-Za-z])(?=[0-9a-f]*[a-f])(?=[0-9a-f]*[0-9])[0-9a-f]{9,16}(?![0-9A-Za-z])"
+)
 CLOSURE = re.compile(r"<function [\w.]*<locals>\.[\w.<>]+ at 0x\.\.\.>")
 MAX_ITEMS = 64
 
 
+def path_forms(path):
+    # A path can appear raw, with forward slashes, or repr-escaped with doubled
+    # backslashes. Longest first, so a parent never eats part of a child.
+    forms = set()
+    for p in {path, os.path.abspath(path), os.path.realpath(path)}:
+        if not p or len(p) < 4:
+            continue
+        forms |= {p, p.replace("\\", "/"), p.replace("\\", "\\\\")}
+    return forms
+
+
+PLACES = []
+for place, label in (
+    (target, "<site>"),
+    (os.getcwd(), "<cwd>"),
+    (os.path.expanduser("~"), "<home>"),
+    (tempfile.gettempdir(), "<tmp>"),
+    (sys.prefix, "<python>"),
+    (sys.base_prefix, "<python>"),
+    (sys.exec_prefix, "<python>"),
+):
+    for form in path_forms(place):
+        PLACES.append((form, label))
+PLACES.sort(key=lambda p: -len(p[0]))
+PLACE_RE = [(re.compile(re.escape(form), re.IGNORECASE), label) for form, label in PLACES]
+VERSION_RE = [
+    re.compile(r"(?<![0-9.])" + re.escape(v) + r"(?!\.?[0-9])")
+    for v in sorted(set(payload.get("versions", [])), key=len, reverse=True)
+    if v and v.count(".") >= 1 and len(v) >= 3
+]
+
+
 def scrub(text):
+    for rx, label in PLACE_RE:
+        text = rx.sub(lambda m, label=label: label, text)
+    for rx in VERSION_RE:
+        text = rx.sub("<version>", text)
     text = DECIMAL_ID.sub("@ id", ADDR.sub("0x...", text))
+    text = BARE_HEX_ID.sub("<id>", text)
     return CLOSURE.sub("<function (a closure)>", text)
 
 
 def text_of(obj, hook):
-    # repr() and str() run the package's OWN code, which can raise like any other
-    # call - and this one runs while a result is being written down, outside any
-    # handler that expects to fail.
-    #
-    # click.ClickException.__str__ returns self.message unchanged, so `fail(1)`
-    # produces an exception whose str() raises TypeError. That TypeError was thrown
-    # from inside `except BaseException`, so it escaped the loop, ended the probe,
-    # and click.File.fail was reported as a function the probe could not get past.
-    # It was this line, not the function.
+    # repr() and str() run the package's OWN code and can raise, here, outside any
+    # handler expecting it (click.ClickException.__str__ can return a non-string).
     try:
         return hook(obj)
     except BaseException as exc:
@@ -301,9 +548,7 @@ def describe(exc):
 
 
 def render(value):
-    # A lazy iterator reprs identically whatever it would yield, so it is drained first.
-    # Without this, any function returning a generator compares equal across versions and
-    # a real change in what it produces is invisible.
+    # A lazy iterator reprs identically whatever it would yield, so it is drained.
     if hasattr(value, "__next__") and not isinstance(value, (str, bytes)):
         items = []
         try:
@@ -318,11 +563,6 @@ def render(value):
 
 
 class NeedsInstance(Exception):
-    # The name is a method and no instance could be made to call it on.
-    #
-    # A comment, not a docstring: this module is a triple-quoted template and a
-    # docstring here closes it. The SURFACE template above says the same thing
-    # for the same reason.
     pass
 
 
@@ -333,21 +573,12 @@ ARG_BY_TYPE = {
 
 
 def value_for(parameter):
-    # A plausible argument for one constructor parameter.
-    #
-    # Only used to BUILD AN INSTANCE so a method can be called on it, never to
-    # produce a result that gets compared. If the guess is wrong the constructor
-    # raises and the name is reported as needing an instance, exactly as before -
-    # so this can only turn a refusal into a comparison, never a comparison into
-    # a wrong answer.
+    # A plausible argument for a constructor parameter - only used to BUILD AN
+    # INSTANCE, never compared. A wrong guess raises and the name is reported as
+    # needing an instance, so this can only turn a refusal into a comparison.
     annotation = parameter.annotation
     if annotation is not inspect.Parameter.empty:
-        # The annotation may be a real class or a string (from __future__
-        # annotations). Both are handled by name, because resolving a string
-        # annotation means eval in the package's namespace and that is a larger
-        # risk than guessing wrong.
-        text = getattr(annotation, "__name__", None) or str(annotation)
-        text = text.lower()
+        text = (getattr(annotation, "__name__", None) or str(annotation)).lower()
         for name, value in ARG_BY_TYPE.items():
             if name in text:
                 return value
@@ -355,16 +586,18 @@ def value_for(parameter):
 
 
 def build_instance(owner):
-    # An instance of `owner`, or NeedsInstance if one cannot be made.
+    # (instance, how it was built). The "how" goes into the result, because a method
+    # is only comparable across versions when both instances were built the same way:
+    # pytest's LineMatcher got [] in one version and "x" in the other (its annotation
+    # changed), and every method on it then "changed behaviour".
     #
-    # This used to be a bare `owner()`, so any class whose __init__ took an
-    # argument was reported as unreachable. On click 8.1.6 -> 8.1.7 that was 95 of
-    # 234 stable callables - a larger bucket than the 54 the tool could actually
-    # exercise - and most of them are the ParamType family, whose constructors
-    # take a name or a list of choices.
+    # BaseException, not Exception: pytest refuses direct construction by raising
+    # Failed, which is a BaseException, and that used to escape as a resolve error.
     try:
-        return owner()
-    except Exception:
+        return owner(), owner.__name__ + "()"
+    except KeyboardInterrupt:
+        raise
+    except BaseException:
         pass
     try:
         signature = inspect.signature(owner)
@@ -379,38 +612,37 @@ def build_instance(owner):
         if parameter.kind in (parameter.VAR_POSITIONAL, parameter.VAR_KEYWORD):
             continue
         if parameter.default is not parameter.empty:
-            # It has a default and `owner()` already failed, so something earlier
-            # in the list is what is missing. Stop rather than override a default
-            # the class chose for itself.
             break
         args.append(value_for(parameter))
+    how = owner.__name__ + "(" + ", ".join(repr(a) for a in args) + ")"
     if args:
         try:
-            return owner(*args)
-        except Exception as exc:
-            raise NeedsInstance(
-                owner.__name__ + "(" + ", ".join(repr(a) for a in args) + ") raised "
-                + type(exc).__name__
-            ) from None
+            return owner(*args), how
+        except KeyboardInterrupt:
+            raise
+        except BaseException as exc:
+            raise NeedsInstance(how + " raised " + type(exc).__name__) from None
     raise NeedsInstance(owner.__name__ + "() takes constructor arguments")
 
 
+def needs_self(owner, name, obj):
+    # Is `owner.name` an instance method? Decided from the class __dict__, not from
+    # inspect.isfunction: numpy's Generator.beta is a Cython method, not a function,
+    # so it was called unbound with a generated string as `self` - and that crashed the
+    # interpreter rather than raising.
+    if getattr(obj, "__self__", None) is not None:
+        return False  # already bound: a classmethod, or a C classmethod
+    for klass in getattr(owner, "__mro__", ()):
+        if name in vars(klass):
+            raw = vars(klass)[name]
+            return not isinstance(raw, (staticmethod, classmethod)) and not inspect.isclass(raw)
+    return False
+
+
 def resolve(qualname):
-    # Returns a CALLABLE THAT TAKES NO self.
-    #
-    # `getattr(SomeClass, "method")` hands back the plain function, which still
-    # wants `self` first - while `_params` deliberately excludes `self` from the
-    # count, because a caller writing `obj.method(x)` passes one argument. Those
-    # two facts together meant the generated literal was bound to `self`: the
-    # tool called `Argument.add_to_parser("a", "b")` with "a" as the Argument.
-    #
-    # That is worse than failing. Most such calls raise TypeError and are
-    # counted as unreachable, which is merely noisy - but a method that does not
-    # touch `self` will happily run against a string and return something, and
-    # the two versions then get compared on a call no user could ever make.
-    #
-    # So: build an instance when the class allows it and bind the method to it,
-    # and otherwise say the name needs an instance rather than inventing one.
+    # Returns a callable that takes no `self`: a method is bound to a real instance
+    # when one can be built, and reported as needing one otherwise - never called
+    # with a generated literal standing in for `self`.
     parts = qualname.split(".")
     for cut in range(len(parts) - 1, 0, -1):
         try:
@@ -421,30 +653,11 @@ def resolve(qualname):
         owner = None
         for attr in parts[cut:]:
             owner, obj = obj, getattr(obj, attr)
-
-        if inspect.isclass(owner) and inspect.isfunction(obj):
-            # A plain function on a class is an instance method. staticmethod
-            # and classmethod do not arrive here: getattr already returns them
-            # bound, or as a function with no `self` parameter.
-            first = next(iter(inspect.signature(obj).parameters), None)
-            if first in ("self", "cls"):
-                return getattr(build_instance(owner), parts[-1])
-        return obj
+        if inspect.isclass(owner) and needs_self(owner, parts[-1], obj):
+            instance, how = build_instance(owner)
+            return getattr(instance, parts[-1]), how
+        return obj, None
     raise ImportError(qualname)
-
-
-# Results are written out as they are produced, not only at the end.
-#
-# Every function in the batch runs in ONE interpreter, so anything that stops
-# that interpreter - a hang hitting the timeout, a segfaulting C extension,
-# os._exit - used to discard the results of every function that had already
-# finished. click 8.1.6 -> 8.1.7 has 234 stable callables; the first 160 are
-# probed in about a second, and one function later in the list was enough to
-# report all 234 as unreachable.
-#
-# The journal also names what was in flight when the interpreter died, which is
-# the one thing the parent cannot work out for itself.
-journal = open(sys.argv[3], "a", encoding="utf-8")
 
 
 def record(key, value):
@@ -454,19 +667,16 @@ def record(key, value):
 
 
 results = {}
-for qualname, argsets in payload.items():
+for qualname, argsets in calls.items():
     journal.write(json.dumps({"q": qualname, "start": 1}) + "\n")
     journal.flush()
     rows = []
     try:
-        fn = resolve(qualname)
+        fn, instance = resolve(qualname)
     except NeedsInstance as exc:
-        # Honest unreachability: the name exists and is callable, but only on an
-        # object this tool cannot build. Kept separate from a resolve failure,
-        # which means the name could not be found at all.
         record(qualname, {"needs_instance": text_of(exc, str)[:150]})
         continue
-    except Exception as exc:
+    except BaseException as exc:
         record(qualname, {"error": describe(exc)})
         continue
     for src in argsets:
@@ -475,36 +685,29 @@ for qualname, argsets in payload.items():
         except Exception as exc:
             rows.append(["badargs", type(exc).__name__])
             continue
-        # Two things a called function can do that are not exceptions.
-        #
-        # It can WRITE TO STDOUT. This channel carries the results as a single
-        # __BR_JSON__ line, so anything a function prints corrupts it. click's
-        # entry points print their usage text.
-        #
-        # It can EXIT. SystemExit inherits from BaseException, not Exception,
-        # so `except Exception` does not catch it and the interpreter simply
-        # stops - mid-run, with no output and a zero exit code. One click
-        # command calling sys.exit() ended the whole probe, which is why the
-        # published click comparison reported 0 functions exercised and 400
-        # unreachable. They were reachable. The first one to exit took the
-        # process with it and everything after it was never attempted.
+        # Output is captured (it would corrupt the result line) and SystemExit is
+        # caught (it inherits BaseException, and one click command calling sys.exit()
+        # used to end the whole probe).
         buf_out, buf_err = io.StringIO(), io.StringIO()
         try:
             with contextlib.redirect_stdout(buf_out), contextlib.redirect_stderr(buf_err):
                 value = fn(*args)
             rows.append(["ok", scrub(render(value))])
         except SystemExit as exc:
-            # Recorded, not fatal. A function that exits is a real behaviour and
-            # worth comparing across versions like any other outcome.
-            rows.append(["exit", "SystemExit: " + text_of(exc.code, str)[:80]])
+            rows.append(["exit", "SystemExit: " + scrub(text_of(exc.code, str)[:80])])
         except KeyboardInterrupt:
             raise
         except BaseException as exc:
             rows.append(["raise", describe(exc)])
-    record(qualname, {"rows": rows})
+    record(qualname, {"rows": rows, "instance": instance} if instance else {"rows": rows})
 
 journal.close()
-print("__BR_JSON__" + json.dumps(results))
+sys.stdout.write("__BR_JSON__" + json.dumps(results) + "\n")
+sys.stdout.flush()
+# os._exit, not a normal return: a probed function may have started a non-daemon
+# thread or registered an atexit hook, and either can keep this interpreter alive
+# past the end of the batch.
+sys._br_real_exit(0)
 """
 
 
@@ -517,15 +720,14 @@ class WrongVersionImported(RuntimeError):
     """
 
 
+Progress = Callable[[int, int], None]
+
+
 def _recover(journal: Path) -> dict | None:
     """Whatever the probe managed to finish before it died, read back off disk.
 
-    Returns None if it never got far enough to produce anything, so that a probe
-    which failed immediately is still distinguishable from one that ran.
-
-    The last line may be a half-written record - the interpreter can be killed
-    mid-write - so an unparsable line is skipped rather than treated as the end
-    of the file.
+    Returns None if it never got far enough to produce anything. The last line may be
+    half-written, so an unparsable line is skipped rather than treated as the end.
     """
     if not journal.exists():
         return None
@@ -540,28 +742,30 @@ def _recover(journal: Path) -> dict | None:
             done[record["q"]] = record["r"]
         elif record.get("start"):
             started = record["q"]
-    # The name that was in flight when it died. Recorded even when nothing at all
-    # finished - the FIRST function in the batch hanging is exactly the case where
-    # the caller most needs to be told which one, and it is the case with no
-    # results to carry the news.
     if started is not None and started not in done:
         done["__incomplete__"] = {"died_on": started, "completed": len(done)}
     return done or None
 
 
-def _wait(proc: subprocess.Popen, timeout: float, journal: Path | None) -> bool:
+def _finished(journal: Path) -> int:
+    try:
+        return journal.read_bytes().count(b'"r": ')
+    except OSError:
+        return 0
+
+
+def _wait(
+    proc: subprocess.Popen,
+    timeout: float,
+    journal: Path | None,
+    progress: Callable[[int], None] | None = None,
+) -> bool:
     """Wait for the child; kill it and return True if it overran.
 
     Without a journal, `timeout` bounds the whole run. With one it bounds each
-    FUNCTION: the journal grows every time a function starts or finishes, so a
-    journal that has not grown for `timeout` seconds means one call is stuck.
-
-    It used to bound the whole batch. The default was ten minutes so that a large
-    package could finish, which meant each function that never returns - click has
-    four - cost ten minutes per version: click 7.1.2 -> 8.1.7 took over an hour, most
-    of it waiting on `click.getchar`.
+    FUNCTION: a journal that has not grown for `timeout` seconds means one call is stuck.
     """
-    start = last_change = time.monotonic()
+    start = last_change = last_report = time.monotonic()
     last_size = -1
     while True:
         try:
@@ -578,6 +782,9 @@ def _wait(proc: subprocess.Popen, timeout: float, journal: Path | None) -> bool:
             if size != last_size:
                 last_size, last_change = size, now
             overran = now - last_change > timeout
+            if progress is not None and now - last_report >= 2:
+                last_report = now
+                progress(_finished(journal))
         else:
             overran = now - start > timeout
         if overran:
@@ -587,34 +794,69 @@ def _wait(proc: subprocess.Popen, timeout: float, journal: Path | None) -> bool:
             return True
 
 
-def _run(script: str, args: list[str], timeout: float, journal: Path | None = None) -> dict | None:
+def sandbox_env(root: Path) -> dict[str, str]:
+    """The child's environment: every place a package might write or look for a user,
+    redirected into the probe's own temp directory.
+
+    HOME/USERPROFILE/APPDATA are where configuration and caches get written; EDITOR,
+    VISUAL, BROWSER and PAGER are what click.edit, click.launch and friends execute. A
+    fixed PYTHONHASHSEED makes set and dict orderings identical across the two versions
+    and across repeat runs, so an ordering is never mistaken for a behaviour.
+    """
+    home, tmp = root / "home", root / "tmp"
+    for d in (home, tmp, home / "AppData" / "Roaming", home / "AppData" / "Local"):
+        d.mkdir(parents=True, exist_ok=True)
+    env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "PYTHONSTARTUP")}
+    env.update(
+        HOME=str(home),
+        USERPROFILE=str(home),
+        APPDATA=str(home / "AppData" / "Roaming"),
+        LOCALAPPDATA=str(home / "AppData" / "Local"),
+        XDG_CONFIG_HOME=str(home / ".config"),
+        XDG_CACHE_HOME=str(home / ".cache"),
+        XDG_DATA_HOME=str(home / ".local" / "share"),
+        TMP=str(tmp),
+        TEMP=str(tmp),
+        TMPDIR=str(tmp),
+        EDITOR="blast-radius-no-editor",
+        VISUAL="blast-radius-no-editor",
+        BROWSER="blast-radius-no-browser",
+        PAGER="blast-radius-no-pager",
+        PYTHONHASHSEED="0",
+        PYTHONDONTWRITEBYTECODE="1",
+        PYTHONIOENCODING="utf-8",
+        BR_SANDBOX=str(root),
+    )
+    return env
+
+
+def _run(
+    script: str,
+    args: list[str],
+    timeout: float,
+    journal: Path | None = None,
+    workdir: Path | None = None,
+    sandbox: bool = True,
+    progress: Callable[[int], None] | None = None,
+) -> dict | None:
     import tempfile
 
-    # ignore_cleanup_errors, because the probe runs arbitrary code with this
-    # directory as its cwd. On Windows a directory cannot be removed while any
-    # process holds it, and a probed function is free to spawn one that outlives
-    # the timeout - click.launch opens a browser, click.edit an editor. Without
-    # this, cleanup raises PermissionError [WinError 32] and takes down a run that
-    # had already finished its work. Leaving a temp directory behind is a smaller
-    # cost than losing the measurement.
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
-        path = Path(tmp) / "probe.py"
-        # newline="" or Windows rewrites the newlines and breaks any continuation.
-        path.write_text(script, encoding="utf-8", newline="")
-        # Output goes to FILES, not pipes, and this is the difference between a
-        # timeout and a hang.
-        #
-        # `capture_output=True` gives the child a pipe. A probed function is free to
-        # spawn a process that inherits it - click.edit opens an editor, click.launch
-        # a browser - and killing the child at the timeout does not close a pipe the
-        # grandchild still holds. subprocess.run then waits in communicate() for an
-        # EOF that will not come, so `timeout=60` becomes no timeout at all.
-        #
-        # Observed: a click 7.1.2 -> 8.1.7 comparison bounded to about twelve minutes
-        # sat for fifty-six, with Notepad.exe alive in the process tree holding the
-        # pipe. A file has no reader to block on: the child is killed, and whatever it
-        # had written is still there to read.
-        out_path, err_path = Path(tmp) / "out.txt", Path(tmp) / "err.txt"
+    # ignore_cleanup_errors: a probed function may leave a process holding the
+    # directory, and on Windows that makes it undeletable. Leaving a temp directory
+    # behind is a smaller cost than losing the measurement.
+    with contextlib.ExitStack() as stack:
+        if workdir is None:
+            workdir = Path(
+                stack.enter_context(tempfile.TemporaryDirectory(ignore_cleanup_errors=True))
+            )
+        path = workdir / "probe.py"
+        prologue = SANDBOX + COMMON
+        if not sandbox:
+            prologue += "\n_br_sandbox = lambda: None\n_sys._br_real_exit = _os._exit\n"
+        path.write_text(prologue + script, encoding="utf-8", newline="")
+        # Output goes to FILES, not pipes: a grandchild that inherits a pipe keeps it
+        # open after the child is killed, and the wait for EOF never ends.
+        out_path, err_path = workdir / "out.txt", workdir / "err.txt"
         timed_out = False
         try:
             with open(out_path, "wb") as out_fh, open(err_path, "wb") as err_fh:
@@ -622,101 +864,121 @@ def _run(script: str, args: list[str], timeout: float, journal: Path | None = No
                     [sys.executable, str(path), *args],
                     stdout=out_fh,
                     stderr=err_fh,
-                    # No stdin. A function that reads from it - click.confirm, and
-                    # every other prompt helper - otherwise blocks until the timeout
-                    # and takes the batch with it. click.confirm is the function that
-                    # was stopping the click run at 141 of 234. With the descriptor
-                    # closed it gets EOF immediately and raises, which is a real
-                    # behaviour worth comparing like any other.
+                    # No stdin: a prompt gets EOF at once instead of blocking.
                     stdin=subprocess.DEVNULL,
-                    cwd=tmp,
+                    cwd=workdir,
+                    env=sandbox_env(workdir) if sandbox else None,
                 )
-                timed_out = _wait(proc, timeout, journal)
+                timed_out = _wait(proc, timeout, journal, progress)
         except OSError:
             return _recover(journal) if journal else None
-        # Decoded here with errors="replace" rather than by text=True, which uses the
-        # locale codec - cp1252 on Windows. A probed function whose output carries one
-        # non-cp1252 byte would otherwise raise UnicodeDecodeError and decide whether
-        # the whole run reports anything.
         try:
             out = out_path.read_text(encoding="utf-8", errors="replace")
         except OSError:
             out = ""
         if timed_out and "__BR_JSON__" not in out:
-            return _recover(journal) if journal else None
+            recovered = _recover(journal) if journal else None
+            if recovered and "__incomplete__" in recovered:
+                recovered["__incomplete__"]["timed_out"] = True
+            return recovered
     if "__BR_WRONGDIR__" in out:
-        # Loud on purpose. Silently returning None here would look like "this version has
-        # no public API", and the diff would then report every symbol as removed.
-        detail = out.split("__BR_WRONGDIR__", 1)[1].strip().splitlines()[0]
+        # Loud on purpose: returning None here would read as "no public API".
+        lines = out.split("__BR_WRONGDIR__", 1)[1].strip().splitlines()
+        detail = lines[0] if lines else "(no location reported)"
         raise WrongVersionImported(f"the import did not come from the target directory: {detail}")
     marker = out.find("__BR_JSON__")
     if marker < 0:
-        # No summary line: the interpreter did not reach the end. Anything it
-        # finished first is still on disk and still worth comparing.
         return _recover(journal) if journal else None
     try:
-        return json.loads(out[marker + len("__BR_JSON__") :])
-    except json.JSONDecodeError:
+        return json.loads(out[marker + len("__BR_JSON__") :].splitlines()[0])
+    except (json.JSONDecodeError, IndexError):
         return _recover(journal) if journal else None
 
 
-def surface(target_dir: Path, package: str, timeout: float = 180.0) -> dict | None:
-    """Every public callable in an installed version, with its signature."""
-    return _run(SURFACE, [str(target_dir.resolve()), package], timeout)
+def surface(
+    target_dir: Path,
+    package: str | list[str],
+    timeout: float = 300.0,
+    owned: list[str] | None = None,
+) -> dict | None:
+    """Every public callable reachable from `package` (one import name or several).
 
-
-# Each restart costs one full timeout, so this is a budget, not a target. click
-# 8.1.x needs exactly three - getchar, launch and termui.hidden_prompt_func, all
-# of which read the console directly rather than stdin, so closing the descriptor
-# does not reach them. A cap of three would clear click with nothing to spare,
-# and the failure mode of being one short is the tail of the package silently
-# counted unreachable.
-MAX_RESTARTS = 5
-
-
-def _attempt(target_dir: Path, payload: dict[str, list[str]], timeout: float) -> dict | None:
+    `owned` is every module prefix the distribution installs, private ones included
+    (pytest installs `_pytest`); a symbol defined under any of them counts as the
+    package's own. It defaults to the import names themselves.
+    """
     import tempfile
 
-    # ignore_cleanup_errors, because the probe runs arbitrary code with this
-    # directory as its cwd. On Windows a directory cannot be removed while any
-    # process holds it, and a probed function is free to spawn one that outlives
-    # the timeout - click.launch opens a browser, click.edit an editor. Without
-    # this, cleanup raises PermissionError [WinError 32] and takes down a run that
-    # had already finished its work. Leaving a temp directory behind is a smaller
-    # cost than losing the measurement.
+    modules = [package] if isinstance(package, str) else list(package)
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+        config = Path(tmp) / "config.json"
+        config.write_text(
+            json.dumps({"modules": modules, "owned": sorted(set(owned or []) | set(modules))}),
+            encoding="utf-8",
+        )
+        return _run(SURFACE, [str(Path(target_dir).resolve()), str(config)], timeout)
+
+
+def resolve_names(target_dir: Path, names: list[str], timeout: float = 300.0) -> dict:
+    """{name: record} for each of `names` that still resolves in this version."""
+    import tempfile
+
+    if not names:
+        return {}
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+        blob = Path(tmp) / "names.json"
+        blob.write_text(json.dumps(names), encoding="utf-8")
+        out = _run(RESOLVE, [str(Path(target_dir).resolve()), str(blob)], timeout)
+    return out or {}
+
+
+# Restarts after a HANG each cost one full timeout, so they are capped hard. Restarts
+# after a CRASH cost only an interpreter start (numpy 2.2 has half a dozen C methods that
+# take the process down on a bad argument), and capping those at the same five left 242
+# numpy functions "not attempted".
+MAX_RESTARTS = 5
+MAX_CRASHES = 100
+
+
+def _attempt(
+    target_dir: Path,
+    payload: dict,
+    timeout: float,
+    sandbox: bool,
+    progress: Callable[[int], None] | None,
+) -> dict | None:
+    import tempfile
+
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         blob = Path(tmp) / "payload.json"
         blob.write_text(json.dumps(payload), encoding="utf-8")
         journal = Path(tmp) / "journal.jsonl"
         return _run(
             CALL,
-            [str(target_dir.resolve()), str(blob), str(journal)],
+            [str(Path(target_dir).resolve()), str(blob), str(journal)],
             timeout,
             journal=journal,
+            workdir=Path(tmp),
+            sandbox=sandbox,
+            progress=progress,
         )
 
 
-def call(target_dir: Path, payload: dict[str, list[str]], timeout: float = 60.0) -> dict | None:
+def call(
+    target_dir: Path,
+    payload: dict[str, list[str]],
+    timeout: float = 20.0,
+    versions: list[str] | None = None,
+    sandbox: bool = True,
+    progress: Progress | None = None,
+) -> dict | None:
     """Call each qualname on each argument set, and return what came back as strings.
 
     `timeout` is per function: one that runs longer is abandoned and the batch
-    restarts after it.
-
-    The payload goes through a temporary file rather than the command line,
-    which has a length limit the payload routinely exceeded. See the comment at
-    the top of CALL.
-
-    One function that never returns should cost one function. It used to cost
-    the whole batch: every name shares an interpreter, so a `time.sleep` in a
-    default argument, a C extension waiting on a socket, or anything else that
-    outlasts the timeout took the results of the functions before it and
-    prevented the ones after it from being attempted at all.
-
-    The journal recovers the first group. This loop recovers the second: the
-    name the probe died on is recorded as unreachable - which is the truth about
-    it, from this tool's point of view - and a fresh interpreter picks up at the
-    next name. Restarts are capped, because each one costs a full timeout and a
-    package that hangs everywhere should be reported, not waited on.
+    restarts after it, up to MAX_RESTARTS times; a function that crashes the
+    interpreter is skipped the same way, up to MAX_CRASHES times. `versions` are
+    strings to normalise out of every result (the package's own version numbers).
+    `progress(done, total)` is called every couple of seconds while the batch runs.
     """
     if not payload:
         return {}
@@ -724,8 +986,18 @@ def call(target_dir: Path, payload: dict[str, list[str]], timeout: float = 60.0)
     results: dict = {}
     stopped_on: list[str] = []
     remaining = list(payload)
-    for restart in range(MAX_RESTARTS + 1):
-        out = _attempt(target_dir, {q: payload[q] for q in remaining}, timeout)
+    total = len(payload)
+    hangs = crashes = 0
+    while True:
+        base = len(results)
+        report = (lambda n, base=base: progress(min(base + n, total), total)) if progress else None
+        out = _attempt(
+            target_dir,
+            {"calls": {q: payload[q] for q in remaining}, "versions": versions or []},
+            timeout,
+            sandbox,
+            report,
+        )
         if out is None:
             break
         incomplete = out.pop("__incomplete__", None)
@@ -735,23 +1007,24 @@ def call(target_dir: Path, payload: dict[str, list[str]], timeout: float = 60.0)
             break
         died_on = incomplete["died_on"]
         if died_on not in remaining:
-            # The journal named something this attempt was not asked for, so there
-            # is no next name to resume from. Stopping is the only safe move:
-            # guessing one risks re-running the name that just killed the probe,
-            # and looping on it until the restart cap with nothing to show.
             break
         stopped_on.append(died_on)
-        results[died_on] = {"error": "no result: the probe stopped here and was restarted"}
+        if incomplete.get("timed_out"):
+            hangs += 1
+            results[died_on] = {"error": "no result: it did not return, and was skipped"}
+        else:
+            crashes += 1
+            results[died_on] = {"error": "no result: the interpreter died in it (a crash)"}
         remaining = remaining[remaining.index(died_on) + 1 :]
-        if not remaining or restart == MAX_RESTARTS:
+        if not remaining or hangs > MAX_RESTARTS or crashes > MAX_CRASHES:
             break
 
-    # Anything still unattempted gets an entry of its own rather than being left
-    # out. A name missing from the results is counted as unreachable either way,
-    # so leaving it out would quietly turn "this tool gave up" into "this package
-    # cannot be exercised" - the one distinction this whole path exists to keep.
+    # Anything unattempted gets an entry of its own, so "this tool gave up" never reads
+    # as "this package cannot be exercised".
     for name in remaining:
         results[name] = {"error": "not attempted: the probe was restarted too many times"}
+    if progress:
+        progress(total, total)
     if stopped_on:
         results["__stopped_on__"] = stopped_on
     return results or None

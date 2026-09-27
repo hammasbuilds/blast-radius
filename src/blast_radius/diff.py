@@ -17,9 +17,11 @@ import ast
 import os
 import re
 import tokenize
+from collections.abc import Callable
 from dataclasses import dataclass
 from dataclasses import field as dc_field
 from pathlib import Path
+from typing import NamedTuple
 
 from blast_radius.probe import call
 from blast_radius.types import BREAKING, Change, Kind
@@ -209,94 +211,232 @@ def argument_sets(signature: str, cap: int = 12) -> list[str]:
     return out
 
 
-def _parse_shape(shape: str) -> list[tuple[str, str, bool]]:
-    """`name:KIND[:d],...` (the probe's call shape) -> [(name, kind, has_default)]."""
+class Param(NamedTuple):
+    name: str
+    kind: str
+    default: bool
+
+
+def _parse_shape(shape: str) -> list[Param]:
+    """`name:KIND[:d],...` (the probe's call shape) -> [Param]."""
     out = []
     for part in shape.split(","):
         if not part:
             continue
         bits = part.split(":")
-        out.append((bits[0], bits[1] if len(bits) > 1 else "", len(bits) > 2 and bits[2] == "d"))
+        out.append(
+            Param(bits[0], bits[1] if len(bits) > 1 else "", len(bits) > 2 and bits[2] == "d")
+        )
     return out
 
 
 _POSITIONAL = ("POSITIONAL_ONLY", "POSITIONAL_OR_KEYWORD")
 _KINDS = frozenset({*_POSITIONAL, "VAR_POSITIONAL", "KEYWORD_ONLY", "VAR_KEYWORD"})
+_NAMED = ("POSITIONAL_OR_KEYWORD", "KEYWORD_ONLY")
+_VAR = ("VAR_POSITIONAL", "VAR_KEYWORD")
+_RECEIVERS = ("self", "cls")
 
 
-def compatible(old_shape: str, new_shape: str) -> bool:
-    """Does every call that binds against the old shape bind the same way against the new?
+def compatible(old_shape: str | None, new_shape: str | None) -> bool:
+    """Is every call that is valid against the old shape still valid against the new one,
+    binding each argument to the same parameter?
 
-    True for the changes semver calls additive: a new parameter with a default at the end
-    or keyword-only, a positional-only parameter that may now also be passed by name, a
-    required parameter that gained a default, a new `*args` or `**kwargs`. These used to
-    be reported as RESHAPED under "a type checker would catch these", which is wrong -
-    there is nothing to catch - and was the largest single source of noise in the report.
+    Shapes are the probe's `name:KIND[:d],...` strings. An empty string is a function
+    that takes no arguments; None is a signature that could not be read, and is never
+    called compatible - "could not read it" must not read as "safe". (`api_changes`
+    tells unknown apart before it gets here, and does not report it as a change.)
 
-    False for anything a caller could trip on: a parameter removed or renamed, one
-    inserted before an existing positional one, a default taken away, a keyword-only
-    parameter with no default, positional-or-keyword turned keyword-only. Also False when
-    either shape is unknown, because "could not read it" must never read as "safe".
+    Each rule is a way an existing call could stop working:
+
+    * Positional capacity: the new function takes at least as many positional arguments
+      as the old one, or has a `*args` that absorbs them. If the old one had `*args`,
+      the new one keeps it (it may add optional positional slots in front of it: the
+      call still binds, though a value that used to reach `*args` now has a name).
+    * An old positional slot that callers may also pass BY NAME keeps its name and stays
+      passable by name. A slot absorbed by a new `*args` is fine while `**kwargs` still
+      accepts the name: `attr.evolve(inst, **c)` -> `(*args, **c)` breaks no call.
+    * Every old keyword-only name is still accepted by keyword.
+    * Nothing becomes required that an old call may have left out: no default taken
+      away, no new required positional, no new required keyword-only parameter.
+    * An old `**kwargs` stays.
     """
+    if old_shape is None or new_shape is None:
+        return False
     if old_shape == new_shape:
         return True
-    if not old_shape or not new_shape:
-        return False
     old, new = _parse_shape(old_shape), _parse_shape(new_shape)
-    if any(kind not in _KINDS for _, kind, _ in old + new):
-        return False  # not a call shape (an old surface carrying signature text only)
-    new_by_name = {name: (kind, d) for name, kind, d in new}
-    old_pos = [p for p in old if p[1] in _POSITIONAL]
-    new_pos = [p for p in new if p[1] in _POSITIONAL]
-    old_kinds = {kind for _, kind, _ in old}
-    new_kinds = {kind for _, kind, _ in new}
+    if any(p.kind not in _KINDS for p in old + new):
+        return False  # not a call shape
+    # A method's receiver is bound by the attribute lookup, never passed by a caller, so
+    # its name and kind are not API. bs4 4.13 dropped an `encode(self, encoding)`
+    # override and inherited str.encode's `(self, /, encoding='utf-8', ...)`: reading the
+    # positional-only `self` as a change reported a reshape nobody can trip on.
+    if old and new and old[0].name in _RECEIVERS and new[0].name in _RECEIVERS:
+        old, new = old[1:], new[1:]
+    old_pos = [p for p in old if p.kind in _POSITIONAL]
+    new_pos = [p for p in new if p.kind in _POSITIONAL]
+    old_var = any(p.kind == "VAR_POSITIONAL" for p in old)
+    new_var = any(p.kind == "VAR_POSITIONAL" for p in new)
+    old_kw = any(p.kind == "VAR_KEYWORD" for p in old)
+    new_kw = any(p.kind == "VAR_KEYWORD" for p in new)
+    old_by_name = {p.name: p for p in old if p.kind not in _VAR}
+    new_by_name = {p.name: p for p in new if p.kind not in _VAR}
 
-    # Positional parameters must line up one for one, at the same index.
-    if len(new_pos) < len(old_pos):
+    # Positional capacity. New optional slots in front of a kept *args are allowed:
+    # every old call still binds (pytest 9's raises(exc, *args) -> raises(exc,
+    # func=None, *args) is exactly this), which is the definition used throughout.
+    if old_var and not new_var:
         return False
-    for (oname, okind, odef), (nname, nkind, ndef) in zip(old_pos, new_pos, strict=False):
-        if odef and not ndef:
-            return False
-        if okind == "POSITIONAL_OR_KEYWORD" and (nkind != okind or nname != oname):
-            return False  # somebody may be passing it by name
-    # An extra positional slot swallows what `*args` used to receive.
-    if "VAR_POSITIONAL" in old_kinds and len(new_pos) != len(old_pos):
+    if len(new_pos) < len(old_pos) and not new_var:
         return False
-    for _, _, ndef in new_pos[len(old_pos) :]:
-        if not ndef:
-            return False
 
-    # Keyword-only parameters must still be accepted by name, and keep their default.
-    for oname, okind, odef in old:
-        if okind != "KEYWORD_ONLY":
+    # Each old positional slot.
+    for i, o in enumerate(old_pos):
+        if i < len(new_pos):
+            n = new_pos[i]
+            if o.kind == "POSITIONAL_OR_KEYWORD" and (n.name != o.name or n.kind != o.kind):
+                return False  # renamed, shifted, or made positional-only
+            if o.default and not n.default:
+                return False  # a caller leaving it out now fails
             continue
-        got = new_by_name.get(oname)
-        if got is None:
-            if "VAR_KEYWORD" in new_kinds:
-                continue  # still accepted, by **kwargs
+        # Absorbed by the new *args. A positional call still binds; a keyword call needs
+        # the name accepted, and not by a separate keyword-only parameter - positional
+        # callers would leave that parameter unset.
+        if o.kind == "POSITIONAL_OR_KEYWORD" and (o.name in new_by_name or not new_kw):
             return False
-        nkind, ndef = got
-        if nkind not in ("KEYWORD_ONLY", "POSITIONAL_OR_KEYWORD") or (odef and not ndef):
+
+    # New positional slots past the old ones must be optional - unless every old call
+    # already passed that name by keyword, because it was keyword-only and required.
+    for n in new_pos[len(old_pos) :]:
+        if n.default:
+            continue
+        o = old_by_name.get(n.name)
+        if not (o and o.kind == "KEYWORD_ONLY" and not o.default and n.kind in _NAMED):
             return False
-    old_names = {name for name, _, _ in old}
-    for nname, nkind, ndef in new:
-        if nkind == "KEYWORD_ONLY" and nname not in old_names and not ndef:
-            return False  # a new required keyword: every existing call now fails
 
-    for var in ("VAR_POSITIONAL", "VAR_KEYWORD"):
-        if var in old_kinds and var not in new_kinds:
+    # Old keyword-only parameters are still accepted by name.
+    for o in old:
+        if o.kind != "KEYWORD_ONLY":
+            continue
+        n = new_by_name.get(o.name)
+        if n is None:
+            if not new_kw:
+                return False
+            continue
+        if n.kind not in _NAMED or (o.default and not n.default):
             return False
-    return True
+        if n.kind == "POSITIONAL_OR_KEYWORD" and new_pos.index(n) < len(old_pos):
+            return False  # old positional callers now fill it AND pass it by name
+
+    # A new required keyword-only parameter must be one every old call already passed.
+    for n in new:
+        if n.kind == "KEYWORD_ONLY" and not n.default:
+            o = old_by_name.get(n.name)
+            if o is None or o.default or o.kind != "KEYWORD_ONLY":
+                return False
+
+    return not (old_kw and not new_kw)
 
 
-def _shape(info: dict) -> str:
-    return info.get("shape", info.get("signature", ""))
+def _shape(info: dict) -> str | None:
+    """The call shape, or None when the probe could not read a signature."""
+    if "shape" in info:
+        return info["shape"]
+    return info.get("signature") or None
 
 
-def api_changes(old: dict, new: dict) -> list[Change]:
-    """GONE, RESHAPED, WIDENED and ADDED - everything readable without running anything."""
-    old_syms = {k: v for k, v in old.items() if k != "__meta__"}
-    new_syms = {k: v for k, v in new.items() if k != "__meta__"}
+def _informative(shape: str | None) -> str | None:
+    """The shape, or None when it says nothing about what a call may pass.
+
+    A bare `(*args, **kwargs)` is a forwarding wrapper (a decorator, a `__new__`, a
+    metaclass), not a contract: the real constraints live wherever it forwards to. bs4
+    4.12's HTMLFormatter read as `(*args, **kwargs)`, and its real, compatible
+    constructor in 4.13 was reported as a reshape because it no longer accepts "anything".
+    """
+    if shape is None:
+        return None
+    params = [p for p in _parse_shape(shape) if p.name not in _RECEIVERS]
+    if [p.kind for p in params] == ["VAR_POSITIONAL", "VAR_KEYWORD"]:
+        return None
+    return shape
+
+
+def _index(syms: dict) -> dict[str, dict]:
+    """Every name and alias -> its record, canonical names first."""
+    out: dict[str, dict] = dict(syms)
+    for info in syms.values():
+        for alias in info.get("aliases", []):
+            out.setdefault(alias, info)
+    return out
+
+
+def _symbols(surface: dict) -> dict[str, dict]:
+    return {k: v for k, v in surface.items() if k != "__meta__"}
+
+
+def _counterpart(name: str, info: dict, index: dict[str, dict]) -> dict | None:
+    """The record for `name` in the other version: listed there under that exact path,
+    as its public name or as an alias.
+
+    Only `name` itself counts, never the old record's other aliases. urllib3 1.26's
+    `urllib3.request.RequestMethods` was also importable as
+    `urllib3.poolmanager.RequestMethods`; in 2.x the second path survives and the first
+    does not, and matching on any alias reported the removed import as still there.
+    """
+    return index.get(name)
+
+
+def gone_candidates(old: dict, new: dict) -> list[str]:
+    """Old names the new surface does not list, as a public name or an alias.
+
+    Candidates, not verdicts: a name is only reported gone after the new version has
+    also failed to resolve it at runtime (see probe.resolve_names).
+    """
+    new_index = _index(_symbols(new))
+    return [
+        name
+        for name, info in sorted(_symbols(old).items())
+        if _counterpart(name, info, new_index) is None
+    ]
+
+
+def unknown_signatures(old: dict, new: dict, resolved: dict | None = None) -> list[str]:
+    """Names present in both versions whose signature is readable in only one.
+
+    numpy 2.5 made dozens of C functions introspectable, and "(unknown) -> (a, b)" was
+    reported as 84 reshaped functions. Nothing a caller does changed; the tool can now
+    read what it could not before. An old bare `(*args, **kwargs)` counts as unreadable
+    too (see `_informative`). Counted, never reported as a change.
+    """
+    new_index = _index(_symbols(new))
+    resolved = resolved or {}
+    out = []
+    for name, info in sorted(_symbols(old).items()):
+        if info.get("kind") not in ("function", "class"):
+            continue
+        other = _counterpart(name, info, new_index) or resolved.get(name)
+        if other is None or other.get("kind") not in ("function", "class"):
+            continue
+        if _shape(info) == _shape(other):
+            continue
+        if _informative(_shape(info)) is None or _shape(other) is None:
+            out.append(name)
+    return out
+
+
+def api_changes(old: dict, new: dict, resolved: dict | None = None) -> list[Change]:
+    """GONE, RESHAPED, WIDENED and ADDED - everything readable without running anything.
+
+    An old name is found in the new version if the new surface lists that exact path,
+    as a public name or as an alias - so a method that moved to a base class, and is
+    now an alias of `Base.method`, is not "gone". `resolved` holds old names the new surface walk
+    did not list but that still resolve in the new version (pydantic 2 serves
+    `pydantic.json.pydantic_encoder` from a module `__getattr__`): an import of them
+    still works, so they are not gone either.
+    """
+    old_syms, new_syms = _symbols(old), _symbols(new)
+    new_index, old_index = _index(new_syms), _index(old_syms)
+    resolved = resolved or {}
     out: list[Change] = []
 
     def aliases(name: str, *infos: dict) -> list[str]:
@@ -304,7 +444,8 @@ def api_changes(old: dict, new: dict) -> list[Change]:
         return sorted(seen - {name})
 
     for name, info in sorted(old_syms.items()):
-        if name not in new_syms:
+        other = _counterpart(name, info, new_index) or resolved.get(name)
+        if other is None:
             out.append(
                 Change(
                     Kind.GONE,
@@ -314,33 +455,53 @@ def api_changes(old: dict, new: dict) -> list[Change]:
                 )
             )
             continue
-        other = new_syms[name]
-        if _shape(info) == _shape(other):
+        callable_kinds = ("function", "class")
+        # pytest 9's `pytest.fail` and friends are callable objects, not functions:
+        # still called exactly as before, so only a NON-callable replacement counts.
+        still_callable = other.get("kind") in callable_kinds or other.get("callable")
+        if info.get("kind") in callable_kinds and not still_callable:
+            now = other.get("kind", "different object")
+            out.append(
+                Change(
+                    Kind.RESHAPED,
+                    name,
+                    f"was a {info['kind']}, is now a {now}",
+                    aliases=aliases(name, info, other),
+                    before=info["kind"],
+                    after=now,
+                )
+            )
             continue
-        kind = Kind.WIDENED if compatible(_shape(info), _shape(other)) else Kind.RESHAPED
+        old_shape, new_shape = _shape(info), _shape(other)
+        if old_shape == new_shape:
+            continue
+        # Only the OLD side can be uninformative: a new `(*args, **kwargs)` accepts every
+        # call, and compatible() says so.
+        old_shape = _informative(old_shape)
+        if old_shape is None or new_shape is None:
+            continue  # unchanged, or not comparable (counted by unknown_signatures)
+        kind = Kind.WIDENED if compatible(old_shape, new_shape) else Kind.RESHAPED
+        before, after = info.get("signature") or "()", other.get("signature") or "()"
         out.append(
             Change(
                 kind,
                 name,
-                f"{info['signature'] or '(unknown)'} -> {other['signature'] or '(unknown)'}",
+                f"{before} -> {after}",
                 aliases=aliases(name, info, other),
-                before=info["signature"] or "(unknown)",
-                after=other["signature"] or "(unknown)",
+                before=before,
+                after=after,
             )
         )
-    for name in sorted(set(new_syms) - set(old_syms)):
-        out.append(
-            Change(
-                Kind.ADDED,
-                name,
-                f"new {new_syms[name]['kind']}",
-                aliases=aliases(name, new_syms[name]),
-            )
-        )
+    for name, info in sorted(new_syms.items()):
+        if _counterpart(name, info, old_index) is not None:
+            continue
+        out.append(Change(Kind.ADDED, name, f"new {info['kind']}", aliases=aliases(name, info)))
     return out
 
 
-def stable_callables(old: dict, new: dict, limit: int | None = None) -> dict[str, str]:
+def stable_callables(
+    old: dict, new: dict, limit: int | None = None, resolved: dict | None = None
+) -> dict[str, str]:
     """Functions present in both versions that every old call still binds against.
 
     These are the only ones worth executing. A function whose shape changed incompatibly
@@ -348,20 +509,68 @@ def stable_callables(old: dict, new: dict, limit: int | None = None) -> dict[str
     shape. A WIDENED one is run on calls built from the OLD signature, which bind
     identically in both - so any difference is behaviour, not shape.
     """
+    new_index = _index(_symbols(new))
+    resolved = resolved or {}
     out: dict[str, str] = {}
-    for name, info in sorted(old.items()):
-        if name == "__meta__" or info["kind"] != "function":
+    for name, info in sorted(_symbols(old).items()):
+        if info["kind"] != "function":
             continue
-        other = new.get(name)
-        # Same CALL SHAPE, not same signature string. A function that gained type hints
-        # and nothing else is still callable exactly as before, and is precisely the kind
-        # whose behaviour is worth comparing.
+        other = _counterpart(name, info, new_index) or resolved.get(name)
         if not other or not compatible(_shape(info), _shape(other)):
             continue
         out[name] = info["signature"]
         if limit and len(out) >= limit:
             break
     return out
+
+
+# Words that mark a function as one that DOES something to the machine rather than
+# computing an answer. Matched against the words of the function's own name (split on
+# underscores and camelCase), not substrings: `open` catches `open_file` and `urlopen`
+# but not `opener`. Deliberately broad - a function skipped here costs one comparison;
+# a function run here cost one user four Explorer windows (click.launch) and a Notepad
+# left open (click.edit).
+_UNSAFE_WORDS = frozenset(
+    {
+        "launch", "open", "urlopen", "startfile", "edit", "editor", "system", "exec",
+        "execute", "spawn", "popen", "run", "main", "kill", "terminate", "shutdown",
+        "remove", "delete", "unlink", "rmtree", "rmdir", "mkdir", "makedirs", "rename",
+        "move", "chmod", "chown", "chdir", "touch", "truncate", "write", "save", "dump",
+        "send", "sendall", "sendmail", "upload", "download", "fetch", "urlretrieve",
+        "connect", "listen", "serve", "bind", "input", "prompt", "getpass", "getchar",
+        "pause", "confirm", "pager", "sleep", "wait", "exit", "quit", "install",
+        "uninstall", "browser", "clipboard",
+    }
+)  # fmt: skip
+
+# HTTP verbs are unsafe only on something that talks to the network: `requests.get` and
+# `Session.post` are; `Headers.get` and every dict-like `.get` are not.
+_HTTP_WORDS = frozenset(
+    {"get", "post", "put", "patch", "delete", "head", "options", "request", "stream"}
+)
+_NETWORK_OWNER = re.compile(
+    r"session|client|pool|connection|transport|adapter|opener|http|request|api", re.I
+)
+
+
+def _words(name: str) -> list[str]:
+    spaced = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "_", name)
+    return [w for w in spaced.lower().split("_") if w]
+
+
+def unsafe_to_call(qualname: str) -> str | None:
+    """Why this function must not be executed, or None if its name suggests it is safe."""
+    parts = qualname.split(".")
+    leaf = parts[-1]
+    hit = next((w for w in _words(leaf) if w in _UNSAFE_WORDS), None)
+    if hit:
+        return f"its name suggests a side effect ({hit})"
+    if leaf.lower() in _HTTP_WORDS:
+        owner = parts[-2] if len(parts) > 1 else ""
+        # A module-level verb (requests.get, httpx.post) or a verb on a client class.
+        if owner[:1].islower() or _NETWORK_OWNER.search(owner):
+            return f"its name suggests a network request ({leaf})"
+    return None
 
 
 def _row_key(row: list) -> tuple:
@@ -392,34 +601,87 @@ def _wrong_type(a: list, b: list) -> bool:
     return any(row[0] == "raise" and str(row[1]).startswith(_WRONG_TYPE) for row in (a, b))
 
 
+class Behaviour(NamedTuple):
+    """What the behaviour pass found. See `behaviour_changes`."""
+
+    silent: list[Change]
+    compared: int
+    unreachable: int
+    stopped_on: list[str]
+    reasons: dict[str, int]
+    weak: list[Change]
+    nondeterministic: list[str]
+
+
+# How each version re-runs a function that disagreed across versions. A disagreement
+# is only reported on inputs where every re-run of BOTH versions reproduced that
+# version's own first answer exactly.
+#
+# Each re-run is a fresh interpreter, later in time, with a different history of earlier
+# calls, so randomness (jinja2's generate_lorem_ipsum, bs4's diagnose.rword), clocks
+# (urllib3's Timeout.start_connect) and fresh identifiers (choose_boundary) show up as a
+# version disagreeing with itself. The two orders catch state: "twice" calls every input
+# a second time after the first pass and "reversed" calls them backwards, so a result
+# that depends on how many calls came before it - attr.ib's process-global counter read
+# 21 in one version and 26 in the other - changes between runs of the same version.
+RERUNS = ("twice", "reversed")
+
+
+def _rerun_plan(argsets: list[str], how: str) -> list[str]:
+    if how == "twice":
+        return argsets + argsets
+    if how == "reversed":
+        return argsets[::-1]
+    return list(argsets)
+
+
+def _rerun_rows(rows: list, n: int, how: str) -> list[list]:
+    """The re-run's rows mapped back to the original input order, one list per pass."""
+    if how == "twice":
+        return [rows[:n], rows[n:]]
+    if how == "reversed":
+        return [rows[::-1]]
+    return [rows]
+
+
+Progress = Callable[[str, int, int], None]
+
+
 def behaviour_changes(
     old_dir,
     new_dir,
     stable: dict[str, str],
-    timeout: float = 60.0,
+    timeout: float = 20.0,
     widened: set[str] | frozenset[str] = frozenset(),
-) -> tuple[list[Change], int, int, list[str], dict[str, int], list[Change]]:
-    """(silent changes, compared, unreachable, stopped_on, reasons, weak).
+    versions: list[str] | None = None,
+    progress: Progress | None = None,
+    reruns: tuple[str, ...] = RERUNS,
+    sandbox: bool = True,
+) -> Behaviour:
+    """Run every stable function on the same inputs in both versions and compare.
 
     `weak` holds functions whose ONLY disagreements are on inputs one version rejects as
     the wrong type - a TypeError or AttributeError on a generated argument, such as a
-    string passed where a `Context` belongs. Measured on click 7.1.2 -> 8.1.7, six of the
-    fourteen functions first reported as silent changes were this: 7.1.2 ignored a
-    parameter that 8.1.7 uses, so `get_default("")` went from None to AttributeError.
-    That is a difference no real caller can see, and it is reported apart, never as SILENT.
+    string passed where a `Context` belongs. No real caller passes those; they are
+    reported apart, never as SILENT.
 
-    `compared` counts only functions that actually ran somewhere. A function that raised on
-    every input in both versions was never exercised, so it is neither evidence of a change
-    nor evidence of stability, and it is counted apart.
+    `nondeterministic` holds functions whose disagreement did not survive re-running:
+    some version gave a different answer to the same call the second time. They are
+    neither evidence of a change nor of stability, and never counted as SILENT.
 
-    `stopped_on` names the functions the probe's interpreter died on and had to be
-    restarted past. They matter because they are not the same finding as the rest of
-    `unreachable`: a function nothing can call is a fact about the package, while a probe
-    that died is a fact about this tool, and both otherwise arrive as "could not be called".
+    `compared` counts only functions that actually ran somewhere. A function that raised
+    on every input in both versions was never exercised and is counted in `unreachable`,
+    with the reason in `reasons`. `stopped_on` names the functions the probe's
+    interpreter had to be restarted past - a fact about this tool, not the package.
     """
     payload = {name: argument_sets(sig) for name, sig in stable.items()}
-    old_res = call(old_dir, payload, timeout)
-    new_res = call(new_dir, payload, timeout)
+
+    def run(where, label: str, calls: dict[str, list[str]]) -> dict | None:
+        report = (lambda done, total: progress(label, done, total)) if progress else None
+        return call(where, calls, timeout, versions=versions, sandbox=sandbox, progress=report)
+
+    old_res = run(old_dir, "old", payload)
+    new_res = run(new_dir, "new", payload)
     stopped_on: list[str] = []
     for res in (old_res, new_res):
         if res:
@@ -427,17 +689,10 @@ def behaviour_changes(
                 if name not in stopped_on:
                     stopped_on.append(name)
     if old_res is None or new_res is None:
-        return [], 0, len(payload), stopped_on, {"the probe produced nothing": len(payload)}, []
+        why = {"the probe produced nothing": len(payload)}
+        return Behaviour([], 0, len(payload), stopped_on, why, [], [])
 
-    changes: list[Change] = []
-    weak: list[Change] = []
     compared = unreachable = 0
-    # Why each unreachable name was unreachable. "Could not be called" covers two
-    # opposite situations and the report used to give one number for both: a
-    # function nothing can construct an argument for is a fact about THIS TOOL,
-    # and a function that rejects everything it is handed is a fact about the
-    # PACKAGE. Measured on click, the bucket was 71 names and there was no way to
-    # tell from the output which kind they were.
     reasons: dict[str, int] = {}
 
     def unreached(why: str) -> None:
@@ -445,7 +700,9 @@ def behaviour_changes(
         unreachable += 1
         reasons[why] = reasons.get(why, 0) + 1
 
-    for name, argsets in payload.items():
+    # name -> (rows_a, rows_b, exercised indices), for every function that disagreed.
+    disagreeing: dict[str, tuple[list, list, list[int]]] = {}
+    for name in payload:
         a, b = old_res.get(name, {}), new_res.get(name, {})
         if "rows" not in a or "rows" not in b:
             missing = a if "rows" not in a else b
@@ -456,22 +713,24 @@ def behaviour_changes(
             else:
                 unreached("no result from one of the two versions")
             continue
+        if a.get("instance") != b.get("instance"):
+            # The method ran on differently built objects, so a difference in what it
+            # returns says nothing about the method.
+            unreached("the two versions needed different constructor arguments")
+            continue
         rows_a, rows_b = a["rows"], b["rows"]
         if len(rows_a) != len(rows_b):
             unreached("the two versions produced different numbers of rows")
             continue
-
         exercised = [
             i
             for i, (ra, rb) in enumerate(zip(rows_a, rows_b, strict=True))
             if ra[0] == "ok" or rb[0] == "ok"
         ]
         if not exercised:
-            # Every attempt raised. TypeError on every one means the arguments were
-            # the wrong shape and this tool never actually reached the function -
-            # fixable here, by generating better arguments. Anything else means the
-            # function ran and refused, which is the package's own behaviour and
-            # nothing to fix.
+            # TypeError on every attempt means the arguments were the wrong shape and
+            # this tool never reached the function; anything else means it ran and
+            # refused, which is the package's own behaviour.
             every = [r[1] for r in rows_a + rows_b]
             if every and all(t.startswith("TypeError") for t in every):
                 unreached("never validly called - every argument set was the wrong type")
@@ -479,11 +738,42 @@ def behaviour_changes(
                 unreached("called, and rejected every input")
             continue
         compared += 1
+        if any(_row_key(rows_a[i]) != _row_key(rows_b[i]) for i in exercised):
+            disagreeing[name] = (rows_a, rows_b, exercised)
 
-        diffs = [i for i in exercised if _row_key(rows_a[i]) != _row_key(rows_b[i])]
+    # Re-run every disagreement and keep only the inputs on which BOTH versions
+    # reproduce their own first answer in every run.
+    reproducible: dict[str, set[int]] = {
+        name: set(range(len(rows_a))) for name, (rows_a, _b, _e) in disagreeing.items()
+    }
+    for n, how in enumerate(reruns if disagreeing else ()):
+        again = {name: _rerun_plan(payload[name], how) for name in disagreeing}
+        for where, first, label in ((old_dir, 0, "old"), (new_dir, 1, "new")):
+            res = run(where, f"{label}, re-run {n + 1} of {len(reruns)}", again) or {}
+            for name, rows in disagreeing.items():
+                got = res.get(name, {}).get("rows")
+                want = rows[first]
+                if got is None or len(got) != len(again[name]):
+                    reproducible[name] = set()
+                    continue
+                for attempt in _rerun_rows(got, len(want), how):
+                    reproducible[name] &= {
+                        i for i, row in enumerate(attempt) if _row_key(row) == _row_key(want[i])
+                    }
+
+    changes: list[Change] = []
+    weak: list[Change] = []
+    nondeterministic: list[str] = []
+    for name, (rows_a, rows_b, exercised) in disagreeing.items():
+        diffs = [
+            i
+            for i in exercised
+            if i in reproducible[name] and _row_key(rows_a[i]) != _row_key(rows_b[i])
+        ]
         if not diffs:
+            nondeterministic.append(name)
             continue
-
+        argsets = payload[name]
         # Lead with a disagreement where both sides returned a value: two differing
         # results are unarguable, where two differing exception types on an argument
         # neither version wanted mostly says the argument was wrong.
@@ -506,10 +796,10 @@ def behaviour_changes(
                 },
             )
         )
-    return changes, compared, unreachable, stopped_on, reasons, weak
+    return Behaviour(changes, compared, unreachable, stopped_on, reasons, weak, nondeterministic)
 
 
-def _bindings(tree: ast.Module, package: str) -> tuple[dict[str, str], set[str]]:
+def _bindings(tree: ast.Module, packages: list[str]) -> tuple[dict[str, str], set[str]]:
     """Local name -> the dotted path in `package` it refers to, from this file's imports.
 
     This is what makes a call site a fact rather than a coincidence. Matching on the
@@ -529,20 +819,31 @@ def _bindings(tree: ast.Module, package: str) -> tuple[dict[str, str], set[str]]
     string - which no static pass can see and which is rare in call sites that
     matter.
     """
-    root = package.split(".")[0]
+
+    def ours(dotted: str) -> bool:
+        return any(dotted == p or dotted.startswith(p + ".") for p in packages)
+
+    def parent_of_ours(dotted: str) -> bool:
+        # `import jaraco` / `from jaraco import functools` for the namespace package
+        # jaraco.functools: the import names a parent of the package.
+        return any(p.startswith(dotted + ".") for p in packages)
+
     out: dict[str, str] = {}
     starred: set[str] = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:
-                if alias.name == root or alias.name.startswith(root + "."):
+                if ours(alias.name) or (alias.asname is None and parent_of_ours(alias.name)):
                     out[alias.asname or alias.name] = alias.name
         elif isinstance(node, ast.ImportFrom):
             if node.level or not node.module:
                 continue  # a relative import cannot reach a third-party package
-            if node.module != root and not node.module.startswith(root + "."):
+            whole = ours(node.module)
+            if not whole and not parent_of_ours(node.module):
                 continue
             for alias in node.names:
+                if not whole and not ours(f"{node.module}.{alias.name}"):
+                    continue
                 if alias.name == "*":
                     # `from packaging.version import *` binds every public name in
                     # that module and there is no way to know which from here. The
@@ -624,7 +925,7 @@ def _read_source(path: Path) -> str:
         return fh.read()
 
 
-def find_call_sites(repo, package: str, changes: list[Change]) -> Scan:
+def find_call_sites(repo, package: str | list[str], changes: list[Change]) -> Scan:
     """Fill in `used_at` for every change the target project actually references.
 
     `repo` may be a directory or a single `.py` file. Returns what was scanned, including
@@ -632,7 +933,8 @@ def find_call_sites(repo, package: str, changes: list[Change]) -> Scan:
     dropped, because an unread file is exactly where a missed call site would be.
     """
     repo = Path(repo)
-    root_pkg = package.split(".")[0]
+    packages = [package] if isinstance(package, str) else list(package)
+    roots = {p.split(".")[0] for p in packages}
     scan = Scan()
     by_qualname: dict[str, Change] = {}
     for c in changes:
@@ -660,14 +962,14 @@ def find_call_sites(repo, package: str, changes: list[Change]) -> Scan:
             scan.unreadable.append(rel)
             continue
         scan.files += 1
-        if root_pkg not in src:
+        if not any(root in src for root in roots):
             continue  # the module never mentions the package at all
         try:
             tree = ast.parse(src, filename=str(p))
         except (SyntaxError, ValueError):
             scan.unreadable.append(rel)
             continue
-        bound, starred = _bindings(tree, package)
+        bound, starred = _bindings(tree, packages)
         if not bound:
             # It mentions the package in a string or a comment but imports nothing
             # from it. Nothing in this file can be a call site.

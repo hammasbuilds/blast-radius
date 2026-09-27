@@ -54,6 +54,10 @@ def test_a_spawned_process_that_outlives_the_child_does_not_hang_the_timeout(tmp
         tmp_path,
         {"spawner.quick": ["(21,)"], "spawner.spawns_and_blocks": ["(1,)"]},
         timeout=5,
+        # The sandbox refuses to start the grandchild at all (tests/test_sandbox.py).
+        # Switched off here, because this is about a grandchild that DID start - by
+        # some route the sandbox does not cover - and must still not hang the wait.
+        sandbox=False,
     )
     elapsed = time.monotonic() - started
 

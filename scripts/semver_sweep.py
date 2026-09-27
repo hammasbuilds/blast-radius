@@ -21,9 +21,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from blast_radius.cli import install, pick_import_name  # noqa: E402
-from blast_radius.diff import api_changes  # noqa: E402
-from blast_radius.probe import surface  # noqa: E402
+from blast_radius.cli import import_plan, install  # noqa: E402
+from blast_radius.diff import api_changes, gone_candidates  # noqa: E402
+from blast_radius.probe import resolve_names, surface  # noqa: E402
 from blast_radius.types import Kind  # noqa: E402
 
 PAIRS = [
@@ -62,16 +62,17 @@ def measure(package: str, old_v: str, new_v: str, work: Path) -> dict:
         ok, why = install(package, v, work / v)
         if not ok:
             return {"error": f"install {v}: {why.splitlines()[-1] if why else '?'}"}
-    module, _ = pick_import_name(work / old_v, package)
-    if module is None:
-        return {"error": "ambiguous import name"}
-    old = surface(work / old_v, module)
-    new = surface(work / new_v, module)
-    if not old or not new:
-        return {"error": f"import {module} failed"}
+    plan = import_plan(work / old_v, package)
+    owned = sorted(set(plan.owned) | set(import_plan(work / new_v, package).owned))
+    module = ",".join(plan.modules)
+    old = surface(work / old_v, plan.modules, owned=owned)
+    new = surface(work / new_v, plan.modules, owned=owned)
+    if not old or not new or len(old) < 2 or len(new) < 2:
+        return {"error": f"import {module} failed or found nothing"}
     exported = {k for k, v in old.items() if k != "__meta__" and v.get("exported")}
+    resolved = resolve_names(work / new_v, gone_candidates(old, new))
     rows: dict[str, list[str]] = {}
-    for c in api_changes(old, new):
+    for c in api_changes(old, new, resolved):
         if c.kind is Kind.ADDED:
             continue
         scope = "exported" if c.qualname in exported else "internal"

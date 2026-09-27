@@ -132,6 +132,28 @@ class Report:
     """False when the behaviour pass did not run (--no-behaviour). A SILENT count of zero
     then means "not looked for", and the report has to say so rather than print a 0."""
 
+    modules: list[str] = field(default_factory=list)
+    """The import names whose public surface was compared."""
+
+    candidates: int = 0
+    """Functions eligible for the behaviour pass (present in both, old calls still bind)."""
+
+    skipped_unsafe: dict[str, str] = field(default_factory=dict)
+    """Eligible functions NOT executed because their name suggests a side effect."""
+
+    truncated: int = 0
+    """Eligible, safe functions left out by --limit. Non-zero means the pass was partial."""
+
+    nondeterministic: list[str] = field(default_factory=list)
+    """Functions that disagreed across versions but also disagreed with themselves when
+    re-run. Not evidence either way; never counted as SILENT."""
+
+    unknown_signatures: list[str] = field(default_factory=list)
+    """Names whose signature is readable in one version only, so could not be compared."""
+
+    still_resolve: int = 0
+    """Old names the new surface walk did not list, but that still import. Not gone."""
+
     def of(self, kind: Kind) -> list[Change]:
         return [c for c in self.changes if c.kind is kind]
 

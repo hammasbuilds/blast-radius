@@ -61,6 +61,7 @@ def shape(*params: str) -> str:
         (shape("x"), shape("x", "*args")),
         (shape("x"), shape("x", "**kw")),
         (shape("x", "*!k"), shape("x", "*k=")),
+        (shape("x", "*args"), shape("x", "y=", "*args")),  # every old call still binds
     ],
 )
 def test_a_change_every_existing_call_survives_is_compatible(old, new):
@@ -77,7 +78,6 @@ def test_a_change_every_existing_call_survives_is_compatible(old, new):
         (shape("x"), shape("x", "*!required")),  # urllib3 2.2.1 -> 2.2.2
         (shape("x", "y"), shape("x", "*y=")),  # became keyword-only
         (shape("x"), shape("/x")),  # became positional-only
-        (shape("x", "*args"), shape("x", "y=", "*args")),  # swallows what *args got
         (shape("x", "**kw"), shape("x")),
         (shape("x"), ""),  # unknown must never read as safe
         ("", shape("x")),
@@ -411,11 +411,12 @@ def test_a_dash_in_the_name_becomes_an_underscore(tmp_path):
     assert cli.pick_import_name(tmp_path, "charset-normalizer")[0] == "charset_normalizer"
 
 
-def test_several_top_level_packages_with_no_obvious_one_is_ambiguous(tmp_path):
+def test_several_top_level_packages_are_all_compared(tmp_path):
+    """attrs installs `attr` and `attrs`; refusing to pick hid both."""
     info = tmp_path / "combo-1.0.dist-info"
     info.mkdir()
     (info / "top_level.txt").write_text("alpha\nbeta\n", encoding="utf-8")
-    assert cli.pick_import_name(tmp_path, "combo") == (None, ["alpha", "beta"])
+    assert cli.pick_import_name(tmp_path, "combo") == ("alpha", ["alpha", "beta"])
 
 
 # --- naming ----------------------------------------------------------------------------------
@@ -474,7 +475,7 @@ def test_a_difference_only_on_a_wrong_typed_argument_is_not_silent(tmp_path):
         "def uses_ctx(ctx):\n    return ctx.lookup_default\n\n\ndef real(x):\n    return 2\n",
     )
     stable = {"tw.uses_ctx": "(ctx)", "tw.real": "(x)"}
-    silent, _c, _u, _s, _r, weak = behaviour_changes(
+    silent, _c, _u, _s, _r, weak, _nd = behaviour_changes(
         tmp_path / "old", tmp_path / "new", stable, timeout=30
     )
     assert [c.qualname for c in silent] == ["tw.real"]

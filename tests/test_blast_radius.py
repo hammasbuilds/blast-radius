@@ -676,7 +676,7 @@ def test_a_probe_that_died_is_reported_apart_from_a_function_that_cannot_be_call
     _pkg(tmp_path / "new", "twins", body)
     stable = {"twins.quick": "(x)", "twins.hangs": "(x)", "twins.after": "(x)"}
 
-    silent, compared, unreachable, stopped_on, reasons, _weak = behaviour_changes(
+    silent, compared, unreachable, stopped_on, reasons, _weak, _nd = behaviour_changes(
         tmp_path / "old", tmp_path / "new", stable, timeout=10
     )
 
@@ -771,7 +771,7 @@ def test_calling_a_function_wrongly_is_not_the_same_as_it_rejecting_input(tmp_pa
     _pkg(tmp_path / "new", "twokinds", body)
     stable = {"twokinds.wants_five": "(a, b, c, d, e)", "twokinds.refuses_everything": "(x)"}
 
-    _silent, _compared, unreachable, _stopped, reasons, _weak = behaviour_changes(
+    _silent, _compared, unreachable, _stopped, reasons, _weak, _nd = behaviour_changes(
         tmp_path / "old", tmp_path / "new", stable, timeout=120
     )
 
@@ -779,3 +779,65 @@ def test_calling_a_function_wrongly_is_not_the_same_as_it_rejecting_input(tmp_pa
     assert sum(reasons.values()) == 2
     assert reasons.get("never validly called - every argument set was the wrong type") == 1
     assert reasons.get("called, and rejected every input") == 1
+
+
+def test_a_method_on_differently_built_instances_is_not_compared(tmp_path):
+    """pytest's LineMatcher annotation changed, so the constructor guess was [] in one
+    version and "x" in the other - and four of its methods read as silent changes."""
+    from blast_radius.diff import behaviour_changes
+
+    for sub, annotation in (("old", "list"), ("new", "str")):
+        _pkg(
+            tmp_path / sub,
+            "built",
+            f"class Matcher:\n    def __init__(self, lines: {annotation}):\n"
+            "        self.lines = lines\n\n    def text(self):\n        return repr(self.lines)\n",
+        )
+    found = behaviour_changes(tmp_path / "old", tmp_path / "new", {"built.Matcher.text": "(self)"})
+    assert found.silent == [] and found.weak == []
+    assert found.reasons == {"the two versions needed different constructor arguments": 1}
+
+
+def test_a_constructor_that_raises_a_base_exception_means_needs_an_instance(tmp_path):
+    """pytest refuses direct construction by raising Failed, a BaseException."""
+    from blast_radius.probe import call
+
+    _pkg(
+        tmp_path,
+        "strict",
+        "class Refused(BaseException):\n    pass\n\n\n"
+        "class Node:\n    def __init__(self):\n        raise Refused('use from_parent')\n\n"
+        "    def name(self):\n        return 'n'\n",
+    )
+    out = call(tmp_path, {"strict.Node.name": ["()"]})
+    assert "needs_instance" in out["strict.Node.name"]
+
+
+def test_a_method_implemented_in_c_is_called_on_an_instance(tmp_path):
+    """numpy's Generator.beta is a Cython method, not a Python function, so it was
+    called unbound with a generated string as `self` - which crashed the interpreter.
+    A C method inherited from dict has the same shape and is safe to test with."""
+    from blast_radius.probe import call
+
+    _pkg(tmp_path, "cmeth", "class Thing(dict):\n    pass\n")
+    out = call(tmp_path, {"cmeth.Thing.keys": ["()"]})
+    assert out["cmeth.Thing.keys"]["rows"][0] == ["ok", "dict_keys([])"]
+    assert out["cmeth.Thing.keys"]["instance"] == "Thing()"
+
+
+def test_crashes_do_not_use_up_the_hang_budget(tmp_path):
+    """Each crash costs an interpreter start, not a timeout. Capping crashes at the
+    five restarts allowed for hangs left 242 numpy functions "not attempted"."""
+    from blast_radius import probe
+
+    body = (
+        "import os\n\n\n"
+        + "".join(f"def c{i}(x):\n    os.abort()\n\n\n" for i in range(probe.MAX_RESTARTS + 3))
+        + "def after(x):\n    return x + 1\n"
+    )
+    _pkg(tmp_path, "crashy", body)
+    names = [f"crashy.c{i}" for i in range(probe.MAX_RESTARTS + 3)]
+    out = probe.call(tmp_path, {**{n: ["(1,)"] for n in names}, "crashy.after": ["(1,)"]})
+    assert out["crashy.after"]["rows"][0] == ["ok", "2"]
+    assert out["__stopped_on__"] == names
+    assert "crash" in out[names[0]]["error"]

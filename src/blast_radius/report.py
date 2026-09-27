@@ -60,6 +60,46 @@ def _by_severity(changes: list[Change]) -> list[Change]:
     return sorted(changes, key=lambda c: (-c.severity, c.qualname))
 
 
+def coverage_notes(report: Report) -> list[str]:
+    """What the behaviour pass did NOT look at, so a SILENT count is never read as more
+    complete than it is."""
+    out = []
+    if report.truncated:
+        checked = report.candidates - len(report.skipped_unsafe) - report.truncated
+        out.append(
+            f"PARTIAL: --limit checked {checked} of {checked + report.truncated} functions;"
+            f" {report.truncated} were not run"
+        )
+    if report.skipped_unsafe:
+        out.append(
+            f"{len(report.skipped_unsafe)} function(s) not run because their names suggest a"
+            " side effect (launch, edit, delete, send, ...)"
+        )
+    if report.nondeterministic:
+        names = ", ".join(report.nondeterministic[:4])
+        more = " ..." if len(report.nondeterministic) > 4 else ""
+        out.append(
+            f"{len(report.nondeterministic)} disagreement(s) dropped as non-deterministic"
+            f" (a version disagreed with itself when re-run): {names}{more}"
+        )
+    return out
+
+
+def api_notes(report: Report) -> list[str]:
+    out = []
+    if report.still_resolve:
+        out.append(
+            f"{report.still_resolve} name(s) missing from the new surface still import"
+            " (moved, inherited or served by a module __getattr__): not counted as gone"
+        )
+    if report.unknown_signatures:
+        out.append(
+            f"{len(report.unknown_signatures)} signature(s) readable in only one version:"
+            " not compared, not counted as reshaped"
+        )
+    return out
+
+
 def summary(report: Report) -> str:
     counts = report.counts()
     silent_n: int | str = counts.get("silent", 0) if report.behaviour_checked else "-"
@@ -83,6 +123,9 @@ def summary(report: Report) -> str:
             f"\n  behaviour compared on {report.compared} function(s); "
             f"{report.unreachable} could not be called in either version"
         )
+        lines.extend(f"  {line}" for line in coverage_notes(report))
+    if report.still_resolve or report.unknown_signatures:
+        lines.extend(f"  {line}" for line in api_notes(report))
 
     silent = _by_severity(report.of(Kind.SILENT))
     if silent:
@@ -192,6 +235,14 @@ def write_json(report: Report, path: Path) -> None:
                 "compared": report.compared,
                 "unreachable": report.unreachable,
                 "reaching_you": len(report.reaching_you),
+                "modules": report.modules,
+                "behaviour_candidates": report.candidates,
+                "partial": bool(report.truncated),
+                "not_run_limit": report.truncated,
+                "not_run_side_effects": report.skipped_unsafe,
+                "nondeterministic": report.nondeterministic,
+                "unknown_signatures": report.unknown_signatures,
+                "still_resolve": report.still_resolve,
                 "seconds": round(report.seconds, 1),
                 "changes": [c.as_row() for c in report.sorted()],
                 "weak_differences": [c.as_row() for c in report.weak],
@@ -236,8 +287,12 @@ def write_markdown(report: Report, path: Path) -> None:
             "could not be called in either version.",
             "",
         ]
+        out += [f"- {line}" for line in coverage_notes(report)]
+        out += [""] if coverage_notes(report) else []
     else:
         out += ["Behaviour was not compared (`--no-behaviour`).", ""]
+    if api_notes(report):
+        out += [f"- {line}" for line in api_notes(report)] + [""]
 
     silent = _by_severity(report.of(Kind.SILENT))
     if silent:
