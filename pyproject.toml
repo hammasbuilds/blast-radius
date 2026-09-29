@@ -25,6 +25,12 @@ keywords = ["dependency", "upgrade", "semver", "api-diff", "differential-testing
 # already on the machine, and everything else is stdlib.
 dependencies = []
 
+[project.optional-dependencies]
+# Both, deliberately. `uv sync` reads the dependency group; `pip install -e ".[dev]"`
+# reads the extra and only warns if it is missing, so the README's own quickstart left
+# pytest uninstalled and told the user to run it.
+dev = ["pytest>=8", "ruff>=0.16,<0.17"]
+
 [dependency-groups]
 dev = ["pytest>=8", "ruff>=0.16,<0.17"]
 
