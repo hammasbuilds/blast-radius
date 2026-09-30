@@ -2,14 +2,13 @@
 <p align="center"><i>What a dependency upgrade actually changes — including what nothing warns you about</i></p>
 
 <p align="center">
-  <a href="https://github.com/hammasbuilds/blast-radius#the-through-line">The through-line</a> &middot;
-  <a href="https://github.com/hammasbuilds/blast-radius#the-result">The result</a> &middot;
+  <a href="https://github.com/hammasbuilds/blast-radius#what-it-does">What it does</a> &middot;
+  <a href="https://github.com/hammasbuilds/blast-radius#results">Results</a> &middot;
   <a href="https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md">The semver sweep</a> &middot;
   <a href="https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md">Full results</a> &middot;
   <a href="https://github.com/hammasbuilds/blast-radius#how-it-works">How it works</a> &middot;
   <a href="https://github.com/hammasbuilds/blast-radius#run-it">Run it</a> &middot;
-  <a href="https://github.com/hammasbuilds/blast-radius#what-this-does-not-do">What it does NOT do</a> &middot;
-  <a href="https://github.com/hammasbuilds/blast-radius#problems-hit-while-building-this">Problems hit</a>
+  <a href="https://github.com/hammasbuilds/blast-radius#scope">Scope</a> 
 </p>
 
 <p align="center">
@@ -24,7 +23,7 @@
 
 ---
 
-## The through-line
+## What it does
 
 ```text
  install BOTH versions ──> read both public surfaces ──┬──> GONE      an ImportError tells you
@@ -46,7 +45,7 @@ sorts what actually changed by **how likely it is to reach production unnoticed*
 
 > **A changelog is a claim. This is the diff.**
 
-## The result
+## Results
 
 ### 27 upgrade pairs: how often does a patch release break public API?
 
@@ -251,7 +250,7 @@ scripts/
   semver_sweep.py   re-runs the 27-pair measurement behind docs/SEMVER.md
 ```
 
-## What this does NOT do
+## Scope
 
 - **It does not read changelogs.** Deliberately. The changelog is the claim being checked.
 - **It cannot reach every API.** A class whose constructor takes an argument is built with a
@@ -281,56 +280,6 @@ scripts/
 - **Two packages.** `packaging` and `click`. Two upgrades are not a general claim about
   upgrades, and nothing here says how this behaves on a package shaped differently from
   both.
-
-## Problems hit while building this
-
-Eleven sources of *confident wrong answers*. Not one of them raised an error.
-
-- **Both probes loaded the same copy, and it reported "nothing changed".** Python silently
-  ignores a `sys.path` entry that does not exist, so a non-native path meant the import fell
-  through to the interpreter's own `packaging`. Two probes of one copy agree perfectly,
-  which looks exactly like a clean upgrade. The probe now proves its own `__file__`.
-- **Object identity read as behaviour.** `packaging.tags.Tag.__repr__` embeds `id(self)` in
-  **decimal**, and the normaliser only stripped hex `0x...` forms — so four identical tag
-  lists came back as four silent behaviour changes.
-- **455 removed symbols that were never there.** `packaging` 21.3 does
-  `from pyparsing import ...`, so a naive walk credited it with pyparsing's entire API, and
-  dropping that dependency read as a mass extinction.
-- **795 breaking changes that break nothing.** click 8 annotated its whole API. Comparing
-  `str(inspect.signature(f))` called every one of those a reshape — and left **zero**
-  functions stable, which silently starved the behaviour pass of every candidate it had.
-  Comparing call shape took it to 68 and turned the pass back on.
-- **One object counted once per module that imported it.** `coverage.CoverageData` is
-  imported into five modules, so a single signature change to `update` was reported as six
-  reshaped symbols. `coverage` 7.5.0's surface was 1,409 symbols; deduplicated it is
-  **547** — inflated 2.6x by aliases. This is also why moving a class between internal
-  modules read as a removal plus an addition, although `from coverage import PathAliases`
-  still worked and no caller could tell.
-- **Internal churn weighed the same as published API.** `coverage.parser.join_regex`
-  counted exactly as much as `coverage.CoverageData.update`, so a release that tidied its
-  internals looked like one that broke its users. Symbols now carry an `exported` flag,
-  set when the author said so via `__all__` or the package root namespace.
-- **A failed install crashed the whole run, on Windows only.** `subprocess.run(text=True)`
-  decodes with the locale codec — cp1252 here — and `uv` draws its errors with box
-  characters that cp1252 cannot represent. The resulting `UnicodeDecodeError` came from
-  subprocess's reader thread, is not an `OSError`, and was not caught, so the fallback to
-  pip never happened. Fixed by decoding UTF-8 explicitly; `install()` now also reports
-  **why** it failed instead of returning a bare `False`.
-
-- **An additive release read as a breaking one.** Any change to a call shape was
-  `reshaped`, including a new parameter with a default. That put `filelock` 3.13 -> 3.15 and
-  `anyio` 4.1 -> 4.4 in the "minor releases that broke API" column, where neither belongs,
-  and the headline said 44% instead of 22%. Signatures are now checked for compatibility.
-- **pypa/build "used none of the changes".** `--used-by` skipped every directory called
-  `build`, to avoid setuptools output - and pypa/build keeps its source in `src/build/`.
-  Build and dist directories are now skipped only when they are not a Python package.
-- **A typo made CI green forever.** `--used-by /no/such/dir` scanned nothing, reported that
-  nothing was matched and exited 0. It is now an error, raised before anything is installed.
-- **A refactor read as four behaviour changes.** click 8 builds `help_option` and three
-  siblings through `option()`, so the decorator they return reprs as
-  `option.<locals>.decorator`. Closure reprs are normalised, and a difference that only
-  shows where one version rejects a generated argument as the wrong type (a string passed
-  as a `Context`) is listed apart instead of counted as silent.
 
 ## Also worth reading
 
