@@ -3,17 +3,59 @@
   "old_version": "7.1.2",
   "new_version": "8.1.7",
   "counts": {
-    "gone": 15,
-    "widened": 14,
-    "reshaped": 13,
+    "gone": 12,
+    "widened": 9,
+    "reshaped": 11,
     "added": 51,
     "silent": 4
   },
   "behaviour_checked": true,
-  "compared": 94,
-  "unreachable": 89,
+  "compared": 87,
+  "unreachable": 76,
   "reaching_you": 0,
-  "seconds": 492.0,
+  "modules": [
+    "click"
+  ],
+  "behaviour_candidates": 184,
+  "partial": false,
+  "not_run_limit": 0,
+  "not_run_side_effects": {
+    "click.Context.exit": "its name suggests a side effect (exit)",
+    "click.Group.main": "its name suggests a side effect (main)",
+    "click.HelpFormatter.write": "its name suggests a side effect (write)",
+    "click.HelpFormatter.write_dl": "its name suggests a side effect (write)",
+    "click.HelpFormatter.write_heading": "its name suggests a side effect (write)",
+    "click.HelpFormatter.write_paragraph": "its name suggests a side effect (write)",
+    "click.HelpFormatter.write_text": "its name suggests a side effect (write)",
+    "click.HelpFormatter.write_usage": "its name suggests a side effect (write)",
+    "click.Option.prompt_for_value": "its name suggests a side effect (prompt)",
+    "click.confirm": "its name suggests a side effect (confirm)",
+    "click.echo_via_pager": "its name suggests a side effect (pager)",
+    "click.edit": "its name suggests a side effect (edit)",
+    "click.getchar": "its name suggests a side effect (getchar)",
+    "click.launch": "its name suggests a side effect (launch)",
+    "click.open_file": "its name suggests a side effect (open)",
+    "click.pause": "its name suggests a side effect (pause)",
+    "click.prompt": "its name suggests a side effect (prompt)",
+    "click.termui.hidden_prompt_func": "its name suggests a side effect (prompt)",
+    "click.testing.make_input_stream": "its name suggests a side effect (input)",
+    "click.types.open_stream": "its name suggests a side effect (open)",
+    "click.utils.LazyFile.open": "its name suggests a side effect (open)"
+  },
+  "nondeterministic": [
+    "click.Path.convert"
+  ],
+  "unknown_signatures": [
+    "click.Context.forward",
+    "click.Context.invoke",
+    "click.argument",
+    "click.confirmation_option",
+    "click.help_option",
+    "click.option",
+    "click.password_option"
+  ],
+  "still_resolve": 0,
+  "seconds": 5.8,
   "changes": [
     {
       "kind": "silent",
@@ -66,14 +108,6 @@
     {
       "kind": "gone",
       "qualname": "click.Argument.full_process_value",
-      "detail": "a function that no longer exists",
-      "witness": null,
-      "used_at": [],
-      "maybe_at": []
-    },
-    {
-      "kind": "gone",
-      "qualname": "click.FloatRange.convert",
       "detail": "a function that no longer exists",
       "witness": null,
       "used_at": [],
@@ -137,22 +171,6 @@
     },
     {
       "kind": "gone",
-      "qualname": "click.termui.get_winterm_size",
-      "detail": "a function that no longer exists",
-      "witness": null,
-      "used_at": [],
-      "maybe_at": []
-    },
-    {
-      "kind": "gone",
-      "qualname": "click.types.FloatParamType.convert",
-      "detail": "a function that no longer exists",
-      "witness": null,
-      "used_at": [],
-      "maybe_at": []
-    },
-    {
-      "kind": "gone",
       "qualname": "click.types.filename_to_ui",
       "detail": "a function that no longer exists",
       "witness": null,
@@ -185,24 +203,8 @@
     },
     {
       "kind": "reshaped",
-      "qualname": "click.Context.forward",
-      "detail": "(*args, **kwargs) -> (_Context__self, _Context__cmd: 'Command', *args: Any, **kwargs: Any) -> Any",
-      "witness": null,
-      "used_at": [],
-      "maybe_at": []
-    },
-    {
-      "kind": "reshaped",
-      "qualname": "click.Context.invoke",
-      "detail": "(*args, **kwargs) -> (_Context__self, _Context__callback: ForwardRef('Command') | ForwardRef('t.Callable[..., V]'), *args: Any, **kwargs: Any) -> Any | ~V",
-      "witness": null,
-      "used_at": [],
-      "maybe_at": []
-    },
-    {
-      "kind": "reshaped",
       "qualname": "click.FloatRange",
-      "detail": "(min=None, max=None, clamp=False) -> (min: float | None = None, max: float | None = None, min_open: bool = False, max_open: bool = False, clamp: bool = False) -> None",
+      "detail": "(min=None, max=None, clamp=False) -> (min: Optional[float] = None, max: Optional[float] = None, min_open: bool = False, max_open: bool = False, clamp: bool = False) -> None",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -210,7 +212,7 @@
     {
       "kind": "reshaped",
       "qualname": "click.IntRange",
-      "detail": "(min=None, max=None, clamp=False) -> (min: float | None = None, max: float | None = None, min_open: bool = False, max_open: bool = False, clamp: bool = False) -> None",
+      "detail": "(min=None, max=None, clamp=False) -> (min: Optional[float] = None, max: Optional[float] = None, min_open: bool = False, max_open: bool = False, clamp: bool = False) -> None",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -218,7 +220,7 @@
     {
       "kind": "reshaped",
       "qualname": "click.Option",
-      "detail": "(param_decls=None, show_default=False, prompt=False, confirmation_prompt=False, hide_input=False, is_flag=None, flag_value=None, multiple=False, count=False, allow_from_autoenv=True, type=None, help=None, hidden=False, show_choices=True, show_envvar=False, **attrs) -> (param_decls: Sequence[str] | N",
+      "detail": "(param_decls=None, show_default=False, prompt=False, confirmation_prompt=False, hide_input=False, is_flag=None, flag_value=None, multiple=False, count=False, allow_from_autoenv=True, type=None, help=None, hidden=False, show_choices=True, show_envvar=False, **attrs) -> (param_decls: Optional[Sequence",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -226,7 +228,7 @@
     {
       "kind": "reshaped",
       "qualname": "click.OptionParser.add_argument",
-      "detail": "(self, dest, nargs=1, obj=None) -> (self, obj: 'CoreArgument', dest: str | None, nargs: int = 1) -> None",
+      "detail": "(self, dest, nargs=1, obj=None) -> (self, obj: 'CoreArgument', dest: Optional[str], nargs: int = 1) -> None",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -234,7 +236,7 @@
     {
       "kind": "reshaped",
       "qualname": "click.OptionParser.add_option",
-      "detail": "(self, opts, dest, action=None, nargs=1, const=None, obj=None) -> (self, obj: 'CoreOption', opts: Sequence[str], dest: str | None, action: str | None = None, nargs: int = 1, const: Any | None = None) -> None",
+      "detail": "(self, opts, dest, action=None, nargs=1, const=None, obj=None) -> (self, obj: 'CoreOption', opts: Sequence[str], dest: Optional[str], action: Optional[str] = None, nargs: int = 1, const: Optional[Any] = None) -> None",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -242,7 +244,7 @@
     {
       "kind": "reshaped",
       "qualname": "click.Parameter",
-      "detail": "(param_decls=None, type=None, required=False, default=None, callback=None, nargs=None, metavar=None, expose_value=True, is_eager=False, envvar=None, autocompletion=None) -> (param_decls: Sequence[str] | None = None, type: click.types.ParamType | Any | None = None, required: bool = False, default: An",
+      "detail": "(param_decls=None, type=None, required=False, default=None, callback=None, nargs=None, metavar=None, expose_value=True, is_eager=False, envvar=None, autocompletion=None) -> (param_decls: Optional[Sequence[str]] = None, type: Union[click.types.ParamType, Any, NoneType] = None, required: bool = False,",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -258,7 +260,7 @@
     {
       "kind": "reshaped",
       "qualname": "click.parser.Argument",
-      "detail": "(dest, nargs=1, obj=None) -> (obj: 'CoreArgument', dest: str | None, nargs: int = 1)",
+      "detail": "(dest, nargs=1, obj=None) -> (obj: 'CoreArgument', dest: Optional[str], nargs: int = 1)",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -266,7 +268,7 @@
     {
       "kind": "reshaped",
       "qualname": "click.parser.Option",
-      "detail": "(opts, dest, action=None, nargs=1, const=None, obj=None) -> (obj: 'CoreOption', opts: Sequence[str], dest: str | None, action: str | None = None, nargs: int = 1, const: Any | None = None)",
+      "detail": "(opts, dest, action=None, nargs=1, const=None, obj=None) -> (obj: 'CoreOption', opts: Sequence[str], dest: Optional[str], action: Optional[str] = None, nargs: int = 1, const: Optional[Any] = None)",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -274,7 +276,7 @@
     {
       "kind": "reshaped",
       "qualname": "click.style",
-      "detail": "(text, fg=None, bg=None, bold=None, dim=None, underline=None, blink=None, reverse=None, reset=True) -> (text: Any, fg: int | Tuple[int, int, int] | str | None = None, bg: int | Tuple[int, int, int] | str | None = None, bold: bool | None = None, dim: bool | None = None, underline: bool | None = None,",
+      "detail": "(text, fg=None, bg=None, bold=None, dim=None, underline=None, blink=None, reverse=None, reset=True) -> (text: Any, fg: Union[int, Tuple[int, int, int], str, NoneType] = None, bg: Union[int, Tuple[int, int, int], str, NoneType] = None, bold: Optional[bool] = None, dim: Optional[bool] = None, underlin",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -282,7 +284,7 @@
     {
       "kind": "reshaped",
       "qualname": "click.testing.Result",
-      "detail": "(runner, stdout_bytes, stderr_bytes, exit_code, exception, exc_info=None) -> (runner: 'CliRunner', stdout_bytes: bytes, stderr_bytes: bytes | None, return_value: Any, exit_code: int, exception: BaseException | None, exc_info: Tuple[Type[BaseException], BaseException, traceback] | None = None)",
+      "detail": "(runner, stdout_bytes, stderr_bytes, exit_code, exception, exc_info=None) -> (runner: 'CliRunner', stdout_bytes: bytes, stderr_bytes: Optional[bytes], return_value: Any, exit_code: int, exception: Optional[BaseException], exc_info: Optional[Tuple[Type[BaseException], BaseException, traceback]] = Non",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -290,7 +292,7 @@
     {
       "kind": "widened",
       "qualname": "click.Argument.get_default",
-      "detail": "(self, ctx) -> (self, ctx: click.core.Context, call: bool = True) -> Any | Callable[[], Any] | None",
+      "detail": "(self, ctx) -> (self, ctx: click.core.Context, call: bool = True) -> Union[Any, Callable[[], Any], NoneType]",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -298,7 +300,7 @@
     {
       "kind": "widened",
       "qualname": "click.Context.lookup_default",
-      "detail": "(self, name) -> (self, name: str, call: bool = True) -> Any | None",
+      "detail": "(self, name) -> (self, name: str, call: bool = True) -> Optional[Any]",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -306,7 +308,7 @@
     {
       "kind": "widened",
       "qualname": "click.Group.main",
-      "detail": "(self, args=None, prog_name=None, complete_var=None, standalone_mode=True, **extra) -> (self, args: Sequence[str] | None = None, prog_name: str | None = None, complete_var: str | None = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any) -> Any",
+      "detail": "(self, args=None, prog_name=None, complete_var=None, standalone_mode=True, **extra) -> (self, args: Optional[Sequence[str]] = None, prog_name: Optional[str] = None, complete_var: Optional[str] = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any) -> Any",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -314,7 +316,7 @@
     {
       "kind": "widened",
       "qualname": "click.Option.get_default",
-      "detail": "(self, ctx) -> (self, ctx: click.core.Context, call: bool = True) -> Any | Callable[[], Any] | None",
+      "detail": "(self, ctx) -> (self, ctx: click.core.Context, call: bool = True) -> Union[Any, Callable[[], Any], NoneType]",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -329,48 +331,8 @@
     },
     {
       "kind": "widened",
-      "qualname": "click.argument",
-      "detail": "(*param_decls, **attrs) -> (*param_decls: str, cls: Type[click.core.Argument] | None = None, **attrs: Any) -> Callable[[~FC], ~FC]",
-      "witness": null,
-      "used_at": [],
-      "maybe_at": []
-    },
-    {
-      "kind": "widened",
-      "qualname": "click.confirmation_option",
-      "detail": "(*param_decls, **attrs) -> (*param_decls: str, **kwargs: Any) -> Callable[[~FC], ~FC]",
-      "witness": null,
-      "used_at": [],
-      "maybe_at": []
-    },
-    {
-      "kind": "widened",
       "qualname": "click.group",
-      "detail": "(name=None, **attrs) -> (name: str | Callable[..., Any] | None = None, cls: Type[~GrpType] | None = None, **attrs: Any) -> click.core.Group | Callable[[Callable[..., Any]], click.core.Group | ~GrpType]",
-      "witness": null,
-      "used_at": [],
-      "maybe_at": []
-    },
-    {
-      "kind": "widened",
-      "qualname": "click.help_option",
-      "detail": "(*param_decls, **attrs) -> (*param_decls: str, **kwargs: Any) -> Callable[[~FC], ~FC]",
-      "witness": null,
-      "used_at": [],
-      "maybe_at": []
-    },
-    {
-      "kind": "widened",
-      "qualname": "click.option",
-      "detail": "(*param_decls, **attrs) -> (*param_decls: str, cls: Type[click.core.Option] | None = None, **attrs: Any) -> Callable[[~FC], ~FC]",
-      "witness": null,
-      "used_at": [],
-      "maybe_at": []
-    },
-    {
-      "kind": "widened",
-      "qualname": "click.password_option",
-      "detail": "(*param_decls, **attrs) -> (*param_decls: str, **kwargs: Any) -> Callable[[~FC], ~FC]",
+      "detail": "(name=None, **attrs) -> (name: Union[str, Callable[..., Any], NoneType] = None, cls: Optional[Type[~GrpType]] = None, **attrs: Any) -> Union[click.core.Group, Callable[[Callable[..., Any]], Union[click.core.Group, ~GrpType]]]",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -378,7 +340,7 @@
     {
       "kind": "widened",
       "qualname": "click.progressbar",
-      "detail": "(iterable=None, length=None, label=None, show_eta=True, show_percent=None, show_pos=False, item_show_func=None, fill_char='#', empty_char='-', bar_template='%(label)s  [%(bar)s]  %(info)s', info_sep='  ', width=36, file=None, color=None) -> (iterable: Iterable[~V] | None = None, length: int | None =",
+      "detail": "(iterable=None, length=None, label=None, show_eta=True, show_percent=None, show_pos=False, item_show_func=None, fill_char='#', empty_char='-', bar_template='%(label)s  [%(bar)s]  %(info)s', info_sep='  ', width=36, file=None, color=None) -> (iterable: Optional[Iterable[~V]] = None, length: Optional[",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -386,7 +348,7 @@
     {
       "kind": "widened",
       "qualname": "click.testing.CliRunner.isolated_filesystem",
-      "detail": "(self) -> (self, temp_dir: str | ForwardRef('os.PathLike[str]') | None = None) -> Iterator[str]",
+      "detail": "(self) -> (self, temp_dir: Union[str, ForwardRef('os.PathLike[str]'), NoneType] = None) -> Iterator[str]",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -394,15 +356,7 @@
     {
       "kind": "widened",
       "qualname": "click.version_option",
-      "detail": "(version=None, *param_decls, **attrs) -> (version: str | None = None, *param_decls: str, package_name: str | None = None, prog_name: str | None = None, message: str | None = None, **kwargs: Any) -> Callable[[~FC], ~FC]",
-      "witness": null,
-      "used_at": [],
-      "maybe_at": []
-    },
-    {
-      "kind": "added",
-      "qualname": "click.Argument.consume_value",
-      "detail": "new function",
+      "detail": "(version=None, *param_decls, **attrs) -> (version: Optional[str] = None, *param_decls: str, package_name: Optional[str] = None, prog_name: Optional[str] = None, message: Optional[str] = None, **kwargs: Any) -> Callable[[~FC], ~FC]",
       "witness": null,
       "used_at": [],
       "maybe_at": []
@@ -806,6 +760,14 @@
       "witness": null,
       "used_at": [],
       "maybe_at": []
+    },
+    {
+      "kind": "added",
+      "qualname": "click.utils.auto_wrap_for_ansi",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": []
     }
   ],
   "weak_differences": [
@@ -841,18 +803,6 @@
         "args": "(0,)",
         "old": "ok: False",
         "new": "raise: TypeError: expected str, bytes or os.PathLike object, not int"
-      },
-      "used_at": [],
-      "maybe_at": []
-    },
-    {
-      "kind": "silent",
-      "qualname": "click.Path.convert",
-      "detail": "same signature (self, value, param, ctx); 3 of 11 exercised inputs disagree",
-      "witness": {
-        "args": "(0, \"\", \"\",)",
-        "old": "ok: 0",
-        "new": "raise: TypeError: access: path should be string, bytes or os.PathLike, not int"
       },
       "used_at": [],
       "maybe_at": []

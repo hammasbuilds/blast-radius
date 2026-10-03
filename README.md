@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python">
   <img src="https://img.shields.io/badge/runtime%20deps-0-brightgreen" alt="zero dependencies">
   <img src="https://img.shields.io/badge/model-none%20required-success" alt="no model">
-  <img src="https://img.shields.io/badge/tests-245-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-251-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/upgrade%20pairs%20measured-27-blue" alt="pairs">
   <a href="https://github.com/hammasbuilds/blast-radius/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
 </p>
@@ -56,7 +56,7 @@ release only adds. Measured across widely-pinned packages:
 |---|---:|---:|---:|
 | **patch** | 15 | **2 (13%)** | 3 |
 | **minor** | 9 | **2 (22%)** | 7 |
-| major | 3 | 2 (67%) | 32 |
+| major | 3 | 2 (67%) | 29 |
 
 Small enough to name every instance, which is the point — a percentage with no names behind
 it is not checkable.
@@ -84,11 +84,14 @@ down.
 
 ### One upgrade in depth
 
-`packaging` 21.3 → 24.0, with call sites matched against a checkout of
-[`pypa/build`](https://github.com/pypa/build):
+`packaging` 21.3 → 24.0, with call sites matched against
+[`pypa/build`](https://github.com/pypa/build) at commit `8d1dd6b` (line numbers below
+are from that commit):
 
 ```
-blast-radius check packaging 21.3 24.0 --used-by path/to/pypa-build
+git clone https://github.com/pypa/build pypa-build
+git -C pypa-build checkout 8d1dd6b
+blast-radius check packaging 21.3 24.0 --used-by pypa-build
 
   gone          2   an import error at startup
   reshaped      0   a type checker would catch these
@@ -101,11 +104,15 @@ The one worth the whole tool:
 
 ```
 packaging.version.parse
-  same signature (version: str) -> ForwardRef('LegacyVersion') | ForwardRef('Version'); 3 of 4 exercised inputs disagree
+  same signature (version: str) -> Union[ForwardRef('LegacyVersion'), ForwardRef('Version')]; 3 of 4 exercised inputs disagree
   input : ("x",)
      21.3 : ok: <LegacyVersion('x')>
      24.0 : raise: InvalidVersion: Invalid version: 'x'
 ```
+
+(Output from Python 3.12. Annotations are printed the way your Python prints them, so
+3.14 shows that return type as `ForwardRef('LegacyVersion') | ForwardRef('Version')`; the
+counts and verdicts do not change.)
 
 `parse("x")` returned a value and now raises. Same name, same signature. No import fails and
 no type checker complains — it takes running both versions to find.
@@ -116,6 +123,7 @@ behaviour pass ran it, and it changed underneath:
 
 ```
 packaging.specifiers.SpecifierSet.contains
+  old calls still bind (signature widened from (self, item: Union[packaging.version.Version, packaging.version.LegacyVersion, str], prereleases: Optional[bool] = None) -> bool); 5 of 6 exercised inputs disagree
   input : ("x", True,)
      21.3 : ok: True
      24.0 : raise: InvalidVersion: Invalid version: 'x'
@@ -132,37 +140,41 @@ The proven ones are `packaging.utils.canonicalize_name` (widened, 3 sites, e.g.
 An upgrade removing forty functions nobody calls is a non-event. The same upgrade touching
 one you call in a loop is an incident — so the report sorts by that before anything else.
 
-### The run that was reported as an honest failure, and was not
+### What the behaviour pass reaches on a real library
 
-`click` 8.1.6 → 8.1.7: **124 of 234 stable callables exercised**, one silent change found
-(`BashComplete.source`: on this machine 8.1.6 raises *Couldn't detect Bash version* and
-8.1.7 returns the completion script).
+`click` 8.1.6 → 8.1.7 (`blast-radius check click 8.1.6 8.1.7`, a few seconds):
 
-This page used to say *0 exercised, 400 unreachable*, and explained it: click is classes and
-decorators needing a constructed `Context`, so a tool calling functions with literals cannot
-get there. That explanation was wrong, and comfortable enough that it survived a while.
+| of 234 stable callables | |
+|---|---:|
+| not run: the name says it acts on the machine (`launch`, `edit`, `prompt`, `getchar`, `confirm`, `pager`, ...) | 21 |
+| **exercised in both versions** | **111** |
+| ran, and rejected every generated input | 56 |
+| needs an instance this tool could not build | 42 |
+| never handed an argument of the right type | 4 |
 
-Four defects were producing the zero, none of them about click:
+No API change and no silent change on the inputs tried. The 102 not exercised are reported
+by reason rather than as one "could not be called" number: a function this tool never
+managed to hand a valid argument is a fact about the tool, and one that ran and refused is a
+fact about the package.
+
+An earlier run reported one silent change here, `BashComplete.source`: on a machine with no
+`bash`, 8.1.6 raises *Couldn't detect Bash version* and 8.1.7 warns and returns the
+completion script. That difference is real - call it directly and it shows - but the
+behaviour pass now refuses to let a probed function start a process, so both versions fail
+at the same `subprocess.run` and it is not reported. That is the price of the guard
+described under [Scope](https://github.com/hammasbuilds/blast-radius#scope).
+
+The first runs exercised none of it. Four fixes, none of them about click, made the pass work at all:
 
 | | |
 |---|---|
-| the payload went on the **command line** | 12,290 characters returned nothing with exit code 0; 400 functions hit `WinError 206`. The default limit is 400, so on Windows the behaviour pass silently did nothing on any package worth checking. |
+| the payload went on the **command line** | 12,290 characters returned nothing with exit code 0; on Windows the behaviour pass silently did nothing on any package worth checking |
 | `SystemExit` was not caught | it inherits `BaseException`, so `except Exception` missed it, and one click command calling `sys.exit()` ended the whole run |
-| `_params` mis-parsed a **return annotation** | `(value: int, name: str = "x") -> bool` was read as taking ONE parameter, so every annotated function was called short and raised `TypeError`. click annotated its entire API in v8 |
-| a class needing a constructor argument was **refused** | 95 of 234, a larger bucket than the 54 the tool could then exercise |
+| `_params` mis-parsed a **return annotation** | `(value: int, name: str = "x") -> bool` was read as taking ONE parameter, so every annotated function was called short and raised `TypeError` |
+| a class needing a constructor argument was **refused** | now built with a generated argument where the annotation allows a guess |
 
-| | before the fixes | now (2026-09-27 run) |
-|---|---:|---:|
-| exercised | 54 | **124** |
-| needs an instance this tool could not build | 95 | **40** |
-| raised on every generated input | 81 | 67 — 60 ran and refused, 7 never got an argument of the right type |
-| never returned, restarted past | - | 3 |
-
-The 110 not exercised are reported by reason rather than as one "could not be called"
-number — a function this tool never managed to hand a valid argument is a fact about the
-tool, and one that ran and refused is a fact about the package.
-
-See [docs/RESULTS.md](https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md) for both runs.
+See [docs/RESULTS.md](https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md) for all three runs; the
+JSON each number is read from is committed next to it.
 
 ## How it works
 
@@ -263,16 +275,22 @@ scripts/
 - **It does not read changelogs.** Deliberately. The changelog is the claim being checked.
 - **It cannot reach every API.** A class whose constructor takes an argument is built with a
   generated one where the annotation allows a guess, and reported as needing an instance
-  where the guess fails. On `click` 8.1.6 → 8.1.7 that is **40 of 234** stable callables.
+  where the guess fails. On `click` 8.1.6 → 8.1.7 that is **42 of 234** stable callables.
 - **Generated arguments, not real ones.** A pool of literals chosen per parameter from its
   annotation, varied one at a time. A behaviour change that only shows on a complex input
-  will be missed. On click, **60 of 234** rejected every generated input and **7** were
+  will be missed. On click, **56 of 234** rejected every generated input and **4** were
   never handed an argument of the right type.
 - **Public surface only.** A project reaching into private names is not covered.
-- **It runs the package's code.** The behaviour pass calls public functions with generated
-  arguments, in a subprocess whose working directory is a throwaway temp dir and whose stdin
-  is closed. That is not a sandbox: a function that deletes, opens a window or makes a
-  network call will do so. Run it on packages you would install anyway, or in CI.
+- **It runs the package's code, behind a guard.** The behaviour pass calls public functions
+  with generated arguments, in a subprocess that sees only the standard library and the
+  installed version (not the environment blast-radius runs in), works in a throwaway temp
+  dir, and has stdin closed. Functions whose names say they act on the machine are not run
+  at all, and in the rest, starting a process, opening a network connection, reading the
+  console and writing outside the temp dir raise `PermissionError` - in both versions
+  alike, so it compares as a refusal. That guards against ordinary library code, not
+  hostile code (`ctypes` can still do anything): run it on packages you would install
+  anyway. The price is that a behaviour change which needs a child process or the network
+  is not seen.
 - **Method calls on runtime objects are "possible", not proven.** `obj.contains(...)`
   cannot be tied to a class without running the code, so such sites are listed separately
   and do not trip `--fail-on used`.
@@ -280,11 +298,11 @@ scripts/
   are keyed on the object, so `packaging.specifiers.parse` (21.3 imported `parse` into that
   module; 24.0 does not) is folded into `packaging.version.parse`. Code importing through
   such an incidental path is still matched, but the path's removal is not listed as `gone`.
-- **A function that never returns costs one `--timeout`, per version.** `click.getchar`,
-  `click.prompt` and `click.termui.hidden_prompt_func` read the console and never answer a
-  batch job. The probe abandons each after `--timeout` seconds (default 60) and carries on,
-  but the waiting is real: most of the click 8.1.6 → 8.1.7 run's 410 seconds is those three
-  functions, twice.
+- **A function that never returns costs one `--timeout`, per version.** The probe abandons
+  it after `--timeout` seconds (default 20) and carries on with the rest. The usual cause,
+  a function waiting on the console (`click.getchar`, `click.prompt`), no longer gets that
+  far: those are skipped by name and `input()` gets end-of-file, which is why the click
+  runs take seconds where they used to take seven minutes.
 - **Two packages.** `packaging` and `click`. Two upgrades are not a general claim about
   upgrades, and nothing here says how this behaves on a package shaped differently from
   both.

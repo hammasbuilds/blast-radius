@@ -3,13 +3,17 @@
 Three upgrades of two packages, run with:
 
 ```bash
-blast-radius check packaging 21.3 24.0 --used-by path/to/pypa-build
-blast-radius check click 7.1.2 8.1.7
-blast-radius check click 8.1.6 8.1.7
+git clone https://github.com/pypa/build pypa-build && git -C pypa-build checkout 8d1dd6b
+blast-radius check packaging 21.3 24.0 --used-by pypa-build --out packaging-out
+blast-radius check click 7.1.2 8.1.7 --out click7-out
+blast-radius check click 8.1.6 8.1.7 --out click8-out
 ```
 
-No language model anywhere. Every number below is read out of `docs/*.json`, re-generated
-on 2026-09-27 (Python 3.14, Windows) after the call-site and signature-compatibility fixes.
+No language model anywhere. Every number below is read out of the `blast-radius.json` each
+run wrote, committed here as `docs/*.json`. Regenerated on 2026-10-03 (Python 3.12,
+Windows) after the probe stopped seeing the environment blast-radius runs in and the
+behaviour pass gained its guard (see the click sections). Annotation text in the output
+follows your Python: 3.14 prints `Optional[str]` as `str | None`.
 
 ## `packaging` 21.3 -> 24.0
 
@@ -52,7 +56,7 @@ inflated them:
 
 ```
 packaging.version.parse
-  same signature (version: str) -> ForwardRef('LegacyVersion') | ForwardRef('Version'); 3 of 4 exercised inputs disagree
+  same signature (version: str) -> Union[ForwardRef('LegacyVersion'), ForwardRef('Version')]; 3 of 4 exercised inputs disagree
   input : ("x",)
      21.3 : ok: <LegacyVersion('x')>
      24.0 : raise: InvalidVersion: Invalid version: 'x'
@@ -64,8 +68,8 @@ takes execution to find.
 
 ### What reaches a real consumer
 
-Pointed at a checkout of [`pypa/build`](https://github.com/pypa/build) with `--used-by`
-(36 Python files read):
+Pointed at [`pypa/build`](https://github.com/pypa/build) at commit `8d1dd6b` with
+`--used-by` (36 Python files read):
 
 | kind | symbol | where | |
 |---|---|---|---|
@@ -91,16 +95,19 @@ entries for one line of code, none of them the class actually being called.
 
 | | count |
 |---|---:|
-| gone | 15 |
-| reshaped | 13 |
+| gone | 12 |
+| reshaped | 11 |
 | **silent** | **4** |
-| widened | 14 |
+| widened | 9 |
 | added | 51 |
 
-Behaviour compared on 94 of 183 functions whose existing calls still bind; 492 seconds, of
-which about 480 were four functions that never return (`click.edit`, `click.getchar`,
-`click.launch`, `click.termui.hidden_prompt_func`) costing the 60-second `--timeout` once
-per version.
+184 functions kept a call shape every old call still binds to. 21 were not run because
+their names say they act on the machine (`launch`, `edit`, `prompt`, `getchar`, ...); of the
+163 run in both versions, behaviour was compared on 87, and 76 could not be called in either
+(41 rejected every generated input, 31 need an instance this tool could not build, 3 were
+never handed an argument of the right type, 1 needed different constructor arguments in the
+two versions). About six seconds. Seven signatures were readable in only one version and
+are neither compared nor counted as reshaped.
 
 The four silent changes, each a real difference in what click 8 returns:
 
@@ -111,31 +118,47 @@ The four silent changes, each a real difference in what click 8 returns:
 | `click.NoSuchOption.format_message` | `()` | `'no such option: x'` | `'No such option: x'` |
 | `click.types.StringParamType.convert` | `(0, "", "")` | `0` | `'0'` |
 
-The first run of this comparison with widened functions included reported **14**. The other
-ten were not behaviour, and finding out why is two more fixes:
+Not counted, and listed in the report as such:
 
-- four were `help_option`, `version_option`, `password_option` and `confirmation_option`
-  returning a decorator that now reprs as `option.<locals>.decorator`, because click 8 builds
-  them through `option()`. Closure reprs are now normalised.
-- six differed only where one version raised `TypeError` or `AttributeError` on a generated
-  argument - `Argument.get_default("")` passes a string where a `Context` belongs, and 7.1.2
-  happened to ignore it. They are listed under "not counted" in the report and never count
-  as silent.
+- five functions differ only where one version raised `TypeError` or `AttributeError` on a
+  generated argument (`Argument.get_default("")` passes a string where a `Context` belongs,
+  and 7.1.2 happened to ignore it). No real caller passes those.
+- `click.Path.convert` disagreed with *itself* when re-run, so its difference is dropped as
+  non-deterministic rather than reported.
+- decorators such as `help_option` and `version_option` return a closure that click 8 builds
+  through `option()`, so it reprs as `option.<locals>.decorator`. Closure reprs are
+  normalised before comparing.
 
-The old numbers on this page (gone 50, reshaped 68, added 292) were from the first probe,
-before aliases were de-duplicated and before additive signature changes became `widened`.
+The first runs of this comparison reported gone 50, reshaped 68, added 292 (before aliases
+were de-duplicated and additive signature changes became `widened`). The previous version
+of this page (2026-09-27, Python 3.14) said gone 15, reshaped 13, widened 14, added 51.
+Since then functions are skipped by name, a signature readable in only one version is no
+longer counted as reshaped, and the probe no longer imports from the environment
+blast-radius runs in. Only the last was measured on its own: it moved gone from 13 to 12
+and added from 50 to 51, because click 7.1.2 defines `termui.get_winterm_size` only when
+`colorama` imports, colorama is not a click 7 dependency, and whether it imported depended
+on what was installed next to the tool.
 
 ## `click` 8.1.6 -> 8.1.7
 
-**124 of 234 stable callables exercised**, one silent change: `BashComplete.source`, where
-8.1.6 raises `RuntimeError: Couldn't detect Bash version` on this machine and 8.1.7 returns
-the completion script. 410 seconds, nearly all of it `click.getchar`, `click.prompt` and
-`click.termui.hidden_prompt_func` waiting on a console, once per version.
+No API change. Of 234 stable callables, 21 are not run by name; of the 213 run in both
+versions, **111 were exercised** and **no behaviour changed** on the inputs tried. The 102
+not exercised: 56 ran and rejected every generated input, 42 need an instance this tool
+could not build, 4 were never handed an argument of the right type. About three seconds.
 
-This page used to report **0 exercised, 400 unreachable**, and explained it: click is classes
-and decorators needing a constructed `Context`, so a tool calling functions with literals
-cannot reach them. That explanation was wrong, and comfortable enough to survive a while.
-Four defects were producing the zero, and none of them was about click:
+An earlier run of this page reported 124 exercised and one silent change,
+`BashComplete.source`: on a machine with no `bash`, 8.1.6 raises *Couldn't detect Bash
+version* and 8.1.7 warns and returns the completion script. Called directly, outside the
+probe, that still reproduces. The behaviour pass now refuses to let a probed function start
+a process, so both versions fail at the same `subprocess.run` and the difference is not
+reported - the cost of the guard. That run also took 410 seconds, nearly all of it
+`click.getchar`, `click.prompt` and `click.termui.hidden_prompt_func` waiting on a console
+once per version; those are now skipped by name.
+
+That earlier run was itself a correction. This page once reported **0 exercised, 400
+unreachable**, and explained it: click is classes and decorators needing a constructed
+`Context`, so a tool calling functions with literals cannot reach them. That explanation was
+wrong. Four defects were producing the zero, and none of them was about click:
 
 | the defect | what it did |
 |---|---|
@@ -143,13 +166,6 @@ Four defects were producing the zero, and none of them was about click:
 | `SystemExit` was not caught | it inherits `BaseException`, so `except Exception` missed it; one click command calling `sys.exit()` ended the whole run |
 | `_params` mis-parsed a return annotation | `(value: int, name: str = "x") -> bool` read as ONE parameter, so every annotated function was called short and raised `TypeError`. click annotated its entire API in v8 |
 | a class needing a constructor argument was refused outright | 95 of 234 - a larger bucket than the 54 the tool could then exercise |
-
-| | before the fixes | now |
-|---|---:|---:|
-| exercised | 54 | **124** |
-| needs an instance this tool could not build | 95 | **40** |
-| raised on every generated input | 81 | 67 (60 ran and refused, 7 never got an argument of the right type) |
-| never returned, restarted past | - | 3 |
 
 ## What this cost to learn
 
@@ -200,6 +216,9 @@ worse than none, because the run looks like it is still working.
 ## Limits
 
 - **Two packages.** `packaging` and `click`. Neither is a general claim about upgrades.
+- **The guard hides what needs a process or the network.** A probed function may not start
+  a process, connect anywhere, read the console or write outside its temp directory; a
+  behaviour change that depends on one of those (`BashComplete.source` above) is not seen.
 - **Generated arguments, not real ones.** A function is called with literals from a small
   pool, chosen per parameter from its annotation. A class whose constructor takes an argument
   is built with a generated one where the annotation allows a guess, and reported as needing

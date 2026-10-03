@@ -1,0 +1,444 @@
+[
+  {
+    "package": "beautifulsoup4",
+    "old": "4.12.2",
+    "new": "4.12.3",
+    "bump": "patch",
+    "module": "bs4",
+    "exported_symbols": 88
+  },
+  {
+    "package": "charset-normalizer",
+    "old": "3.3.0",
+    "new": "3.3.2",
+    "bump": "patch",
+    "module": "charset_normalizer",
+    "exported_symbols": 15
+  },
+  {
+    "package": "click",
+    "old": "8.1.6",
+    "new": "8.1.7",
+    "bump": "patch",
+    "module": "click",
+    "exported_symbols": 197
+  },
+  {
+    "package": "coverage",
+    "old": "7.5.0",
+    "new": "7.5.4",
+    "bump": "patch",
+    "module": "coverage",
+    "exported_symbols": 80,
+    "exported_reshaped": [
+      "coverage.CoverageData.update"
+    ],
+    "internal_gone": [
+      "coverage.misc.output_encoding",
+      "coverage.parser.AstArcAnalyzer.add_arcs",
+      "coverage.parser.AstArcAnalyzer.add_body_arcs",
+      "coverage.phystokens.SoftKeywordFinder",
+      "coverage.phystokens.SoftKeywordFinder.visit_Match",
+      "coverage.phystokens.SoftKeywordFinder.visit_TypeAlias",
+      "coverage.regions.RegionFinder.visit_ClassDef",
+      "coverage.regions.RegionFinder.visit_FunctionDef"
+    ],
+    "internal_reshaped": [
+      "coverage.parser.AstArcAnalyzer",
+      "coverage.parser.PythonParser.lines_matching"
+    ]
+  },
+  {
+    "package": "filelock",
+    "old": "3.15.1",
+    "new": "3.15.4",
+    "bump": "patch",
+    "module": "filelock",
+    "exported_symbols": 16
+  },
+  {
+    "package": "httpx",
+    "old": "0.27.0",
+    "new": "0.27.2",
+    "bump": "patch",
+    "module": "httpx",
+    "exported_symbols": 157
+  },
+  {
+    "package": "jinja2",
+    "old": "3.1.2",
+    "new": "3.1.4",
+    "bump": "patch",
+    "module": "jinja2",
+    "exported_symbols": 96
+  },
+  {
+    "package": "markupsafe",
+    "old": "2.1.3",
+    "new": "2.1.5",
+    "bump": "patch",
+    "module": "markupsafe",
+    "exported_symbols": 35
+  },
+  {
+    "package": "platformdirs",
+    "old": "4.2.0",
+    "new": "4.2.2",
+    "bump": "patch",
+    "module": "platformdirs",
+    "exported_symbols": 47
+  },
+  {
+    "package": "pytest",
+    "old": "8.2.0",
+    "new": "8.2.2",
+    "bump": "patch",
+    "module": "pytest,py",
+    "exported_symbols": 321
+  },
+  {
+    "package": "requests",
+    "old": "2.32.2",
+    "new": "2.32.3",
+    "bump": "patch",
+    "module": "requests",
+    "exported_symbols": 63
+  },
+  {
+    "package": "rich",
+    "old": "13.7.0",
+    "new": "13.7.1",
+    "bump": "patch",
+    "module": "rich",
+    "exported_symbols": 6
+  },
+  {
+    "package": "tqdm",
+    "old": "4.66.1",
+    "new": "4.66.4",
+    "bump": "patch",
+    "module": "tqdm",
+    "exported_symbols": 77
+  },
+  {
+    "package": "typer",
+    "old": "0.12.0",
+    "new": "0.12.3",
+    "bump": "patch",
+    "module": "typer",
+    "exported_symbols": 13,
+    "internal_widened": [
+      "typer.cli.docs",
+      "typer.cli.get_docs_for_click"
+    ]
+  },
+  {
+    "package": "urllib3",
+    "old": "2.2.1",
+    "new": "2.2.2",
+    "bump": "patch",
+    "module": "urllib3",
+    "exported_symbols": 92,
+    "exported_reshaped": [
+      "urllib3.BaseHTTPResponse",
+      "urllib3.HTTPResponse"
+    ]
+  },
+  {
+    "package": "anyio",
+    "old": "4.1.0",
+    "new": "4.4.0",
+    "bump": "minor",
+    "module": "anyio",
+    "exported_symbols": 155,
+    "exported_widened": [
+      "anyio.Path.relative_to"
+    ]
+  },
+  {
+    "package": "click",
+    "old": "8.0.4",
+    "new": "8.1.7",
+    "bump": "minor",
+    "module": "click",
+    "exported_symbols": 200,
+    "exported_gone": [
+      "click.Group.resultcallback",
+      "click.get_os_args",
+      "click.get_terminal_size"
+    ],
+    "exported_reshaped": [
+      "click.Parameter",
+      "click.Path.coerce_path_result"
+    ],
+    "exported_widened": [
+      "click.Path",
+      "click.group"
+    ],
+    "internal_gone": [
+      "click.types.get_filesystem_encoding"
+    ]
+  },
+  {
+    "package": "filelock",
+    "old": "3.13.1",
+    "new": "3.15.4",
+    "bump": "minor",
+    "module": "filelock",
+    "exported_symbols": 9,
+    "exported_widened": [
+      "filelock.BaseFileLock",
+      "filelock.FileLock",
+      "filelock.SoftFileLock",
+      "filelock.UnixFileLock"
+    ]
+  },
+  {
+    "package": "httpx",
+    "old": "0.26.0",
+    "new": "0.27.0",
+    "bump": "minor",
+    "module": "httpx",
+    "exported_symbols": 157
+  },
+  {
+    "package": "pluggy",
+    "old": "1.4.0",
+    "new": "1.5.0",
+    "bump": "minor",
+    "module": "pluggy",
+    "exported_symbols": 45
+  },
+  {
+    "package": "rich",
+    "old": "13.0.1",
+    "new": "13.7.1",
+    "bump": "minor",
+    "module": "rich",
+    "exported_symbols": 6,
+    "internal_reshaped": [
+      "rich.cells.chop_cells",
+      "rich.markdown.CodeBlock.create",
+      "rich.markdown.Heading",
+      "rich.markdown.Heading.create",
+      "rich.markdown.ImageItem.create",
+      "rich.markdown.ListElement.create",
+      "rich.markdown.MarkdownElement.create",
+      "rich.markdown.Paragraph.create",
+      "rich.traceback.Traceback",
+      "rich.traceback.Traceback.extract",
+      "rich.traceback.Traceback.from_exception"
+    ],
+    "internal_widened": [
+      "rich.panel.Panel.fit",
+      "rich.theme.Theme.read",
+      "rich.traceback.install"
+    ]
+  },
+  {
+    "package": "starlette",
+    "old": "0.35.1",
+    "new": "0.37.2",
+    "bump": "minor",
+    "module": "starlette",
+    "exported_symbols": 2
+  },
+  {
+    "package": "typer",
+    "old": "0.9.0",
+    "new": "0.12.3",
+    "bump": "minor",
+    "module": "typer",
+    "exported_symbols": 13,
+    "internal_reshaped": [
+      "typer.main.generate_list_convertor"
+    ]
+  },
+  {
+    "package": "urllib3",
+    "old": "2.1.0",
+    "new": "2.2.2",
+    "bump": "minor",
+    "module": "urllib3",
+    "exported_symbols": 90,
+    "exported_reshaped": [
+      "urllib3.BaseHTTPResponse",
+      "urllib3.HTTPResponse"
+    ]
+  },
+  {
+    "package": "click",
+    "old": "7.1.2",
+    "new": "8.1.7",
+    "bump": "major",
+    "module": "click",
+    "exported_symbols": 177,
+    "exported_gone": [
+      "click.Argument.full_process_value",
+      "click.Group.resultcallback",
+      "click.Option.full_process_value",
+      "click.get_os_args",
+      "click.get_terminal_size"
+    ],
+    "exported_widened": [
+      "click.Argument.get_default",
+      "click.Context.lookup_default",
+      "click.Group.main",
+      "click.Option.get_default",
+      "click.Path",
+      "click.group",
+      "click.progressbar",
+      "click.version_option"
+    ],
+    "exported_reshaped": [
+      "click.FloatRange",
+      "click.IntRange",
+      "click.Option",
+      "click.OptionParser.add_argument",
+      "click.OptionParser.add_option",
+      "click.Parameter",
+      "click.Path.coerce_path_result",
+      "click.style"
+    ],
+    "internal_gone": [
+      "click.core.fast_exit",
+      "click.core.invoke_param_callback",
+      "click.core.iteritems",
+      "click.types.filename_to_ui",
+      "click.types.get_filesystem_encoding",
+      "click.types.get_streerror",
+      "click.utils.is_bytes"
+    ],
+    "internal_reshaped": [
+      "click.parser.Argument",
+      "click.parser.Option",
+      "click.testing.Result"
+    ],
+    "internal_widened": [
+      "click.testing.CliRunner.isolated_filesystem"
+    ]
+  },
+  {
+    "package": "rich",
+    "old": "12.6.0",
+    "new": "13.7.1",
+    "bump": "major",
+    "module": "rich",
+    "exported_symbols": 6,
+    "internal_reshaped": [
+      "rich.cells.chop_cells",
+      "rich.logging.NullFile.closed",
+      "rich.markdown.CodeBlock.create",
+      "rich.markdown.Heading",
+      "rich.markdown.Heading.create",
+      "rich.markdown.ImageItem.create",
+      "rich.markdown.ListElement.create",
+      "rich.markdown.MarkdownElement.create",
+      "rich.markdown.Paragraph.create",
+      "rich.pretty.Node",
+      "rich.traceback.Traceback",
+      "rich.traceback.Traceback.extract",
+      "rich.traceback.Traceback.from_exception"
+    ],
+    "internal_widened": [
+      "rich.panel.Panel.fit",
+      "rich.theme.Theme.read",
+      "rich.traceback.install"
+    ]
+  },
+  {
+    "package": "urllib3",
+    "old": "1.26.18",
+    "new": "2.2.2",
+    "bump": "major",
+    "module": "urllib3",
+    "exported_symbols": 79,
+    "exported_reshaped": [
+      "urllib3.HTTPConnectionPool",
+      "urllib3.HTTPResponse",
+      "urllib3.HTTPSConnectionPool",
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request",
+      "urllib3.Retry",
+      "urllib3.Retry.sleep_for_retry"
+    ],
+    "exported_widened": [
+      "urllib3.HTTPConnectionPool.urlopen",
+      "urllib3.ProxyManager"
+    ],
+    "exported_gone": [
+      "urllib3.HTTPResponse.from_httplib",
+      "urllib3.get_host",
+      "urllib3.packages.backports.weakref_finalize.weakref_finalize",
+      "urllib3.packages.backports.weakref_finalize.weakref_finalize.detach",
+      "urllib3.packages.backports.weakref_finalize.weakref_finalize.peek",
+      "urllib3.request.RequestMethods",
+      "urllib3.request.RequestMethods.urlopen",
+      "urllib3.util.split_first",
+      "urllib3.util.wait.NoWayToWaitForSocketError"
+    ],
+    "internal_reshaped": [
+      "urllib3.connection.HTTPConnection.putrequest",
+      "urllib3.connection.HTTPSConnection",
+      "urllib3.exceptions.NewConnectionError",
+      "urllib3.exceptions.ProxyError",
+      "urllib3.util.ssltransport.SSLTransport.makefile",
+      "urllib3.util.ssltransport.SSLTransport.recv"
+    ],
+    "internal_widened": [
+      "urllib3.connection.HTTPConnection.request",
+      "urllib3.connection.create_urllib3_context",
+      "urllib3.connection.match_hostname",
+      "urllib3.response.HTTPHeaderDict.add"
+    ],
+    "internal_gone": [
+      "urllib3.connection.create_proxy_ssl_context",
+      "urllib3.connectionpool.LifoQueue",
+      "urllib3.connectionpool.assert_header_parsing",
+      "urllib3.contrib.appengine.AppEngineManager",
+      "urllib3.contrib.appengine.AppEngineManager.urlopen",
+      "urllib3.contrib.appengine.AppEnginePlatformError",
+      "urllib3.contrib.appengine.AppEnginePlatformWarning",
+      "urllib3.contrib.appengine.is_appengine",
+      "urllib3.contrib.appengine.is_appengine_sandbox",
+      "urllib3.contrib.appengine.is_local_appengine",
+      "urllib3.contrib.appengine.is_prod_appengine",
+      "urllib3.contrib.appengine.is_prod_appengine_mvms",
+      "urllib3.exceptions.SNIMissingWarning",
+      "urllib3.exceptions.SubjectAltNameWarning",
+      "urllib3.filepost.b",
+      "urllib3.filepost.iter_fields",
+      "urllib3.packages.backports.makefile.backport_makefile",
+      "urllib3.packages.six.Module_six_moves_urllib",
+      "urllib3.packages.six.Module_six_moves_urllib_error",
+      "urllib3.packages.six.Module_six_moves_urllib_parse",
+      "urllib3.packages.six.Module_six_moves_urllib_request",
+      "urllib3.packages.six.Module_six_moves_urllib_response",
+      "urllib3.packages.six.Module_six_moves_urllib_robotparser",
+      "urllib3.packages.six.MovedAttribute",
+      "urllib3.packages.six.MovedModule",
+      "urllib3.packages.six.add_metaclass",
+      "urllib3.packages.six.add_move",
+      "urllib3.packages.six.assertCountEqual",
+      "urllib3.packages.six.assertNotRegex",
+      "urllib3.packages.six.assertRaisesRegex",
+      "urllib3.packages.six.assertRegex",
+      "urllib3.packages.six.create_unbound_method",
+      "urllib3.packages.six.ensure_binary",
+      "urllib3.packages.six.ensure_str",
+      "urllib3.packages.six.ensure_text",
+      "urllib3.packages.six.get_unbound_function",
+      "urllib3.packages.six.iteritems",
+      "urllib3.packages.six.iterkeys",
+      "urllib3.packages.six.iterlists",
+      "urllib3.packages.six.itervalues",
+      "urllib3.packages.six.python_2_unicode_compatible",
+      "urllib3.packages.six.raise_from",
+      "urllib3.packages.six.remove_move",
+      "urllib3.packages.six.reraise",
+      "urllib3.packages.six.u",
+      "urllib3.packages.six.with_metaclass",
+      "urllib3.response.HTTPHeaderDict.from_httplib"
+    ]
+  }
+]
