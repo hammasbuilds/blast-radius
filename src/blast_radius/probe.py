@@ -23,8 +23,29 @@ import os
 import subprocess
 import sys
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from pathlib import Path
+
+
+@contextlib.contextmanager
+def _scratch() -> Iterator[str]:
+    """A temp directory that is removed on a best-effort basis and never raises.
+
+    Not `TemporaryDirectory(ignore_cleanup_errors=True)`: when a directory inside it
+    keeps refusing removal (a probed function left a process or handle holding it),
+    CPython 3.12's cleanup on Linux retries through unlink -> IsADirectoryError ->
+    rmtree -> rmdir without end and dies with RecursionError - after the work is
+    done. Leaving a temp directory behind costs less than losing the measurement.
+    """
+    import shutil
+    import tempfile
+
+    path = tempfile.mkdtemp(prefix="blast-probe-")
+    try:
+        yield path
+    finally:
+        shutil.rmtree(path, ignore_errors=True)
+
 
 # Installed into every probe before any package code runs. Comments, not docstrings,
 # throughout the templates: each is a triple-quoted string and a docstring would close it.
@@ -839,16 +860,11 @@ def _run(
     sandbox: bool = True,
     progress: Callable[[int], None] | None = None,
 ) -> dict | None:
-    import tempfile
-
-    # ignore_cleanup_errors: a probed function may leave a process holding the
-    # directory, and on Windows that makes it undeletable. Leaving a temp directory
-    # behind is a smaller cost than losing the measurement.
+    # _scratch, not TemporaryDirectory: a probed function may leave a process holding
+    # the directory, and its removal must never cost the measurement.
     with contextlib.ExitStack() as stack:
         if workdir is None:
-            workdir = Path(
-                stack.enter_context(tempfile.TemporaryDirectory(ignore_cleanup_errors=True))
-            )
+            workdir = Path(stack.enter_context(_scratch()))
         path = workdir / "probe.py"
         prologue = SANDBOX + COMMON
         if not sandbox:
@@ -861,7 +877,13 @@ def _run(
         try:
             with open(out_path, "wb") as out_fh, open(err_path, "wb") as err_fh:
                 proc = subprocess.Popen(
-                    [sys.executable, str(path), *args],
+                    # -S: no site-packages and no .pth files from the interpreter
+                    # running blast-radius. Without it an optional import the target
+                    # does not ship (`try: import colorama`) resolved against whatever
+                    # was installed next to this tool, and click 7.1.2's surface was
+                    # 248 symbols in one environment and 250 in another. The probe
+                    # sees the stdlib and the target directory, nothing else.
+                    [sys.executable, "-S", str(path), *args],
                     stdout=out_fh,
                     stderr=err_fh,
                     # No stdin: a prompt gets EOF at once instead of blocking.
@@ -907,10 +929,8 @@ def surface(
     (pytest installs `_pytest`); a symbol defined under any of them counts as the
     package's own. It defaults to the import names themselves.
     """
-    import tempfile
-
     modules = [package] if isinstance(package, str) else list(package)
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+    with _scratch() as tmp:
         config = Path(tmp) / "config.json"
         config.write_text(
             json.dumps({"modules": modules, "owned": sorted(set(owned or []) | set(modules))}),
@@ -921,11 +941,9 @@ def surface(
 
 def resolve_names(target_dir: Path, names: list[str], timeout: float = 300.0) -> dict:
     """{name: record} for each of `names` that still resolves in this version."""
-    import tempfile
-
     if not names:
         return {}
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+    with _scratch() as tmp:
         blob = Path(tmp) / "names.json"
         blob.write_text(json.dumps(names), encoding="utf-8")
         out = _run(RESOLVE, [str(Path(target_dir).resolve()), str(blob)], timeout)
@@ -947,9 +965,7 @@ def _attempt(
     sandbox: bool,
     progress: Callable[[int], None] | None,
 ) -> dict | None:
-    import tempfile
-
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+    with _scratch() as tmp:
         blob = Path(tmp) / "payload.json"
         blob.write_text(json.dumps(payload), encoding="utf-8")
         journal = Path(tmp) / "journal.jsonl"

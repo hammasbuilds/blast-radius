@@ -6,21 +6,42 @@ on:
 
 jobs:
   test:
+    # pyproject.toml lists 3.11-3.13 and says each is exercised on Linux and Windows;
+    # this matrix is what makes that true. The two platforms really do differ here:
+    # temp-directory cleanup took a different code path on Linux and failed only there.
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13"]
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install "pytest>=8" "ruff>=0.16,<0.17"
+      - run: ruff check src tests scripts demo.py
+      - run: ruff format --check src tests scripts demo.py
+      - run: pip install -e .
+      # The suite installs nothing and reaches no network: everything under test is the
+      # code that decides what counts as a change.
+      - run: pytest -q
+
+  wheel:
+    # The editable install reads src/ directly, so it cannot notice a wheel missing a
+    # file. Build the real wheel, install it where src/ is not, and run the suite and
+    # the console script against that.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v3
+      - uses: actions/setup-python@v5
         with:
-          enable-cache: true
-          cache-dependency-glob: "**/pyproject.toml"
-      - run: uv sync --all-groups
-
-      - name: Lint
-        run: |
-          uv run ruff check src tests scripts demo.py
-          uv run ruff format --check src tests scripts demo.py
-
-      # The suite installs nothing and reaches no network: everything under test is the
-      # code that decides what counts as a change.
-      - name: Test
-        run: uv run pytest -q
+          python-version: "3.12"
+      - run: pip install build pytest
+      - run: python -m build --wheel
+      - run: pip install dist/*.whl
+      - run: blast-radius --version
+      - run: |
+          mkdir /tmp/installed && cp -r tests /tmp/installed/
+          cd /tmp/installed && python -m pytest -q -p no:cacheprovider tests

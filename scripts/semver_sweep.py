@@ -116,6 +116,18 @@ def main() -> int:
             f"{bump:5}  pairs {len(rows):2}  broke exported API {len(broke):2}"
             f"  symbols {n_sym:3}  widened-only pairs {len(widened_only)}"
         )
+    failed = [r for r in results if "error" in r]
+    if failed:
+        # A partial sweep prints a table that looks like a result. Say it is not one:
+        # with the network down, 26 of 27 pairs failed to install and the summary still
+        # read "patch pairs 1, broke 1" with exit status 0.
+        print(
+            f"\nINCOMPLETE: {len(failed)} of {len(results)} pairs could not be measured "
+            "(see the lines above); the table covers only the rest and is not the "
+            "published result. Re-run when the installs succeed.",
+            file=sys.stderr,
+        )
+        return 1
     return 0
 
 

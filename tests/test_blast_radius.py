@@ -841,3 +841,23 @@ def test_crashes_do_not_use_up_the_hang_budget(tmp_path):
     assert out["crashy.after"]["rows"][0] == ["ok", "2"]
     assert out["__stopped_on__"] == names
     assert "crash" in out[names[0]]["error"]
+
+
+def test_the_probe_does_not_see_what_is_installed_next_to_blast_radius(tmp_path):
+    """An optional import the target does not ship must not resolve against the
+    environment running blast-radius. It did: click 7.1.2 defines
+    `termui.get_winterm_size` only when colorama imports, colorama is not a click 7
+    dependency, and the same comparison reported 248 symbols in one venv and 250 in
+    another. pytest is importable here (it is running this test) and is not in the
+    target directory, so the probe must not see it."""
+    _pkg(
+        tmp_path,
+        "optional",
+        "def always():\n    return 1\n\n"
+        "try:\n    import pytest  # noqa: F401\n\n"
+        "    def only_with_the_host():\n        return 2\n"
+        "except ImportError:\n    pass\n",
+    )
+    out = surface(tmp_path, "optional")
+    assert "optional.always" in out
+    assert "optional.only_with_the_host" not in out

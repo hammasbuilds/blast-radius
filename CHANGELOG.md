@@ -64,5 +64,15 @@ First release.
 - A failed install crashed the run on Windows. `subprocess.run(text=True)` decodes with
   the locale codec, and `uv` draws its errors with box characters cp1252 cannot
   represent; the resulting `UnicodeDecodeError` is not an `OSError` and was not caught.
+- The probe imported from the environment blast-radius runs in as well as from the
+  installed version, so an optional import the target does not ship resolved against
+  whatever sat next to the tool: click 7.1.2 had 248 public symbols in one environment
+  and 250 in another. The probe interpreter now starts with `-S` and sees only the
+  standard library and the target.
+- On Linux, a probe temp directory that kept refusing removal crashed the run with
+  `RecursionError` from `TemporaryDirectory` cleanup, after the work was done. Cleanup
+  is now best-effort and can never raise.
+- `scripts/semver_sweep.py` printed a summary table and exited 0 when pairs failed to
+  install; it now says the run is incomplete and exits 1.
 
 [0.1.0]: https://github.com/hammasbuilds/blast-radius/releases/tag/v0.1.0
