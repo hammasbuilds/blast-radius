@@ -223,35 +223,36 @@ def summary(report: Report) -> str:
     return "\n".join(lines)
 
 
-def write_json(report: Report, path: Path) -> None:
-    path.write_text(
-        json.dumps(
-            {
-                "package": report.package,
-                "old_version": report.old_version,
-                "new_version": report.new_version,
-                "counts": report.counts(),
-                "behaviour_checked": report.behaviour_checked,
-                "compared": report.compared,
-                "unreachable": report.unreachable,
-                "reaching_you": len(report.reaching_you),
-                "modules": report.modules,
-                "behaviour_candidates": report.candidates,
-                "partial": bool(report.truncated),
-                "not_run_limit": report.truncated,
-                "not_run_side_effects": report.skipped_unsafe,
-                "nondeterministic": report.nondeterministic,
-                "unknown_signatures": report.unknown_signatures,
-                "still_resolve": report.still_resolve,
-                "seconds": round(report.seconds, 1),
-                "changes": [c.as_row() for c in report.sorted()],
-                "weak_differences": [c.as_row() for c in report.weak],
-            },
-            indent=2,
-        ),
-        encoding="utf-8",
-        newline="",
+def as_json(report: Report) -> str:
+    """The machine-readable report: what blast-radius.json holds and --json prints."""
+    return json.dumps(
+        {
+            "package": report.package,
+            "old_version": report.old_version,
+            "new_version": report.new_version,
+            "counts": report.counts(),
+            "behaviour_checked": report.behaviour_checked,
+            "compared": report.compared,
+            "unreachable": report.unreachable,
+            "reaching_you": len(report.reaching_you),
+            "modules": report.modules,
+            "behaviour_candidates": report.candidates,
+            "partial": bool(report.truncated),
+            "not_run_limit": report.truncated,
+            "not_run_side_effects": report.skipped_unsafe,
+            "nondeterministic": report.nondeterministic,
+            "unknown_signatures": report.unknown_signatures,
+            "still_resolve": report.still_resolve,
+            "seconds": round(report.seconds, 1),
+            "changes": [c.as_row() for c in report.sorted()],
+            "weak_differences": [c.as_row() for c in report.weak],
+        },
+        indent=2,
     )
+
+
+def write_json(report: Report, path: Path) -> None:
+    path.write_text(as_json(report), encoding="utf-8", newline="")
 
 
 def _esc(s: object, limit: int = 70) -> str:

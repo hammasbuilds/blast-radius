@@ -338,3 +338,73 @@ def test_a_closed_pipe_ends_the_output_not_the_run(tmp_path):
     code = proc.wait(timeout=120)
     assert "Traceback" not in err, err
     assert code == 0, (code, err)
+
+
+# --- machine-readable output and install failures -------------------------------------------
+
+
+def test_json_prints_exactly_the_report_file_on_stdout(tmp_path, fake_index, capsys):
+    fake_index(
+        {
+            "1.0.0": {"fakepkg/__init__.py": "def f(x):\n    return x\n\ndef g():\n    pass\n"},
+            "2.0.0": {"fakepkg/__init__.py": "def f(x, y):\n    return x\n"},
+        }
+    )
+    out = tmp_path / "out"
+    code = cli.main(
+        ["check", "fakepkg", "1.0.0", "2.0.0", "--no-behaviour", "--json", "--out", str(out)]
+    )
+    captured = capsys.readouterr()
+    assert code == 0
+    printed = json.loads(captured.out)  # the whole of stdout is one JSON document
+    assert printed == json.loads((out / "blast-radius.json").read_text(encoding="utf-8"))
+    assert names(printed, "gone") == ["fakepkg.g"]
+    assert names(printed, "reshaped") == ["fakepkg.f"]
+    assert "public symbols" in captured.err  # the human report moved to stderr
+
+
+def test_json_leaves_stdout_empty_on_an_error(tmp_path, fake_index, capsys):
+    fake_index({"1.0.0": {"fakepkg/__init__.py": "def f():\n    pass\n"}})
+    code = cli.main(["check", "fakepkg", "1.0.0", "9.9.9", "--json"])
+    captured = capsys.readouterr()
+    assert code == 2
+    assert captured.out == ""
+    assert "could not install fakepkg==9.9.9" in captured.err
+
+
+def test_json_mode_does_not_leak_into_the_next_run(tmp_path, fake_index, capsys):
+    fake_index({v: {"fakepkg/__init__.py": "def f():\n    pass\n"} for v in ("1.0.0", "2.0.0")})
+    cli.main(["check", "fakepkg", "1.0.0", "2.0.0", "--no-behaviour", "--json"])
+    capsys.readouterr()
+    cli.main(["check", "fakepkg", "1.0.0", "2.0.0", "--no-behaviour"])
+    assert "public symbols" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    ("why", "expected"),
+    [
+        (
+            "uv failed (exit 1):\n  x No solution found when resolving dependencies:\n"
+            "  `-> Because there is no version of packaging==99.99 and you require\n"
+            "      packaging==99.99, we can conclude that your requirements are unsatisfiable.",
+            "packaging 99.99 does not exist on the package index",
+        ),
+        (
+            "uv failed (exit 1):\n  `-> Because packagin was not found in the package registry\n"
+            "      and you require packagin==1.0, we can conclude ...",
+            "packagin is not on the package index",
+        ),
+        (
+            "pip failed (exit 1):\nERROR: Could not find a version that satisfies the "
+            "requirement packaging==99.99 (from versions: 20.0, 21.3)\nERROR: No matching "
+            "distribution found for packaging==99.99",
+            "packaging 99.99 does not exist on the package index",
+        ),
+        ("uv did not finish within 600s", "the install timed out"),
+        ("uv failed (exit 1):\nsomething else entirely", ""),
+    ],
+)
+def test_an_install_failure_gets_a_one_line_reason(why, expected):
+    package = "packagin" if "packagin " in why else "packaging"
+    headline = cli.install_headline(package, "99.99", why)
+    assert headline.startswith(expected) if expected else headline == ""

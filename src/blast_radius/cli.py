@@ -25,7 +25,7 @@ from blast_radius.diff import (
     unsafe_to_call,
 )
 from blast_radius.probe import WrongVersionImported, resolve_names, surface
-from blast_radius.report import summary, write_json, write_markdown
+from blast_radius.report import as_json, summary, write_json, write_markdown
 from blast_radius.types import BREAKING, Kind, Report
 
 DESCRIPTION = """\
@@ -81,12 +81,17 @@ _VERSION = re.compile(
 _NAME = re.compile(r"^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$", re.IGNORECASE)
 
 _stdout_gone = False
+# With --json, stdout carries exactly one JSON document and the human report goes to stderr.
+_report_to_stderr = False
 
 
 def _say(text: str = "") -> None:
     """Print a line of the report. A closed pipe (`| head`) ends the output, not the run:
     the comparison still finishes and the exit status still reports the gate."""
     global _stdout_gone
+    if _report_to_stderr:
+        _note(text)
+        return
     if _stdout_gone:
         return
     try:
@@ -330,7 +335,27 @@ class _Progress:
         _note(f"  [{name}] {done}/{total} functions, {_duration(elapsed)} elapsed{eta}")
 
 
+def install_headline(package: str, version: str, why: str) -> str:
+    """One line saying why an install failed, when the installer's text makes it clear.
+
+    The installer's own output stays below it - it is specific and sometimes the only
+    clue - but a CI log should not need a resolver explanation read to learn of a typo.
+    """
+    flat = " ".join(why.split()).lower()
+    if "not found in the package registry" in flat or (
+        "no matching distribution" in flat and "from versions: none" in flat
+    ):
+        return f"{package} is not on the package index (check the spelling of the name)"
+    if "there is no version of" in flat or "no matching distribution" in flat:
+        return f"{package} {version} does not exist on the package index"
+    if "did not finish within" in flat:
+        return "the install timed out; raise --install-timeout or check the network"
+    return ""
+
+
 def cmd_check(args: argparse.Namespace) -> int:
+    global _report_to_stderr
+    _report_to_stderr = bool(args.json)
     t0 = time.time()
     fail_on = _parse_fail_on(args.fail_on, args.fail_on_silent)
     used_by: Path | None = None
@@ -361,7 +386,11 @@ def cmd_check(args: argparse.Namespace) -> int:
             _say(f"installing {args.package}=={version} ...")
             installed, why = install(args.package, version, into, timeout=args.install_timeout)
             if not installed:
-                _say(f"\nerror: could not install {args.package}=={version}")
+                headline = install_headline(args.package, version, why)
+                _say(
+                    f"\nerror: could not install {args.package}=={version}"
+                    + (f": {headline}" if headline else "")
+                )
                 for line in why.splitlines():
                     _say(f"  {line}")
                 return EXIT_ERROR
@@ -515,6 +544,11 @@ def cmd_check(args: argparse.Namespace) -> int:
             _say(f"\n  wrote {out / 'REPORT.md'} and {out / 'blast-radius.json'}")
 
         tripped = gate(report, fail_on)
+        if args.json:
+            try:
+                print(as_json(report), flush=True)
+            except (BrokenPipeError, OSError):
+                _silence_stdout()
         if tripped:
             _say(f"\n  FAIL (--fail-on {','.join(sorted(fail_on))}): {'; '.join(tripped)}")
             return EXIT_GATE
@@ -582,6 +616,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="API diff only: skip executing functions (much faster; SILENT is not checked)",
     )
     c.add_argument("--out", metavar="DIR", help="also write REPORT.md and blast-radius.json here")
+    c.add_argument(
+        "--json",
+        action="store_true",
+        help="print the blast-radius.json report on stdout (the human report moves to "
+        "stderr); on an error stdout stays empty and the exit status is 2",
+    )
     c.add_argument(
         "--import-name",
         metavar="NAME",

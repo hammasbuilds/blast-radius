@@ -11,6 +11,10 @@ First release.
 
 ### Added
 
+- `--json`: the blast-radius.json object on stdout, the human report on stderr; stdout
+  stays empty when the run cannot finish (exit 2).
+- A one-line reason before the installer's text when an install fails: a version that
+  does not exist, a package name that is not on the index, or a timeout.
 - `blast-radius check <package> <old> <new>` — installs both versions into separate
   directories, compares their public API, then **executes** every function that kept
   both name and call shape on identical inputs. Reports three kinds, ordered by how

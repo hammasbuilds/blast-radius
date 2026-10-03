@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python">
   <img src="https://img.shields.io/badge/runtime%20deps-0-brightgreen" alt="zero dependencies">
   <img src="https://img.shields.io/badge/model-none%20required-success" alt="no model">
-  <img src="https://img.shields.io/badge/tests-126-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-245-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/upgrade%20pairs%20measured-27-blue" alt="pairs">
   <a href="https://github.com/hammasbuilds/blast-radius/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
 </p>
@@ -204,7 +204,15 @@ blast-radius check packaging 21.3 24.0
 blast-radius check packaging 21.3 24.0 --used-by path/to/your/repo
 blast-radius check requests 2.28.0 2.31.0 --no-behaviour    # API diff only, fast
 blast-radius check packaging 21.3 24.0 --out report/         # also writes REPORT.md + JSON
+blast-radius check packaging 21.3 24.0 --json | jq .counts    # the JSON on stdout
 ```
+
+Until the first PyPI release, install from source:
+`pip install git+https://github.com/hammasbuilds/blast-radius`.
+
+`--json` prints the same object as `blast-radius.json` and nothing else on stdout; the
+human report moves to stderr. If the run cannot finish, stdout stays empty and the exit
+status is 2.
 
 Needs no model, no API key, no GPU. It installs both versions itself, with `uv` if present
 and `pip` otherwise, into throwaway directories it cleans up. The name you install and the
