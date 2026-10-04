@@ -8,6 +8,7 @@ modelled on is named in the test.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import textwrap
@@ -329,7 +330,12 @@ def test_a_closed_pipe_ends_the_output_not_the_run(tmp_path):
         [sys.executable, str(script)],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        env={**__import__("os").environ, "PYTHONPATH": src},
+        # Prepend, not replace: an environment that supplies pytest through PYTHONPATH
+        # would otherwise lose it in the child.
+        env={
+            **os.environ,
+            "PYTHONPATH": os.pathsep.join(filter(None, [src, os.environ.get("PYTHONPATH")])),
+        },
     )
     assert proc.stdout is not None and proc.stderr is not None
     proc.stdout.readline()  # read one line, as `head -1` would, then hang up
