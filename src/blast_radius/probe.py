@@ -213,6 +213,48 @@ def _br_sandbox():
         raise SystemExit(code)
 
     _os._exit = soft_exit
+
+    # Second layer, under the name patches above. Patching names in `os` and `builtins`
+    # can only cover what Python code reaches by those names, so it cannot see a module
+    # that does its file I/O in C: sqlite3.connect("outside.db") created a real file
+    # outside the root with every guard above installed. That is not hostile code, it is
+    # ordinary library code - any package with a local cache or an on-disk index does it
+    # on import - and it is exactly what this sandbox exists to prevent.
+    #
+    # CPython raises audit events from inside those C implementations, so a hook sees
+    # them however they are reached, and cannot be bypassed by a reference bound before
+    # the sandbox was installed. The policy is the same `inside(root)` rule as above, so
+    # the probe's own scratch writes keep working.
+    def _audit(event, args):
+        if event == "sqlite3.connect":
+            target = args[0] if args else None
+            if target not in (":memory:", "", None) and not inside(target):
+                raise PermissionError(
+                    "blocked by the blast-radius sandbox: sqlite3.connect " + str(target)
+                )
+        elif event in ("ctypes.dlopen", "ctypes.dlsym", "ctypes.call_function"):
+            # The module docstring is honest that ctypes can do anything. It can still
+            # be refused when a diff is all that was asked for.
+            raise PermissionError("blocked by the blast-radius sandbox: ctypes")
+        elif event == "os.truncate":
+            # Guarded by path above, but the fd form slips through `inside`, which
+            # treats any integer as an already-open descriptor.
+            if args and isinstance(args[0], int):
+                raise PermissionError("blocked by the blast-radius sandbox: truncate by fd")
+        elif event in ("shutil.copyfile", "shutil.copymode", "shutil.copystat",
+                       "shutil.move", "shutil.rmtree", "shutil.unpack_archive"):
+            for candidate in args:
+                if isinstance(candidate, (str, bytes)) and not inside(candidate):
+                    raise PermissionError(
+                        "blocked by the blast-radius sandbox: " + event + " " + str(candidate)
+                    )
+
+    try:
+        _sys.addaudithook(_audit)
+    except Exception:
+        # An interpreter without audit hooks keeps the name-patch layer, which is what
+        # it had before. Losing the second layer must not stop a diff.
+        pass
 """
 
 COMMON = r"""
