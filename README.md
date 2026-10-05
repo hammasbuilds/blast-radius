@@ -210,7 +210,7 @@ named in the output rather than skipped in silence.
 ## Run it
 
 ```bash
-pip install blast-radius          # or: uv tool install blast-radius / pipx install blast-radius
+pip install git+https://github.com/hammasbuilds/blast-radius
 
 blast-radius check packaging 21.3 24.0
 blast-radius check packaging 21.3 24.0 --used-by path/to/your/repo
@@ -219,8 +219,8 @@ blast-radius check packaging 21.3 24.0 --out report/         # also writes REPOR
 blast-radius check packaging 21.3 24.0 --json | jq .counts    # the JSON on stdout
 ```
 
-Until the first PyPI release, install from source:
-`pip install git+https://github.com/hammasbuilds/blast-radius`.
+PyPI release coming: `pip install blast-radius` (or `uv tool install` / `pipx install`)
+will work once it is published.
 
 `--json` prints the same object as `blast-radius.json` and nothing else on stdout; the
 human report moves to stderr. If the run cannot finish, stdout stays empty and the exit
