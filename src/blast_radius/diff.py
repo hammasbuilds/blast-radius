@@ -60,8 +60,14 @@ POOL = [
 # statement about COMPARISON. It is not a reason to ignore them when choosing
 # what to pass, which is what this fixes.
 TYPED_POOL: dict[str, list[str]] = {
-    "int": ["1", "0", "-1", "2"],
-    "float": ["1.0", "0.0", "-1.5"],
+    # 3, 5 and 10 are here because a behaviour change in numeric code is usually a moved
+    # THRESHOLD, and a pool of 1, 0, -1, 2 steps straight over most of them. A flat rate
+    # below 5 units that became a flat rate below 3 is invisible to every one of those
+    # four values and obvious at 3 or 4. The pool is tried one parameter at a time around
+    # a baseline and capped at 12 calls, so the extra values cost a few subprocess calls
+    # on a function that was already being executed.
+    "int": ["1", "0", "-1", "2", "3", "4", "5", "10", "100"],
+    "float": ["1.0", "0.0", "-1.5", "2.5", "0.5"],
     "complex": ["1j"],
     "bool": ["True", "False"],
     "str": ['"x"', '""', '"a b"', '"1.0"'],
@@ -136,6 +142,7 @@ def _param_annotations(signature: str) -> list[str | None]:
     else:
         inner = text.split("->")[0]
     out: list[str | None] = []
+    names: list[str] = []
     depth, current = 0, ""
     for ch in inner + ",":
         if ch in "([{":
@@ -156,13 +163,78 @@ def _param_annotations(signature: str) -> list[str | None]:
                 # every generated call raises TypeError.
                 break
             name, _, rest = piece.partition(":")
-            if name.strip() in ("self", "cls"):
+            bare = name.split("=")[0].strip()
+            if bare in ("self", "cls"):
                 continue
             annotation = rest.split("=")[0].strip() if rest else None
             out.append(annotation or None)
+            # The name was parsed and thrown away. An unannotated parameter has nothing
+            # else to go on, so it is kept for _pool_for_parameter.
+            names.append(bare)
             continue
         current += ch
+    _NAMES_SEEN[signature] = names
     return out
+
+
+#: Parameter names from the last parse of each signature. The annotation parser already
+#: has them and used to discard them; `_pool_for_parameter` needs them to type a
+#: parameter that carries no annotation at all.
+_NAMES_SEEN: dict[str, list[str]] = {}
+
+
+def _param_names(signature: str) -> list[str]:
+    """The positional parameter names of a signature, `self` excluded."""
+    if signature not in _NAMES_SEEN:
+        _param_annotations(signature)
+    return _NAMES_SEEN.get(signature, [])
+
+
+# What a parameter called this is almost certainly for. Only names whose meaning does not
+# vary between codebases are listed: `price` is a number everywhere, while `value` and
+# `data` could be anything and are deliberately absent.
+_NAME_HINTS: tuple[tuple[frozenset[str], str], ...] = (
+    (
+        frozenset(
+            {
+                "amount", "price", "cost", "total", "tax", "rate", "percent", "percentage",
+                "weight", "height", "width", "size", "length", "count", "n", "num",
+                "number", "index", "idx", "offset", "limit", "quantity", "qty", "score",
+                "balance", "fee", "discount", "margin", "ratio", "factor", "seconds",
+                "timeout", "port", "year", "age", "level", "depth",
+            }
+        ),
+        "int",
+    ),
+    (frozenset({"path", "file", "filename", "filepath", "directory", "dirname"}), "path"),
+    (frozenset({"items", "values", "rows", "entries", "elements"}), "list"),
+    (frozenset({"flag", "enabled", "disabled", "verbose", "strict", "force", "dry_run"}), "bool"),
+)  # fmt: skip
+
+
+def _pool_for_parameter(annotation: str | None, name: str | None) -> list[str]:
+    """Values worth passing: from the annotation if there is one, else from the name.
+
+    An unannotated parameter got the generic pool, which leads with version strings
+    because this tool was built for packaging libraries. On an ordinary numeric API that
+    meant every generated call raised TypeError on both sides, the function was counted
+    `unreachable` with "never validly called - every argument set was the wrong type",
+    and a SILENT change inside it could not be found at all. Most Python is unannotated,
+    so that was most functions - the one kind of change this tool exists to catch was
+    invisible on them.
+
+    The name is consulted only when there is no annotation, and only for names whose
+    meaning is not in doubt. A wrong guess costs nothing that the generic pool did not
+    already cost: the call raises on both sides and is reported unreachable, as before.
+    """
+    if annotation:
+        return _pool_for(annotation)
+    if name:
+        lowered = name.strip().lower().lstrip("_")
+        for vocabulary, kind in _NAME_HINTS:
+            if lowered in vocabulary:
+                return _pool_for(kind)
+    return POOL
 
 
 def _params(signature: str) -> int:
@@ -198,7 +270,14 @@ def argument_sets(signature: str, cap: int = 12) -> list[str]:
         # and a call that raises on both sides establishes nothing.
         n = 3
     annotations = _param_annotations(signature)
-    pools = [_pool_for(annotations[i] if i < len(annotations) else None) for i in range(n)]
+    names = _param_names(signature)
+    pools = [
+        _pool_for_parameter(
+            annotations[i] if i < len(annotations) else None,
+            names[i] if i < len(names) else None,
+        )
+        for i in range(n)
+    ]
     baseline = [pool[0] for pool in pools]
     out = ["(" + ", ".join(baseline) + ",)"]
     for i in range(n):
