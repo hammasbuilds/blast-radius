@@ -116,6 +116,45 @@ def _pool_for(annotation: str | None) -> list[str]:
     return ["None", *POOL] if optional else POOL
 
 
+def _string_mask(text: str) -> list[bool]:
+    """True at every index of `text` that lies inside a string literal.
+
+    The signature is parsed as text, so without this a comma, bracket, paren or colon in a
+    default value is read as syntax. Handles both quote characters and backslash escapes;
+    a triple-quoted default would be reported as three empty strings in a row, which is
+    harmless here because only the quoting state matters.
+    """
+    mask = [False] * len(text)
+    quote = ""
+    escaped = False
+    for i, ch in enumerate(text):
+        if quote:
+            mask[i] = True
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == quote:
+                quote = ""
+        elif ch in "\"'":
+            quote = ch
+            mask[i] = True
+    return mask
+
+
+def _partition_outside(piece: str, sep: str) -> tuple[str, str]:
+    """`piece.partition(sep)` ignoring separators inside string literals.
+
+    `(value, fmt="%H:%M")` split on the colon inside the default and read `%M"` as the
+    annotation.
+    """
+    mask = _string_mask(piece)
+    for i, ch in enumerate(piece):
+        if ch == sep and not mask[i]:
+            return piece[:i], piece[i + len(sep) :]
+    return piece, ""
+
+
 def _param_annotations(signature: str) -> list[str | None]:
     """The annotation text of each positional parameter, `self` excluded.
 
@@ -129,7 +168,12 @@ def _param_annotations(signature: str) -> list[str | None]:
         # the last character. "(value: int) -> bool" ends in "l", and slicing
         # [1:-1] silently dropped the final parameter.
         depth = 0
+        mask = _string_mask(text)
         for i, ch in enumerate(text):
+            if mask[i]:
+                # A paren inside a default value is not syntax: `(x, fmt=")")` ended the
+                # parameter list at the quoted paren and dropped everything after it.
+                continue
             if ch == "(":
                 depth += 1
             elif ch == ")":
@@ -144,7 +188,15 @@ def _param_annotations(signature: str) -> list[str | None]:
     out: list[str | None] = []
     names: list[str] = []
     depth, current = 0, ""
-    for ch in inner + ",":
+    # The sentinel comma flushes the last parameter, and is never inside a string.
+    scan = inner + ","
+    scan_mask = _string_mask(inner) + [False]
+    for index, ch in enumerate(scan):
+        if scan_mask[index]:
+            # Inside a default's string: not a separator, not a bracket. `sep=", "` split
+            # the parameter list here and produced a phantom third parameter.
+            current += ch
+            continue
         if ch in "([{":
             depth += 1
         elif ch in ")]}":
@@ -162,11 +214,11 @@ def _param_annotations(signature: str) -> list[str | None]:
                 # skip, or a keyword-only parameter gets counted as positional and
                 # every generated call raises TypeError.
                 break
-            name, _, rest = piece.partition(":")
-            bare = name.split("=")[0].strip()
+            name, rest = _partition_outside(piece, ":")
+            bare = _partition_outside(name, "=")[0].strip()
             if bare in ("self", "cls"):
                 continue
-            annotation = rest.split("=")[0].strip() if rest else None
+            annotation = _partition_outside(rest, "=")[0].strip() if rest else None
             out.append(annotation or None)
             # The name was parsed and thrown away. An unannotated parameter has nothing
             # else to go on, so it is kept for _pool_for_parameter.
