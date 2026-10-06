@@ -183,6 +183,45 @@ def test_writing_outside_the_temp_directory_is_refused(tmp_path):
     assert _row(out, "writer.write_here") == ["ok", "'fine'"]
 
 
+def test_writing_through_io_fileio_and_the_io_module_is_refused(tmp_path):
+    """The routes the name patches cannot reach.
+
+    The sandbox rebinds `builtins.open`, `io.open` and `os.open`. `io.FileIO` is a
+    different callable that opens the file in C, and `_io` holds the same objects under
+    names nothing rebound - so each of these wrote a file outside the probe's root with
+    every name patch installed, while `open()` next to them was blocked. Ordinary library
+    code uses `io.FileIO` for raw binary I/O; the name filter cannot help, because the
+    function's own name is innocent.
+
+    Closed in the audit hook rather than with more name patches, for the reason the hook's
+    sqlite3 branch already gives: CPython raises `open` from inside the C implementation,
+    so one branch sees every route and cannot be bypassed by a reference bound before the
+    sandbox was installed.
+    """
+    outside = tmp_path / "outside_io.txt"
+    body = (
+        "import io\nimport _io\n\n\n"
+        "def write_fileio(x):\n"
+        f"    io.FileIO(r'{outside}', 'w').close()\n\n\n"
+        "def write_io_module(x):\n"
+        f"    _io.open(r'{outside}', 'w').close()\n\n\n"
+        "def write_io_module_fileio(x):\n"
+        f"    _io.FileIO(r'{outside}', 'w').close()\n\n\n"
+        "def read_outside(x):\n"
+        f"    return io.FileIO(r'{tmp_path / 'readable.txt'}', 'r').read(4).decode()\n"
+    )
+    (tmp_path / "readable.txt").write_text("keep", encoding="utf-8")
+    _pkg(tmp_path / "site", "rawio", body)
+    writers = ["rawio.write_fileio", "rawio.write_io_module", "rawio.write_io_module_fileio"]
+    out = call(tmp_path / "site", {n: ["(1,)"] for n in [*writers, "rawio.read_outside"]})
+    for name in writers:
+        assert "PermissionError" in _row(out, name)[1], name
+    assert not outside.exists(), "a write escaped the sandbox"
+    # Reading is not a side effect, and blocking it would make the behaviour pass useless
+    # rather than safe.
+    assert _row(out, "rawio.read_outside") == ["ok", "'keep'"]
+
+
 def test_home_and_the_console_are_not_the_users(tmp_path):
     body = (
         "import getpass, os\n\n\n"

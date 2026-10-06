@@ -7,6 +7,12 @@ name = "blast-radius"
 version = "0.1.0"
 source = { editable = "." }
 
+[package.optional-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "ruff" },
+]
+
 [package.dev-dependencies]
 dev = [
     { name = "pytest" },
@@ -14,6 +20,11 @@ dev = [
 ]
 
 [package.metadata]
+requires-dist = [
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.16,<0.17" },
+]
+provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
 dev = [

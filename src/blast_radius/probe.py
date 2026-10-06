@@ -225,8 +225,36 @@ def _br_sandbox():
     # them however they are reached, and cannot be bypassed by a reference bound before
     # the sandbox was installed. The policy is the same `inside(root)` rule as above, so
     # the probe's own scratch writes keep working.
+    # Flag bits on the os.open form of the event that mean the call will change the file.
+    # O_RDONLY is 0, so a read still passes.
+    _open_write_flags = 0
+    for _flag_name in ("O_WRONLY", "O_RDWR", "O_CREAT", "O_APPEND", "O_TRUNC"):
+        _open_write_flags |= getattr(_os, _flag_name, 0)
+
     def _audit(event, args):
-        if event == "sqlite3.connect":
+        if event == "open":
+            # The name patches above cover `builtins.open`, `io.open` and `os.open` and
+            # nothing else. `io.FileIO` is a different callable that opens the file in C,
+            # and `_io` holds the same objects under names nothing rebound - so io.FileIO,
+            # _io.open and _io.FileIO each wrote outside the root with every patch
+            # installed. One hook branch covers all of them, and anything else that opens
+            # a file, because CPython raises this event from inside the C implementation.
+            #
+            # Two call shapes share the event: a mode STRING as args[1] (builtins.open,
+            # io.open, io.FileIO), or None there and an integer flag set as args[2]
+            # (os.open).
+            target = args[0] if args else None
+            mode = args[1] if len(args) > 1 else None
+            if mode is None:
+                flags = args[2] if len(args) > 2 and isinstance(args[2], int) else 0
+                writing = bool(flags & _open_write_flags)
+            else:
+                writing = any(c in str(mode) for c in "wax+")
+            if writing and not inside(target):
+                raise PermissionError(
+                    "blocked by the blast-radius sandbox: write to " + str(target)
+                )
+        elif event == "sqlite3.connect":
             target = args[0] if args else None
             if target not in (":memory:", "", None) and not inside(target):
                 raise PermissionError(
