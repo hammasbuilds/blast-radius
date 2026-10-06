@@ -5,7 +5,9 @@
 Semantic versioning makes two promises. A **patch** release changes nothing a caller can
 see. A **minor** release only adds.
 
-This is a measurement of both, across 27 real upgrade pairs of widely-pinned packages.
+This is a measurement of both, across 27 real upgrade pairs of widely-pinned packages,
+**22 of which made the promise being measured** - the other five are 0.x releases and are
+excluded below for the reason SemVer itself gives.
 Reproduce it with [`scripts/semver_sweep.py`](../scripts/semver_sweep.py), or one pair at a
 time with `blast-radius check <package> <old> <new> --no-behaviour`. Last re-run
 2026-10-03 (Python 3.12, Windows); every row below is read from
@@ -13,19 +15,62 @@ time with `blast-radius check <package> <old> <new> --no-behaviour`. Last re-run
 
 ## The result
 
-| Bump | Pairs | Broke exported API | Exported symbols removed or reshaped |
-|---|---:|---:|---:|
-| **patch** | 15 | **2 (13%)** | 3 |
-| **minor** | 9 | **2 (22%)** | 7 |
-| major | 3 | 2 (67%) | 29 |
+| Bump | Pairs | Broke exported API | Broken symbols | Of exported symbols |
+|---|---:|---:|---:|---:|
+| **patch** | 13 | **2 of 13 (15%)** | 3 | 3 of 1,133 (0.26%) |
+| **minor** | 6 | **2 of 6 (33%)** | 7 | 7 of 505 (1.4%) |
+| major | 3 | **2 of 3** | 29 | 29 of 262 (11%) |
 
 Semver says the patch row should be 0% and the minor row should be 0%. A further 2 minor
 pairs (`anyio`, `filelock`) changed exported signatures only *additively* - new parameters
 with defaults - which every existing call survives. They are reported as `widened` and
 not counted.
 
-Both numbers are small enough to name every instance, which is the point - a percentage
-with no names behind it is not checkable.
+**Three things about these rows before the percentages.**
+
+**The major row is 2 of 3.** A percentage over three observations is not an estimate of
+anything, so it is not given one. One pair flipping moves the patch row 7.7 points and the
+minor row 16.7.
+
+**All six breaks come from two packages.** `click` supplies three and `urllib3` three; the
+other sixteen packages in the sweep supplied none. And `urllib3`'s
+`BaseHTTPResponse`/`HTTPResponse` reshape is counted in **both** the patch row (2.2.1 →
+2.2.2) and the minor row (2.1.0 → 2.2.2) - one upstream defect reached through two
+different ranges. So the three rows are not independent samples of three populations; they
+are two libraries' release habits, observed through several windows.
+
+**The per-symbol column is the one that scales.** Exported-symbol counts across the patch
+pairs run from 6 (`rich`) to 321 (`pytest`); a package exporting 6 names has far less
+surface to break, and the per-pair rate treats it as one equal observation. Read the two
+columns together: a patch release breaks something 15% of the time, and when it does it
+breaks about one name in four hundred.
+
+Every instance is named below, which is the point - a percentage with no names behind it
+is not checkable.
+
+### Why 0.x pairs are excluded
+
+SemVer 2.0.0 §4: *"Major version zero (0.y.z) is for initial development. Anything MAY
+change at any time. The public API SHOULD NOT be considered stable."* For a 0.x package
+the **second** component is the breaking position, so a 0.26.0 → 0.27.0 bump is not a
+"minor" release in the sense this document measures, and counting it as one measures a
+promise that was never made. The five excluded pairs are `httpx` 0.26.0 → 0.27.0 and
+0.27.0 → 0.27.2, `typer` 0.9.0 → 0.12.3 and 0.12.0 → 0.12.3, and `starlette` 0.35.1 →
+0.37.2.
+
+This is the same reasoning already applied, pre-registered, to the calendar-versioned
+packages further down. Applying it here **raises** both headline numbers - patch from 13%
+to 15%, minor from 22% to 33% - because all five excluded pairs were clean. Every other
+correction in this document moved a number down; this one does not, which is the reason to
+be sure it is right rather than a reason to skip it.
+
+### What this sweep cannot see
+
+It runs `--no-behaviour`, so it compares **API surface only**: names that vanished and
+signatures that changed. It cannot detect a single `SILENT` change - same name, same
+signature, different answer - which is the category this tool exists for and the one
+nothing else reports. The evidence for SILENT is the two packages in
+[`RESULTS.md`](RESULTS.md), not this table.
 
 ## Every patch-release break, in full
 

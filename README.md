@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python">
   <img src="https://img.shields.io/badge/runtime%20deps-0-brightgreen" alt="zero dependencies">
   <img src="https://img.shields.io/badge/model-none%20required-success" alt="no model">
-  <img src="https://img.shields.io/badge/tests-273-brightgreen" alt="tests">
+  <img src="https://img.shields.io/badge/tests-274-brightgreen" alt="tests">
   <img src="https://img.shields.io/badge/upgrade%20pairs%20measured-27-blue" alt="pairs">
   <a href="https://github.com/hammasbuilds/blast-radius/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
 </p>
@@ -47,19 +47,33 @@ sorts what actually changed by **how likely it is to reach production unnoticed*
 
 ## Results
 
-### 27 upgrade pairs: how often does a patch release break public API?
+### 22 upgrade pairs: how often does a patch release break public API?
+
+**API surface only.** This sweep runs `--no-behaviour`, so it sees names that vanished and
+signatures that changed, and **cannot detect a single `SILENT` change** — the category the
+opening of this README argues nothing else reports. The evidence for `SILENT` is the two
+packages in [`RESULTS.md`](docs/RESULTS.md), not this table.
 
 Semantic versioning says a patch release changes nothing a caller can see, and a minor
 release only adds. Measured across widely-pinned packages:
 
-| Bump | Pairs | Broke exported API | Exported symbols removed or reshaped |
-|---|---:|---:|---:|
-| **patch** | 15 | **2 (13%)** | 3 |
-| **minor** | 9 | **2 (22%)** | 7 |
-| major | 3 | 2 (67%) | 29 |
+| Bump | Pairs | Broke exported API | Broken symbols | Of exported symbols |
+|---|---:|---:|---:|---:|
+| **patch** | 13 | **2 of 13 (15%)** | 3 | 3 of 1,133 (0.26%) |
+| **minor** | 6 | **2 of 6 (33%)** | 7 | 7 of 505 (1.4%) |
+| major | 3 | **2 of 3** | 29 | 29 of 262 (11%) |
+
+Five of the 27 pairs are **0.x** releases, where [SemVer
+§4](https://semver.org/#spec-item-4) promises nothing at all — for a 0.x package the second
+component *is* the breaking position — so they are excluded, on the same grounds this study
+already excludes calendar-versioned packages. All five were clean, so excluding them
+**raises** both headlines. **All six breaks come from two packages**: `click` three and
+`urllib3` three, with urllib3's `HTTPResponse` reshape falling in both the patch and the
+minor row. The major row is 2 of 3 and gets no percentage.
 
 Small enough to name every instance, which is the point — a percentage with no names behind
-it is not checkable.
+it is not checkable. Full method, the three rows' dependence, the per-symbol view and four
+earlier corrections: [`docs/SEMVER.md`](docs/SEMVER.md).
 
 **`urllib3` 2.2.1 → 2.2.2**, a patch release, added a **required** keyword-only parameter to
 `BaseHTTPResponse.__init__`, inserted between `version` and `reason`:
@@ -311,7 +325,7 @@ scripts/
 
 | | |
 |---|---|
-| &#128200; **[The semver sweep](https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md)** | 27 upgrade pairs, every break named |
+| &#128200; **[The semver sweep](https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md)** | 22 upgrade pairs that made the promise, every break named, API surface only |
 | &#128202; **[Results](https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md)** | All three runs in full, with the limits |
 | **[suite-auditor](https://github.com/hammasbuilds/suite-auditor)** | The same differential idea, pointed at a test suite |
 | **[pr-referee](https://github.com/hammasbuilds/pr-referee)** | And pointed at a diff |
