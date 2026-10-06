@@ -7,7 +7,13 @@ the exported symbols that became GONE or RESHAPED (breaking) versus WIDENED (a
 signature that grew in a way every existing call survives, which is not a break).
 API surface only - the behaviour pass is not run here.
 
-Installs honour UV_OFFLINE=1, so a run against a warm uv cache needs no network.
+Installs honour UV_OFFLINE=1, so a run against a warm uv cache needs no network - but
+"warm" means a cache that has already held all 45 (package, version) pairs this sweep
+installs, which only a previous online run produces. On a cold or partial cache the
+affected pairs fail rather than degrade, and one of them, `coverage` 7.5.0 -> 7.5.4, is
+behind the patch-row headline. Warm it first with:
+
+    python scripts/semver_sweep.py --out /dev/null    # once, online
 """
 
 from __future__ import annotations
