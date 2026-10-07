@@ -74,11 +74,19 @@ def _br_sandbox():
 
     root = _os.path.normcase(_os.path.realpath(_os.environ.get("BR_SANDBOX") or _os.getcwd()))
 
+    # Writes that go nowhere. `dill` opens os.devnull for writing on import, and
+    # refusing it stopped the module importing at all, so the pair could not be
+    # measured. The null device discards; there is nothing here to protect.
+    null_devices = frozenset({"nul", "nul:", "/dev/null", "devnull"})
+
     def inside(path):
         try:
             if isinstance(path, int):
                 return True  # an already-open descriptor
             text = _os.fsdecode(_os.fspath(path))
+            flat = text.replace("\\", "/").lower()
+            if flat in null_devices or flat.rsplit("/", 1)[-1] in null_devices:
+                return True
             full = _os.path.normcase(_os.path.realpath(text))
         except Exception:
             return False
@@ -231,6 +239,36 @@ def _br_sandbox():
     for _flag_name in ("O_WRONLY", "O_RDWR", "O_CREAT", "O_APPEND", "O_TRUNC"):
         _open_write_flags |= getattr(_os, _flag_name, 0)
 
+    # Audit events whose first argument is a path the call is about to change, and the
+    # subset that takes a second one. Names and argument positions were read off a live
+    # interpreter rather than from the documentation: nt.unlink raises `os.remove`, not
+    # `os.unlink`, so guarding the name the caller used would have guarded nothing.
+    # Platform libraries a package loads to ask the OS a question - the console code
+    # page, a temp path, a process handle. Matched on the bare stem, so "kernel32",
+    # "kernel32.dll" and a full path to it are the same entry, and a leading "lib" is
+    # dropped so "libc.so.6" matches "c".
+    _SYSTEM_LIBS = frozenset({
+        # Windows
+        "kernel32", "kernelbase", "user32", "advapi32", "shell32", "shlwapi",
+        "ole32", "oleaut32", "combase", "ntdll", "msvcrt", "ucrtbase", "gdi32",
+        "ws2_32", "crypt32", "bcrypt", "secur32", "sechost", "rpcrt4", "version",
+        "winmm", "powrprof", "comdlg32", "psapi", "userenv", "oleacc",
+        # POSIX. "c", "dl", "m" are the stems left after dropping "lib".
+        "c", "dl", "m", "pthread", "rt", "util", "crypt", "resolv", "socket",
+        "nsl", "systemd", "objc", "system",
+        # The interpreter's own library. ctypes.pythonapi reports its name as
+        # "python dll", and click, typer and uvicorn all reach it through
+        # ctypes.pythonapi on import.
+        "python dll", "python", "python3", "libpython",
+    })  # fmt: skip
+
+
+    _PATH2_EVENTS = ("os.rename", "os.link", "os.symlink")
+    _PATH0_EVENTS = _PATH2_EVENTS + (
+        "os.remove", "os.mkdir", "os.rmdir", "os.chmod", "os.chown",
+        "os.utime", "os.truncate",
+    )  # fmt: skip
+
     def _audit(event, args):
         if event == "open":
             # The name patches above cover `builtins.open`, `io.open` and `os.open` and
@@ -260,15 +298,94 @@ def _br_sandbox():
                 raise PermissionError(
                     "blocked by the blast-radius sandbox: sqlite3.connect " + str(target)
                 )
-        elif event in ("ctypes.dlopen", "ctypes.dlsym", "ctypes.call_function"):
-            # The module docstring is honest that ctypes can do anything. It can still
-            # be refused when a diff is all that was asked for.
-            raise PermissionError("blocked by the blast-radius sandbox: ctypes")
-        elif event == "os.truncate":
-            # Guarded by path above, but the fd form slips through `inside`, which
-            # treats any integer as an already-open descriptor.
-            if args and isinstance(args[0], int):
-                raise PermissionError("blocked by the blast-radius sandbox: truncate by fd")
+        elif event == "ctypes.dlopen":
+            # Refusing ctypes outright broke ordinary imports. `click`, `typer`,
+            # `uvicorn`, `platformdirs` and `dill` all read `ctypes.windll.kernel32` on
+            # import under Windows, and a denied dlopen surfaces as
+            # `AttributeError: kernel32`, so the module never imported and the pair was
+            # unmeasurable: 5 of 37 sweep pairs, including the one the published
+            # headline rests on. A guard that blocks everything is not safe, it is
+            # broken, and it broke the tool's own published result.
+            #
+            # So the OS libraries a library loads to ask the platform a question are
+            # allowed by name, and anything else - a package reaching for a .dll or .so
+            # of its own - is still refused.
+            name = args[0] if args else None
+            if name is not None:
+                base = str(name).replace("\\", "/").rsplit("/", 1)[-1].lower()
+                base = base.split(".")[0]
+                if base.startswith("lib"):
+                    base = base[3:]
+                if base not in _SYSTEM_LIBS:
+                    raise PermissionError(
+                        "blocked by the blast-radius sandbox: ctypes.dlopen "
+                        + str(name)
+                    )
+        elif event == "ctypes.dlsym":
+            # args[0] is the loaded library object, which carries the name it was
+            # opened under - so a symbol lookup is checked against the same allowlist
+            # rather than waved through because the dlopen already passed.
+            library = args[0] if args else None
+            name = getattr(library, "_name", None)
+            if name is not None:
+                base = str(name).replace("\\", "/").rsplit("/", 1)[-1].lower()
+                base = base.split(".")[0]
+                if base.startswith("lib"):
+                    base = base[3:]
+                if base not in _SYSTEM_LIBS:
+                    raise PermissionError(
+                        "blocked by the blast-radius sandbox: ctypes.dlsym in "
+                        + str(name)
+                    )
+        elif event in _PATH0_EVENTS:
+            # Everything that changes a path without opening it: delete, rename,
+            # mkdir, rmdir, chmod, utime, link, symlink, truncate.
+            #
+            # These were covered only by the name patches in `os` above, and a measured
+            # battery of 28 escape routes found 8 that got past them. `nt` (and `posix`)
+            # is the C module `os` is a thin wrapper over, so `nt.unlink`, `nt.rename`,
+            # `nt.mkdir`, `nt.utime` and `nt.truncate` each changed a file outside the
+            # root with every name patch installed - the same shape of hole as `_io`
+            # beside `io`, which this hook already closes for writes. A reference bound
+            # before the sandbox installed (`f = os.unlink` at module import, which
+            # every stdlib module imported during startup is holding) escaped too.
+            #
+            # The event fires inside the C implementation, so it sees all of them, and
+            # the fd form cannot be smuggled past: `inside` treats any integer as an
+            # already-open descriptor, so an int in a path position is refused outright
+            # rather than quietly allowed.
+            for index in (0, 1) if event in _PATH2_EVENTS else (0,):
+                if len(args) <= index:
+                    continue
+                target = args[index]
+                if isinstance(target, int):
+                    raise PermissionError(
+                        "blocked by the blast-radius sandbox: " + event + " by fd"
+                    )
+                if not inside(target):
+                    raise PermissionError(
+                        "blocked by the blast-radius sandbox: "
+                        + event + " " + str(target)
+                    )
+        elif event == "socket.connect":
+            # socket.socket is a Python subclass of the C type in `_socket`, so
+            # patching socket.socket.connect leaves _socket.socket.connect alone. It
+            # reached the real internet in the battery and failed only on a timeout.
+            # args is (self, address); the hook sees it however the class was reached.
+            address = args[1] if len(args) > 1 else None
+            host = address[0] if isinstance(address, tuple) and address else address
+            if host not in ("127.0.0.1", "::1", "localhost", "", None):
+                raise PermissionError("blocked by the blast-radius sandbox: network")
+        elif event in ("socket.getaddrinfo", "socket.gethostbyname", "socket.sendto"):
+            host = args[0] if args else None
+            if host not in ("127.0.0.1", "::1", "localhost", "", None):
+                raise PermissionError(
+                    "blocked by the blast-radius sandbox: network lookup"
+                )
+        elif event in ("subprocess.Popen", "os.system", "os.exec", "os.posix_spawn",
+                       "os.spawn", "winreg.CreateKey", "winreg.SetValue",
+                       "winreg.DeleteKey", "winreg.DeleteValue"):  # fmt: skip
+            raise PermissionError("blocked by the blast-radius sandbox: " + event)
         elif event in ("shutil.copyfile", "shutil.copymode", "shutil.copystat",
                        "shutil.move", "shutil.rmtree", "shutil.unpack_archive"):
             for candidate in args:

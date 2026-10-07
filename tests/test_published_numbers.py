@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import pathlib
 import re
+import sys
 from pathlib import Path
 
 import pytest
@@ -46,12 +47,17 @@ def _made_the_promise(row: dict) -> bool:
     same reasoning the study already applies to calendar-versioned packages, and it was
     applied to them and not to these.
     """
-    return not str(row.get("old", "")).startswith("0.")
+    # Read the cohort the sweep assigned, rather than re-deriving it here. The sweep
+    # labels every pair from its version numbers via `classify()` and refuses to run if
+    # a declared label disagrees, so this is the same rule applied in one place instead
+    # of two that can drift - which is exactly what happened before: the document
+    # excluded five 0.x pairs and the script counted them as `patch` and `minor`.
+    return not str(row.get("bump", "")).startswith("0.")
 
 
 def test_the_semver_summary_rows_are_the_sweep():
     rows = _load("semver-sweep.json")
-    assert len(rows) == 27 and not [r for r in rows if "error" in r]
+    assert len(rows) == 44 and not [r for r in rows if "error" in r]
     counted = [r for r in rows if _made_the_promise(r)]
     assert len(counted) == 22, "the 0.x exclusion no longer selects 22 pairs"
     readme = README.read_text(encoding="utf-8")
@@ -161,3 +167,78 @@ def test_the_click_major_run_in_results_is_the_committed_one():
         assert f"| {kind} | {run['counts'][kind]} |" in section, kind
     assert f"| **silent** | **{run['counts']['silent']}** |" in section
     assert f"behaviour was compared on {run['compared']}" in section.replace("\n", " ")
+
+
+def test_the_zero_x_cohort_rows_are_the_sweep():
+    """The 0.x rows get the same guard as the three SemVer rows, for the same reason.
+
+    The five 0.x pairs were once excluded by hand in SEMVER.md while the script counted
+    them as `patch` and `minor`. Nothing compared the two, so the document published
+    patch 13 / minor 6 and the script printed patch 15 / minor 9. These rows are new
+    and would drift exactly the same way.
+    """
+    rows = _load("semver-sweep.json")
+    semver = (DOCS / "SEMVER.md").read_text(encoding="utf-8")
+    labels = {
+        "0.x-patch": "third (`0.y.Z`, the patch position)",
+        "0.x-breaking": "second (`0.Y.z`, the breaking position)",
+        "0.0.z": "`0.0.z`",
+    }
+    for bump, label in labels.items():
+        mine = [r for r in rows if r["bump"] == bump and "error" not in r]
+        assert mine, f"the sweep no longer has a {bump} cohort"
+        # A pair exporting nothing could not have broken anything, so it is not an
+        # observation. Leaving mdit-py-plugins (0 exported) in would read 1 of 11.
+        counted = [r for r in mine if r.get("exported_symbols", 0) > 0]
+        broke = [r for r in counted if _broken(r)]
+        symbols = sum(_broken(r) for r in counted)
+        exported = sum(r.get("exported_symbols", 0) for r in counted)
+        pattern = re.compile(
+            rf"\|\s*\**{re.escape(label)}\**\s*\|\s*{len(counted)}\s*\|"
+            rf"\s*\**{len(broke)} of {len(counted)}\**\s*\|\s*{symbols}\s*\|"
+            rf"\s*{symbols} of {exported:,}"
+        )
+        assert pattern.search(semver), f"SEMVER.md {bump} row (expected {pattern.pattern})"
+
+
+def test_every_pair_carries_the_cohort_its_versions_imply():
+    """The cohort label cannot be hand-written, because a hand-written one drifted.
+
+    `classify()` reads it off the version numbers, the sweep refuses to run when a
+    declared label disagrees, and this asserts the committed output obeys the same rule.
+    """
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "scripts"))
+    from semver_sweep import PAIRS, classify
+
+    wrong = [(p, o, n, d, classify(o, n)) for p, o, n, d in PAIRS if classify(o, n) != d]
+    assert not wrong, f"declared label contradicts the versions: {wrong}"
+
+    for row in _load("semver-sweep.json"):
+        derived = classify(row["old"], row["new"])
+        assert row["bump"] == derived, (
+            f"{row['package']} {row['old']} -> {row['new']} is published as "
+            f"{row['bump']} but its versions say {derived}"
+        )
+
+
+def test_a_pair_that_exports_nothing_is_not_counted_as_a_clean_upgrade():
+    """A zero-surface pair cannot break, so it must not sit in the denominator.
+
+    `mdit-py-plugins` 0.3.5 -> 0.4.1 exports 0 names: its plugins live in submodules it
+    does not re-export. Counted as an observation it is a free "did not break", and the
+    breaking-position row reads 1 of 11 instead of 1 of 10.
+    """
+    script = (
+        pathlib.Path(__file__).resolve().parent.parent / "scripts" / "semver_sweep.py"
+    ).read_text(encoding="utf-8")
+    assert 'r.get("exported_symbols", 0) > 0' in script, (
+        "the sweep no longer excludes pairs with no exported surface from its rates"
+    )
+    rows = _load("semver-sweep.json")
+    vacuous = [r for r in rows if "error" not in r and r.get("exported_symbols", 0) == 0]
+    semver = (DOCS / "SEMVER.md").read_text(encoding="utf-8")
+    for row in vacuous:
+        assert row["package"] in semver, (
+            f"{row['package']} exports nothing and is excluded from a rate, which the "
+            "document has to say rather than leave as a silently smaller denominator"
+        )

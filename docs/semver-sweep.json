@@ -60,7 +60,7 @@
     "package": "httpx",
     "old": "0.27.0",
     "new": "0.27.2",
-    "bump": "patch",
+    "bump": "0.x-patch",
     "module": "httpx",
     "exported_symbols": 157
   },
@@ -94,7 +94,7 @@
     "new": "8.2.2",
     "bump": "patch",
     "module": "pytest,py",
-    "exported_symbols": 321
+    "exported_symbols": 324
   },
   {
     "package": "requests",
@@ -124,7 +124,7 @@
     "package": "typer",
     "old": "0.12.0",
     "new": "0.12.3",
-    "bump": "patch",
+    "bump": "0.x-patch",
     "module": "typer",
     "exported_symbols": 13,
     "internal_widened": [
@@ -197,7 +197,7 @@
     "package": "httpx",
     "old": "0.26.0",
     "new": "0.27.0",
-    "bump": "minor",
+    "bump": "0.x-breaking",
     "module": "httpx",
     "exported_symbols": 157
   },
@@ -239,7 +239,7 @@
     "package": "starlette",
     "old": "0.35.1",
     "new": "0.37.2",
-    "bump": "minor",
+    "bump": "0.x-breaking",
     "module": "starlette",
     "exported_symbols": 2
   },
@@ -247,7 +247,7 @@
     "package": "typer",
     "old": "0.9.0",
     "new": "0.12.3",
-    "bump": "minor",
+    "bump": "0.x-breaking",
     "module": "typer",
     "exported_symbols": 13,
     "internal_reshaped": [
@@ -264,6 +264,227 @@
     "exported_reshaped": [
       "urllib3.BaseHTTPResponse",
       "urllib3.HTTPResponse"
+    ]
+  },
+  {
+    "package": "uvicorn",
+    "old": "0.30.0",
+    "new": "0.30.6",
+    "bump": "0.x-patch",
+    "module": "uvicorn",
+    "exported_symbols": 38
+  },
+  {
+    "package": "fastapi",
+    "old": "0.110.0",
+    "new": "0.110.3",
+    "bump": "0.x-patch",
+    "module": "fastapi",
+    "exported_symbols": 56,
+    "internal_widened": [
+      "fastapi.openapi.models.MediaType",
+      "fastapi.openapi.models.Parameter",
+      "fastapi.openapi.models.ParameterBase"
+    ],
+    "internal_gone": [
+      "fastapi.utils.match_pydantic_error_url"
+    ]
+  },
+  {
+    "package": "starlette",
+    "old": "0.36.0",
+    "new": "0.36.3",
+    "bump": "0.x-patch",
+    "module": "starlette",
+    "exported_symbols": 2
+  },
+  {
+    "package": "dill",
+    "old": "0.3.7",
+    "new": "0.3.8",
+    "bump": "0.x-patch",
+    "module": "dill",
+    "exported_symbols": 67
+  },
+  {
+    "package": "tomlkit",
+    "old": "0.12.0",
+    "new": "0.12.5",
+    "bump": "0.x-patch",
+    "module": "tomlkit",
+    "exported_symbols": 37,
+    "exported_widened": [
+      "tomlkit.TOMLDocument.append"
+    ]
+  },
+  {
+    "package": "pathspec",
+    "old": "0.12.0",
+    "new": "0.12.1",
+    "bump": "0.x-patch",
+    "module": "pathspec",
+    "exported_symbols": 22
+  },
+  {
+    "package": "distlib",
+    "old": "0.3.7",
+    "new": "0.3.8",
+    "bump": "0.x-patch",
+    "module": "distlib",
+    "exported_symbols": 57
+  },
+  {
+    "package": "wcwidth",
+    "old": "0.2.6",
+    "new": "0.2.13",
+    "bump": "0.x-patch",
+    "module": "wcwidth",
+    "exported_symbols": 3
+  },
+  {
+    "package": "uvicorn",
+    "old": "0.23.2",
+    "new": "0.30.1",
+    "bump": "0.x-breaking",
+    "module": "uvicorn",
+    "exported_symbols": 29,
+    "exported_gone": [
+      "uvicorn.Server.install_signal_handlers",
+      "uvicorn.main.Multiprocess.shutdown",
+      "uvicorn.main.Multiprocess.signal_handler",
+      "uvicorn.main.Multiprocess.startup"
+    ]
+  },
+  {
+    "package": "h11",
+    "old": "0.13.0",
+    "new": "0.14.0",
+    "bump": "0.x-breaking",
+    "module": "h11",
+    "exported_symbols": 29
+  },
+  {
+    "package": "fastapi",
+    "old": "0.100.0",
+    "new": "0.111.0",
+    "bump": "0.x-breaking",
+    "module": "fastapi",
+    "exported_symbols": 50,
+    "exported_widened": [
+      "fastapi.Body",
+      "fastapi.Cookie",
+      "fastapi.FastAPI",
+      "fastapi.File",
+      "fastapi.Form",
+      "fastapi.Header",
+      "fastapi.Path",
+      "fastapi.Query"
+    ],
+    "internal_gone": [
+      "fastapi.applications.AsyncExitStackMiddleware",
+      "fastapi.openapi.models.EmailStr.validate",
+      "fastapi.utils.match_pydantic_error_url"
+    ],
+    "internal_widened": [
+      "fastapi.applications.get_openapi",
+      "fastapi.openapi.models.MediaType",
+      "fastapi.openapi.models.Parameter",
+      "fastapi.openapi.models.ParameterBase",
+      "fastapi.openapi.utils.get_definitions",
+      "fastapi.openapi.utils.get_openapi_operation_parameters",
+      "fastapi.openapi.utils.get_openapi_operation_request_body",
+      "fastapi.openapi.utils.get_openapi_path",
+      "fastapi.openapi.utils.get_schema_from_model_field",
+      "fastapi.params.Body",
+      "fastapi.params.Cookie",
+      "fastapi.params.File",
+      "fastapi.params.Form",
+      "fastapi.params.Header",
+      "fastapi.params.Param",
+      "fastapi.params.Path",
+      "fastapi.params.Query"
+    ],
+    "internal_reshaped": [
+      "fastapi.routing.solve_dependencies"
+    ]
+  },
+  {
+    "package": "tomlkit",
+    "old": "0.12.0",
+    "new": "0.13.2",
+    "bump": "0.x-breaking",
+    "module": "tomlkit",
+    "exported_symbols": 37,
+    "exported_widened": [
+      "tomlkit.TOMLDocument.append"
+    ]
+  },
+  {
+    "package": "pathspec",
+    "old": "0.11.0",
+    "new": "0.12.1",
+    "bump": "0.x-breaking",
+    "module": "pathspec",
+    "exported_symbols": 19,
+    "exported_widened": [
+      "pathspec.PathSpec.match_entries",
+      "pathspec.PathSpec.match_files",
+      "pathspec.PathSpec.match_tree",
+      "pathspec.PathSpec.match_tree_entries"
+    ],
+    "internal_gone": [
+      "pathspec.gitignore.GitWildMatchPatternError"
+    ]
+  },
+  {
+    "package": "annotated-types",
+    "old": "0.6.0",
+    "new": "0.7.0",
+    "bump": "0.x-breaking",
+    "module": "annotated_types",
+    "exported_symbols": 15
+  },
+  {
+    "package": "mdit-py-plugins",
+    "old": "0.3.5",
+    "new": "0.4.1",
+    "bump": "0.x-breaking",
+    "module": "mdit_py_plugins",
+    "exported_symbols": 0,
+    "internal_gone": [
+      "mdit_py_plugins.admon.index.get_tag",
+      "mdit_py_plugins.admon.index.validate",
+      "mdit_py_plugins.front_matter.index.make_front_matter_rule"
+    ],
+    "internal_widened": [
+      "mdit_py_plugins.dollarmath.dollarmath_plugin",
+      "mdit_py_plugins.dollarmath.index.math_block_dollar",
+      "mdit_py_plugins.footnote.footnote_plugin",
+      "mdit_py_plugins.footnote.index.footnote_ref"
+    ],
+    "internal_reshaped": [
+      "mdit_py_plugins.footnote.index.footnote_tail",
+      "mdit_py_plugins.texmath.index.dollar_post",
+      "mdit_py_plugins.texmath.index.dollar_pre"
+    ]
+  },
+  {
+    "package": "httpcore",
+    "old": "0.16.3",
+    "new": "0.17.0",
+    "bump": "0.x-breaking",
+    "module": "httpcore",
+    "exported_symbols": 104
+  },
+  {
+    "package": "python-multipart",
+    "old": "0.0.6",
+    "new": "0.0.9",
+    "bump": "0.0.z",
+    "module": "multipart",
+    "exported_symbols": 18,
+    "internal_reshaped": [
+      "multipart.multipart.ord_char"
     ]
   },
   {

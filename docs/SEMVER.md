@@ -5,19 +5,19 @@
 Semantic versioning makes two promises. A **patch** release changes nothing a caller can
 see. A **minor** release only adds.
 
-This is a measurement of both, across 27 real upgrade pairs of widely-pinned packages,
-**22 of which made the promise being measured** - the other five are 0.x releases and are
-excluded below for the reason SemVer itself gives.
+This is a measurement of both, across 44 real upgrade pairs of widely-pinned packages.
+**22 of them made the promise being measured**; the other 22 are 0.x releases, which SemVer
+exempts, and they are measured separately below rather than discarded.
 Reproduce it with [`scripts/semver_sweep.py`](../scripts/semver_sweep.py), or one pair at a
 time with `blast-radius check <package> <old> <new> --no-behaviour`. Last re-run
-2026-10-03 (Python 3.12, Windows); every row below is read from
+2026-10-07 (Python 3.14, Windows); every row below is read from
 [`semver-sweep.json`](semver-sweep.json), the script's output from that run.
 
 ## The result
 
 | Bump | Pairs | Broke exported API | Broken symbols | Of exported symbols |
 |---|---:|---:|---:|---:|
-| **patch** | 13 | **2 of 13 (15%)** | 3 | 3 of 1,133 (0.26%) |
+| **patch** | 13 | **2 of 13 (15%)** | 3 | 3 of 1,136 (0.26%) |
 | **minor** | 6 | **2 of 6 (33%)** | 7 | 7 of 505 (1.4%) |
 | major | 3 | **2 of 3** | 29 | 29 of 262 (11%) |
 
@@ -48,21 +48,78 @@ breaks about one name in four hundred.
 Every instance is named below, which is the point - a percentage with no names behind it
 is not checkable.
 
-### Why 0.x pairs are excluded
+### The 0.x cohorts
+
+SemVer exempts 0.x, so these pairs cannot be counted in the rows above. That is a reason to
+read them apart, not a reason not to measure them: 0.x packages are pinned in production in
+large numbers, and the convention they *do* follow - the second component is the breaking
+position, the third is a patch - is itself a claim that can be checked.
+
+| Position moved | Pairs | Broke exported API | Broken symbols | Of exported symbols |
+|---|---:|---:|---:|---:|
+| **third (`0.y.Z`, the patch position)** | 10 | **0 of 10** | 0 | 0 of 452 |
+| **second (`0.Y.z`, the breaking position)** | 10 | **1 of 10** | 4 | 4 of 455 (0.88%) |
+| `0.0.z` | 1 | 0 of 1 | 0 | 0 of 18 |
+
+The one break is `uvicorn` 0.23.2 → 0.30.1, four symbols. Every other 0.x pair in the sweep
+kept its exported API, including seven breaking-position bumps across `httpx`, `starlette`,
+`typer`, `fastapi`, `h11`, `tomlkit`, `pathspec`, `annotated-types` and `httpcore`.
+
+**Read the comparison carefully.** 0 of 10 in the 0.x patch position against 2 of 13 in the
+SemVer patch position does not show that packages promising nothing are safer than packages
+promising stability. They are different packages: both SemVer patch breaks come from
+`coverage` and `urllib3`, neither of which has a 0.x pair here, and `urllib3`'s is one
+upstream defect. What the 0.x rows do support is narrower and still worth having - **a 0.x
+pin is not the hazard the version number implies**, and a third-component 0.x bump behaved
+no worse than a patch release in this sample.
+
+`mdit-py-plugins` 0.3.5 → 0.4.1 is measured and then excluded: it exports **0** names, so it
+could not have broken anything, and leaving it in the denominator would have made the
+breaking-position row read 1 of 11. The script excludes any zero-surface pair from the rate
+and says so on the line.
+
+### Why 0.x pairs are not in the three rows above
 
 SemVer 2.0.0 §4: *"Major version zero (0.y.z) is for initial development. Anything MAY
 change at any time. The public API SHOULD NOT be considered stable."* For a 0.x package
 the **second** component is the breaking position, so a 0.26.0 → 0.27.0 bump is not a
 "minor" release in the sense this document measures, and counting it as one measures a
-promise that was never made. The five excluded pairs are `httpx` 0.26.0 → 0.27.0 and
-0.27.0 → 0.27.2, `typer` 0.9.0 → 0.12.3 and 0.12.0 → 0.12.3, and `starlette` 0.35.1 →
-0.37.2.
+promise that was never made.
 
 This is the same reasoning already applied, pre-registered, to the calendar-versioned
-packages further down. Applying it here **raises** both headline numbers - patch from 13%
-to 15%, minor from 22% to 33% - because all five excluded pairs were clean. Every other
+packages further down. Applying it **raises** both headline numbers - patch from 13% to
+15%, minor from 22% to 33% - because the pairs it moves out were clean. Every other
 correction in this document moved a number down; this one does not, which is the reason to
 be sure it is right rather than a reason to skip it.
+
+**For a while the exclusion was only in this document.** The five 0.x pairs were labelled
+`patch` and `minor` in `scripts/semver_sweep.py` and counted in those rows, so the script
+this page tells you to reproduce with printed **patch 15 / minor 9** against the published
+**patch 13 / minor 6**. The cohort is now read off the version numbers by `classify()`, the
+declared label next to each pair is checked against it, and the script exits non-zero
+naming any pair where the two disagree. A hand-written cohort label is how the two drifted
+apart in the first place.
+
+### The sandbox had made five pairs unmeasurable
+
+Re-running this sweep on 2026-10-07 produced `import click failed or found nothing` for 11
+of 44 pairs, this document's own headline pair among them. The cause was in blast-radius,
+not in the packages: the probe's sandbox refused `ctypes` outright, and `click`, `typer`,
+`uvicorn`, `platformdirs` and `dill` all read `ctypes.windll.kernel32` on import under
+Windows. A denied `dlopen` surfaces as `AttributeError: kernel32`, so the module never
+imported and the pair could not be measured at all.
+
+A sandbox tightening had quietly made the tool's published result unreproducible. It now
+allows the platform libraries a package loads to ask the OS a question - matched by name,
+with a package reaching for a `.dll` or `.so` of its own still refused - and the three
+SemVer rows reproduce exactly. The script's own `INCOMPLETE` guard is what caught it: it
+printed the failures, said the table was not the published result, and exited non-zero
+instead of publishing a summary over 26 pairs.
+
+Two pairs stay out for reasons that are not about this tool: `httpcore` 0.17.3 and 0.18.0
+install cleanly and then fail to import on Python 3.14 (`'typing.Union' object has no
+attribute '__module__'`), and `watchfiles` 0.21.0 could not be downloaded. Candidate pairs
+are now gated on *importing and exposing a surface*, not on installing.
 
 ### What this sweep cannot see
 
@@ -174,28 +231,45 @@ additive and not a break.
 | `click` | 8.1.6 | 8.1.7 | patch | 197 | 0 | 0 | 0 |
 | `coverage` | 7.5.0 | 7.5.4 | patch | 80 | **1** | 0 | 10 |
 | `filelock` | 3.15.1 | 3.15.4 | patch | 16 | 0 | 0 | 0 |
-| `httpx` | 0.27.0 | 0.27.2 | patch | 157 | 0 | 0 | 0 |
 | `jinja2` | 3.1.2 | 3.1.4 | patch | 96 | 0 | 0 | 0 |
 | `markupsafe` | 2.1.3 | 2.1.5 | patch | 35 | 0 | 0 | 0 |
 | `platformdirs` | 4.2.0 | 4.2.2 | patch | 47 | 0 | 0 | 0 |
-| `pytest` | 8.2.0 | 8.2.2 | patch | 321 | 0 | 0 | 0 |
+| `pytest` | 8.2.0 | 8.2.2 | patch | 324 | 0 | 0 | 0 |
 | `requests` | 2.32.2 | 2.32.3 | patch | 63 | 0 | 0 | 0 |
 | `rich` | 13.7.0 | 13.7.1 | patch | 6 | 0 | 0 | 0 |
 | `tqdm` | 4.66.1 | 4.66.4 | patch | 77 | 0 | 0 | 0 |
-| `typer` | 0.12.0 | 0.12.3 | patch | 13 | 0 | 0 | 0 |
 | `urllib3` | 2.2.1 | 2.2.2 | patch | 92 | **2** | 0 | 0 |
 | `anyio` | 4.1.0 | 4.4.0 | minor | 155 | 0 | 1 | 0 |
 | `click` | 8.0.4 | 8.1.7 | minor | 200 | **5** | 2 | 1 |
 | `filelock` | 3.13.1 | 3.15.4 | minor | 9 | 0 | 4 | 0 |
-| `httpx` | 0.26.0 | 0.27.0 | minor | 157 | 0 | 0 | 0 |
 | `pluggy` | 1.4.0 | 1.5.0 | minor | 45 | 0 | 0 | 0 |
 | `rich` | 13.0.1 | 13.7.1 | minor | 6 | 0 | 0 | 11 |
-| `starlette` | 0.35.1 | 0.37.2 | minor | 2 | 0 | 0 | 0 |
-| `typer` | 0.9.0 | 0.12.3 | minor | 13 | 0 | 0 | 1 |
 | `urllib3` | 2.1.0 | 2.2.2 | minor | 90 | **2** | 0 | 0 |
 | `click` | 7.1.2 | 8.1.7 | major | 177 | **13** | 8 | 10 |
 | `rich` | 12.6.0 | 13.7.1 | major | 6 | 0 | 0 | 13 |
 | `urllib3` | 1.26.18 | 2.2.2 | major | 79 | **16** | 2 | 53 |
+| `dill` | 0.3.7 | 0.3.8 | 0.x-patch | 67 | 0 | 0 | 0 |
+| `distlib` | 0.3.7 | 0.3.8 | 0.x-patch | 57 | 0 | 0 | 0 |
+| `fastapi` | 0.110.0 | 0.110.3 | 0.x-patch | 56 | 0 | 0 | 1 |
+| `httpx` | 0.27.0 | 0.27.2 | 0.x-patch | 157 | 0 | 0 | 0 |
+| `pathspec` | 0.12.0 | 0.12.1 | 0.x-patch | 22 | 0 | 0 | 0 |
+| `starlette` | 0.36.0 | 0.36.3 | 0.x-patch | 2 | 0 | 0 | 0 |
+| `tomlkit` | 0.12.0 | 0.12.5 | 0.x-patch | 37 | 0 | 1 | 0 |
+| `typer` | 0.12.0 | 0.12.3 | 0.x-patch | 13 | 0 | 0 | 0 |
+| `uvicorn` | 0.30.0 | 0.30.6 | 0.x-patch | 38 | 0 | 0 | 0 |
+| `wcwidth` | 0.2.6 | 0.2.13 | 0.x-patch | 3 | 0 | 0 | 0 |
+| `annotated-types` | 0.6.0 | 0.7.0 | 0.x-breaking | 15 | 0 | 0 | 0 |
+| `fastapi` | 0.100.0 | 0.111.0 | 0.x-breaking | 50 | 0 | 8 | 4 |
+| `h11` | 0.13.0 | 0.14.0 | 0.x-breaking | 29 | 0 | 0 | 0 |
+| `httpcore` | 0.16.3 | 0.17.0 | 0.x-breaking | 104 | 0 | 0 | 0 |
+| `httpx` | 0.26.0 | 0.27.0 | 0.x-breaking | 157 | 0 | 0 | 0 |
+| `mdit-py-plugins` | 0.3.5 | 0.4.1 | 0.x-breaking | 0 | 0 | 0 | 6 |
+| `pathspec` | 0.11.0 | 0.12.1 | 0.x-breaking | 19 | 0 | 4 | 1 |
+| `starlette` | 0.35.1 | 0.37.2 | 0.x-breaking | 2 | 0 | 0 | 0 |
+| `tomlkit` | 0.12.0 | 0.13.2 | 0.x-breaking | 37 | 0 | 1 | 0 |
+| `typer` | 0.9.0 | 0.12.3 | 0.x-breaking | 13 | 0 | 0 | 1 |
+| `uvicorn` | 0.23.2 | 0.30.1 | 0.x-breaking | 29 | **4** | 0 | 0 |
+| `python-multipart` | 0.0.6 | 0.0.9 | 0.0.z | 18 | 0 | 0 | 1 |
 
 The minor row is the one worth acting on. `click` 8.0 -> 8.1 removed `get_os_args`,
 `get_terminal_size` and `Group.resultcallback` and reshaped `Parameter` and

@@ -99,7 +99,7 @@ def main() -> int:
     print("    blast-radius check <package> <old> <new>", flush=True)
     print("    blast-radius check <package> <old> <new> --used-by /path/to/your/repo", flush=True)
     print(flush=True)
-    print("27 upgrade pairs measured this way: docs/SEMVER.md", flush=True)
+    print("44 upgrade pairs measured this way: docs/SEMVER.md", flush=True)
     return 0
 
 

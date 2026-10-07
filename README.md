@@ -59,7 +59,7 @@ release only adds. Measured across widely-pinned packages:
 
 | Bump | Pairs | Broke exported API | Broken symbols | Of exported symbols |
 |---|---:|---:|---:|---:|
-| **patch** | 13 | **2 of 13 (15%)** | 3 | 3 of 1,133 (0.26%) |
+| **patch** | 13 | **2 of 13 (15%)** | 3 | 3 of 1,136 (0.26%) |
 | **minor** | 6 | **2 of 6 (33%)** | 7 | 7 of 505 (1.4%) |
 | major | 3 | **2 of 3** | 29 | 29 of 262 (11%) |
 
@@ -214,6 +214,35 @@ compatible call shape are run, on the same generated inputs built from the *old*
 signature, in both versions. Comparing behaviour across an incompatible signature change
 would find differences the signature already explained.
 
+**Executing a package means sandboxing it.** The behaviour pass imports two versions of a
+third-party package and calls its functions on generated inputs. That is running somebody
+else's code on your machine, so the probe installs a sandbox first: writes are confined to
+a scratch root, deletes, renames and metadata changes outside it are refused, the network
+is refused except loopback, starting a process is refused, `ctypes` is refused, and reading
+from a console raises instead of hanging.
+
+It works in two layers, because one is not enough. Patching names in `os`, `builtins` and
+`socket` covers what Python code reaches by those names; it cannot see a library doing its
+I/O in C. An audit hook sits underneath, and CPython raises those events from inside the C
+implementations, so the hook sees a call however it was reached and whatever reference it
+was bound to.
+
+The layering is measured, not asserted. A battery of 28 escape routes is run against the
+sandbox: `nt`/`posix` (the C module `os` wraps) under every name, references bound before
+the sandbox installed, `_socket` under `socket.socket`, `io.FileIO` and `_io` under `io`,
+`sqlite3` opening a file in C, and `shutil` operating on paths outside the root. **8 of
+those 28 escaped an earlier version of the sandbox** — `nt.unlink`, `nt.rename`, `nt.mkdir`,
+`nt.utime`, `nt.truncate`, two pre-bound `os` references, and a raw `_socket` connect that
+reached the real internet and failed only on a timeout. All 28 are refused now, and
+`tests/test_sandbox_os_level.py` fails if any of them stops being.
+
+None of those are hostile calls. Ordinary library code deletes a stale cache entry, renames
+a file into place or touches a timestamp on import. Doing it on the machine of somebody who
+only asked for a diff is the thing being prevented. The other half of each test asserts the
+probe's own scratch writes, reads, imports and loopback lookups still work — a sandbox that
+blocks everything is not safe, it is broken, and the behaviour pass needs all of them on
+every run.
+
 **Your code, not your dependencies.** `--used-by` resolves each file's imports, so a
 project's own `parse()` is not credited to `packaging`. It skips virtualenvs (any directory
 holding `pyvenv.cfg`), `site-packages`, `node_modules`, `.tox`, and `build/` or `dist/`
@@ -281,8 +310,13 @@ src/blast_radius/
   report.py   sorted by what can reach you, silent changes first
   types.py    the kinds of change, and why they are ordered that way
 scripts/
-  semver_sweep.py   re-runs the 27-pair measurement behind docs/SEMVER.md
+  semver_sweep.py   re-runs the 44-pair measurement behind docs/SEMVER.md
 ```
+
+284 tests. `pytest --cov=blast_radius` reports **91%** of statements, with one gap worth
+naming: the sandbox is a source string executed in the probe's subprocesses, so coverage
+cannot see it at all and the 91% says nothing about the part that guards your machine.
+That is measured separately, by running 28 escape routes against it.
 
 ## Scope
 
@@ -301,10 +335,14 @@ scripts/
   dir, and has stdin closed. Functions whose names say they act on the machine are not run
   at all, and in the rest, starting a process, opening a network connection, reading the
   console and writing outside the temp dir raise `PermissionError` - in both versions
-  alike, so it compares as a refusal. That guards against ordinary library code, not
-  hostile code (`ctypes` can still do anything): run it on packages you would install
-  anyway. The price is that a behaviour change which needs a child process or the network
-  is not seen.
+  alike, so it compares as a refusal. Deleting, renaming or touching a file outside the
+  root is refused too, and so is `ctypes`. Two layers do it: name patches for what Python
+  code reaches by name, and an audit hook underneath for what a library does in C. **28
+  escape routes are run against it as a test; 8 of them escaped an earlier version.**
+  That guards against *ordinary library code* - a stale cache entry deleted on import,
+  a file renamed into place - and is not a security boundary against code written to
+  break out: run it on packages you would install anyway. The price is that a behaviour
+  change which needs a child process or the network is not seen.
 - **Method calls on runtime objects are "possible", not proven.** `obj.contains(...)`
   cannot be tied to a class without running the code, so such sites are listed separately
   and do not trip `--fail-on used`.
@@ -325,7 +363,7 @@ scripts/
 
 | | |
 |---|---|
-| &#128200; **[The semver sweep](https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md)** | 22 upgrade pairs that made the promise, every break named, API surface only |
+| &#128200; **[The semver sweep](https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md)** | 44 pairs: the 22 that made the promise, and 22 more on 0.x, which promises nothing. Every break named, API surface only |
 | &#128202; **[Results](https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md)** | All three runs in full, with the limits |
 | **[suite-auditor](https://github.com/hammasbuilds/suite-auditor)** | The same differential idea, pointed at a test suite |
 | **[pr-referee](https://github.com/hammasbuilds/pr-referee)** | And pointed at a diff |
