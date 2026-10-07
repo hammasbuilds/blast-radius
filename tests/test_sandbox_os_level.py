@@ -48,6 +48,8 @@ root, outside = sys.argv[2], sys.argv[3]
 # removed the file.
 victims = {}
 for name in (
+    "os_remove", "os_unlink", "pathlib_unlink", "os_rename", "pathlib_rename",
+    "os_replace", "os_chmod", "os_utime", "os_link", "open_write", "io_fileio_write",
     "nt_unlink", "nt_rename", "nt_mkdir", "nt_utime", "nt_truncate", "nt_chmod",
     "prebound_unlink", "prebound_rename",
 ):
@@ -107,6 +109,32 @@ def attempt(label, fn):
         result[label] = type(exc).__name__
 
 
+# The Python-level names first. These are the name-patch layer's job and all of them
+# held from the beginning - which is exactly why they belong in the test: the layer that
+# was never broken is the one a later change is most likely to break quietly, and
+# "8 of 28 escaped" is not a measurement anyone can check if only the 8 are run.
+attempt("os_remove", lambda: os.remove(victims["os_remove"]))
+attempt("os_unlink", lambda: os.unlink(victims["os_unlink"]))
+attempt("pathlib_unlink", lambda: __import__("pathlib").Path(victims["pathlib_unlink"]).unlink())
+attempt("os_rename", lambda: os.rename(victims["os_rename"], victims["os_rename"] + ".moved"))
+attempt("pathlib_rename", lambda: __import__("pathlib").Path(
+    victims["pathlib_rename"]).rename(victims["pathlib_rename"] + ".moved"))
+attempt("os_replace", lambda: os.replace(victims["os_replace"], victims["os_replace"] + ".moved"))
+attempt("os_mkdir", lambda: os.mkdir(os.path.join(outside, "made_by_os")))
+attempt("os_chmod", lambda: os.chmod(victims["os_chmod"], 0o600))
+attempt("os_utime", lambda: os.utime(victims["os_utime"], (0, 0)))
+attempt("os_link", lambda: os.link(victims["os_link"], victims["os_link"] + ".link"))
+attempt("open_write", lambda: open(victims["open_write"], "w", encoding="utf-8").write("x"))
+attempt("io_fileio_write", lambda: __import__("io").FileIO(
+    victims["io_fileio_write"], "w").write(b"x"))
+attempt("sqlite_outside", lambda: __import__("sqlite3").connect(
+    os.path.join(outside, "made.db")).execute("create table t(x)"))
+attempt("shutil_copyfile", lambda: __import__("shutil").copyfile(
+    sys.argv[1], os.path.join(outside, "made.copy")))
+attempt("subprocess_popen", lambda: __import__("subprocess").Popen(["cmd", "/c", "echo"]))
+attempt("socket_connect", lambda: __import__("socket").socket().connect(("93.184.216.34", 80)))
+attempt("ctypes_foreign", lambda: __import__("ctypes").CDLL("definitely_not_a_system_library"))
+
 attempt("nt_unlink", lambda: low.unlink(victims["nt_unlink"]))
 attempt("nt_rename", lambda: low.rename(victims["nt_rename"], victims["nt_rename"] + ".moved"))
 attempt("nt_mkdir", lambda: low.mkdir(os.path.join(outside, "made_by_nt")))
@@ -153,6 +181,26 @@ sys.stdout.write("__JSON__" + json.dumps(result))
 """
 
 ESCAPE_ROUTES = (
+    # Python-level names, covered by the name patches. All held from the start; they are
+    # here because an untested guard is the one a later change breaks quietly.
+    "os_remove",
+    "os_unlink",
+    "pathlib_unlink",
+    "os_rename",
+    "pathlib_rename",
+    "os_replace",
+    "os_mkdir",
+    "os_chmod",
+    "os_utime",
+    "os_link",
+    "open_write",
+    "io_fileio_write",
+    "sqlite_outside",
+    "shutil_copyfile",
+    "subprocess_popen",
+    "socket_connect",
+    "ctypes_foreign",
+    # C-level and pre-bound routes. Eight of these got past an earlier sandbox.
     "nt_unlink",
     "nt_rename",
     "nt_mkdir",
@@ -231,3 +279,30 @@ def test_the_probes_own_work_still_works(tmp_path) -> None:
     out = _run(tmp_path)
     broken = {name: out[name] for name in MUST_KEEP_WORKING if out[name] != "allowed"}
     assert not broken, f"the sandbox broke the probe's own work: {broken}"
+
+
+def test_the_readme_quotes_the_number_of_routes_actually_run() -> None:
+    """The README said 28 while the tests ran 10.
+
+    "A battery of 28 escape routes is run against the sandbox" was true of a script in a
+    scratch directory, not of this repository - so the one claim in the README that reads
+    as a measurement anyone can repeat was the one that could not be. The missing 18 were
+    the Python-level names: `os.remove`, `pathlib.Path.unlink`, `open(..., "w")`,
+    `shutil.copyfile`, `subprocess.Popen`, a foreign `ctypes.CDLL`. Every one of them held
+    from the beginning, which is exactly why they were worth adding: the guard that has
+    never broken is the one a later change breaks quietly, and "8 of 28 escaped" is not
+    checkable if only the 8 are run.
+    """
+    import re
+
+    from tests import test_sandbox_c_level  # noqa: PLC0415
+
+    c_level = re.findall(r'attempt\("([a-z_0-9]+)"', test_sandbox_c_level.SCRIPT)
+    total = len(ESCAPE_ROUTES) + len([n for n in c_level if "outside" in n])
+
+    readme = (Path(__file__).parent.parent / "README.md").read_text(encoding="utf-8")
+    quoted = {int(n) for n in re.findall(r"(\d+) escape routes", readme)}
+    assert quoted, "the README no longer says how many escape routes are run"
+    assert quoted == {total}, (
+        f"the README quotes {sorted(quoted)} escape routes; the tests assert {total}"
+    )

@@ -227,8 +227,11 @@ I/O in C. An audit hook sits underneath, and CPython raises those events from in
 implementations, so the hook sees a call however it was reached and whatever reference it
 was bound to.
 
-The layering is measured, not asserted. A battery of 28 escape routes is run against the
-sandbox: `nt`/`posix` (the C module `os` wraps) under every name, references bound before
+The layering is measured, not asserted. **28 escape routes** are run against the sandbox
+by `tests/test_sandbox_os_level.py` and `tests/test_sandbox_c_level.py`, and a third test
+checks that this number is the number those two assert - it read 28 here while the tests
+ran 10, because the full battery lived in a scratch directory and only the routes that had
+once escaped were kept. The routes are: `nt`/`posix` (the C module `os` wraps) under every name, references bound before
 the sandbox installed, `_socket` under `socket.socket`, `io.FileIO` and `_io` under `io`,
 `sqlite3` opening a file in C, and `shutil` operating on paths outside the root. **8 of
 those 28 escaped an earlier version of the sandbox** — `nt.unlink`, `nt.rename`, `nt.mkdir`,
