@@ -12,3 +12,10 @@ build/
 # Scratch from a one-off measurement, not part of the project.
 click_measure.log
 run_m.bat
+
+# Coverage artefacts. A 52 KB SQLite file holding absolute local paths; it was
+# committed into four of these repositories the day coverage was first measured.
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
