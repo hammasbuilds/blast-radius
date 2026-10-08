@@ -62,7 +62,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install build twine
+      # readme_renderer[md] is what lets `twine check` render Markdown. Without it
+      # readme_renderer.markdown.render() returns None, twine reports PASSED, and
+      # the gate passes a README it never parsed.
+      - run: pip install build twine "readme_renderer[md]"
       - run: python -m build
 
       # The version in pyproject.toml must match the tag, or you publish 0.1.0
@@ -77,7 +80,7 @@ jobs:
 
       # Catches a README that will not render on PyPI, which cannot be fixed
       # after upload without burning a version number.
-      - run: twine check dist/*
+      - run: twine check --strict dist/*
 
       - name: py.typed must be in the wheel
         run: |
