@@ -7,10 +7,12 @@ None of them installs anything or reaches the network.
 
 from __future__ import annotations
 
+import pathlib
 import subprocess
 
 import pytest
 
+import blast_radius
 from blast_radius import cli
 from blast_radius.diff import api_changes, compatible, find_call_sites, stable_callables
 from blast_radius.probe import surface
@@ -507,3 +509,26 @@ def test_weak_differences_are_listed_apart_and_not_counted():
     text = summary(report)
     assert "Not counted: 1 function(s)" in text
     assert report.counts() == {}
+
+
+def test_the_version_is_the_same_in_every_place_it_is_declared() -> None:
+    """__version__, pyproject.toml and the installed metadata must agree.
+
+    The version is written twice - here and in pyproject.toml - and the other tests
+    only check that `--version` prints `__version__`, which is true however wrong
+    both are. Bump pyproject alone and the wheel says blast-radius {new} while
+    `blast-radius --version` says the old one; release.yml compares the tag to
+    pyproject, so nothing would have caught it.
+    """
+    from importlib.metadata import version
+
+    assert version("blast-radius") == blast_radius.__version__
+
+    # pyproject.toml is absent wherever only tests/ is shipped, as in the
+    # installed-wheel CI job.
+    pyproject = pathlib.Path(__file__).resolve().parent.parent / "pyproject.toml"
+    if pyproject.exists():
+        import tomllib
+
+        declared = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+        assert declared["project"]["version"] == blast_radius.__version__
