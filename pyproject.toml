@@ -67,4 +67,8 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+# "." so the repo root is importable: one test reads the c-level suite to count the
+# escape routes it runs, and `pytest` alone (as CI invokes it) does not put the
+# working directory on sys.path the way `python -m pytest` does. Without it the
+# test passed locally and failed on every CI runner.
+pythonpath = ["src", "."]
