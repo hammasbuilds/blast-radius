@@ -50,6 +50,7 @@ def classify(old: str, new: str) -> str:
     0.0.z is its own case - with y as well as x at zero there is no patch position left
     to make a promise about - so it is reported separately rather than folded in.
     """
+
     def parts(text: str) -> list[int]:
         out = []
         for chunk in text.split(".")[:3]:

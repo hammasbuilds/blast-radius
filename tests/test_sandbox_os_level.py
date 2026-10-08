@@ -25,7 +25,16 @@ import subprocess
 import sys
 from pathlib import Path
 
-PROBE = Path(__file__).parent.parent / "src" / "blast_radius" / "probe.py"
+import pytest
+
+import blast_radius.probe
+
+# Located through the imported module, not the repo layout: CI also runs this suite
+# against the installed wheel from a copied tests/ directory, where ../src/ is absent.
+PROBE = Path(blast_radius.probe.__file__)
+
+# Absent in the installed-wheel CI job, which copies only tests/.
+README = Path(__file__).parent.parent / "README.md"
 
 # Run the sandbox in a subprocess, as the real probe does and for the same reason:
 # installing it in-process patches builtins.open for the whole interpreter, which stops
@@ -281,6 +290,7 @@ def test_the_probes_own_work_still_works(tmp_path) -> None:
     assert not broken, f"the sandbox broke the probe's own work: {broken}"
 
 
+@pytest.mark.skipif(not README.exists(), reason="README.md is not shipped with the tests")
 def test_the_readme_quotes_the_number_of_routes_actually_run() -> None:
     """The README said 28 while the tests ran 10.
 
@@ -300,7 +310,7 @@ def test_the_readme_quotes_the_number_of_routes_actually_run() -> None:
     c_level = re.findall(r'attempt\("([a-z_0-9]+)"', test_sandbox_c_level.SCRIPT)
     total = len(ESCAPE_ROUTES) + len([n for n in c_level if "outside" in n])
 
-    readme = (Path(__file__).parent.parent / "README.md").read_text(encoding="utf-8")
+    readme = README.read_text(encoding="utf-8")
     quoted = {int(n) for n in re.findall(r"(\d+) escape routes", readme)}
     assert quoted, "the README no longer says how many escape routes are run"
     assert quoted == {total}, (

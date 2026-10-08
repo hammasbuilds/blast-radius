@@ -66,7 +66,7 @@ def test_a_possible_hit_is_reported_as_possible_and_says_why() -> None:
 
 
 def test_changes_that_reach_nothing_say_how_much_was_searched() -> None:
-    """"Nothing reaches you" is only meaningful beside the size of the search.
+    """ "Nothing reaches you" is only meaningful beside the size of the search.
 
     Zero hits across 0 files and zero hits across 412 files are the same sentence and
     very different facts, so the file count belongs in it.

@@ -8,7 +8,11 @@ import sys
 import tempfile
 from pathlib import Path
 
-PROBE = Path(__file__).parent.parent / "src" / "blast_radius" / "probe.py"
+import blast_radius.probe
+
+# Located through the imported module, not the repo layout: CI also runs this suite
+# against the installed wheel from a copied tests/ directory, where ../src/ is absent.
+PROBE = Path(blast_radius.probe.__file__)
 
 # Run the sandbox in a subprocess, as the real probe does. Installing it in-process
 # patches builtins.open for the whole interpreter, which stops pytest from writing its
