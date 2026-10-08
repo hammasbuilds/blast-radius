@@ -6,13 +6,13 @@ on:
 
 jobs:
   test:
-    # pyproject.toml lists 3.11-3.13 and says each is exercised on Linux and Windows;
+    # pyproject.toml lists 3.11-3.14 and says each is exercised on Linux and Windows;
     # this matrix is what makes that true. The two platforms really do differ here:
     # temp-directory cleanup took a different code path on Linux and failed only there.
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.11", "3.12", "3.13"]
+        python: ["3.11", "3.12", "3.13", "3.14"]
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:

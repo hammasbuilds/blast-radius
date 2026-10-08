@@ -52,7 +52,7 @@ sorts what actually changed by **how likely it is to reach production unnoticed*
 **API surface only.** This sweep runs `--no-behaviour`, so it sees names that vanished and
 signatures that changed, and **cannot detect a single `SILENT` change** — the category the
 opening of this README argues nothing else reports. The evidence for `SILENT` is the two
-packages in [`RESULTS.md`](docs/RESULTS.md), not this table.
+packages in [`RESULTS.md`](https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md), not this table.
 
 Semantic versioning says a patch release changes nothing a caller can see, and a minor
 release only adds. Measured across widely-pinned packages:
@@ -73,7 +73,7 @@ minor row. The major row is 2 of 3 and gets no percentage.
 
 Small enough to name every instance, which is the point — a percentage with no names behind
 it is not checkable. Full method, the three rows' dependence, the per-symbol view and four
-earlier corrections: [`docs/SEMVER.md`](docs/SEMVER.md).
+earlier corrections: [`docs/SEMVER.md`](https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md).
 
 **`urllib3` 2.2.1 → 2.2.2**, a patch release, added a **required** keyword-only parameter to
 `BaseHTTPResponse.__init__`, inserted between `version` and `reason`:
