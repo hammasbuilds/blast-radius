@@ -1,27 +1,10 @@
-<h1 align="center">blast-radius (Python · inspect · differential testing · AST)</h1>
-<p align="center"><i>What a dependency upgrade actually changes — including what nothing warns you about</i></p>
+# blast-radius
 
-<p align="center">
-  <a href="https://github.com/hammasbuilds/blast-radius#what-it-does">What it does</a> &middot;
-  <a href="https://github.com/hammasbuilds/blast-radius#results">Results</a> &middot;
-  <a href="https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md">The semver sweep</a> &middot;
-  <a href="https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md">Full results</a> &middot;
-  <a href="https://github.com/hammasbuilds/blast-radius#how-it-works">How it works</a> &middot;
-  <a href="https://github.com/hammasbuilds/blast-radius#run-it">Run it</a> &middot;
-  <a href="https://github.com/hammasbuilds/blast-radius#scope">Scope</a> 
-</p>
-
-<p align="center">
-  <a href="https://github.com/hammasbuilds/blast-radius/actions/workflows/ci.yml"><img src="https://github.com/hammasbuilds/blast-radius/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
-  <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python">
-  <img src="https://img.shields.io/badge/runtime%20deps-0-brightgreen" alt="zero dependencies">
-  <img src="https://img.shields.io/badge/model-none%20required-success" alt="no model">
-  <img src="https://img.shields.io/badge/tests-274-brightgreen" alt="tests">
-  <img src="https://img.shields.io/badge/upgrade%20pairs%20measured-27-blue" alt="pairs">
-  <a href="https://github.com/hammasbuilds/blast-radius/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
-</p>
-
----
+We built blast-radius to show what a dependency upgrade actually changes: it installs both
+versions of a Python package side by side, diffs their public API, then runs every function
+whose signature did not change on the same inputs in both versions to catch silent
+behaviour changes that no import error or type checker reports. It is for maintainers and
+CI pipelines reviewing dependency bumps. No model, no API key, no runtime dependencies.
 
 ## What it does
 
@@ -44,6 +27,40 @@ sorts what actually changed by **how likely it is to reach production unnoticed*
 | **same name, same signature, different answer (`SILENT`)** | **nothing** |
 
 > **A changelog is a claim. This is the diff.**
+
+## Sample input / output
+
+`python demo.py` - a real check of `urllib3` 2.2.1 to 2.2.2, a patch release (about five
+seconds; it installs both wheels):
+
+```text
+installing urllib3==2.2.1 ...
+installing urllib3==2.2.2 ...
+
+reading both public surfaces...
+  2.2.1: 212 public symbols (reports version 2.2.1)
+  2.2.2: 212 public symbols (reports version 2.2.2)
+
+==============================================================================
+BLAST RADIUS - urllib3 2.2.1 -> 2.2.2
+==============================================================================
+  gone          0   an import error at startup
+  reshaped      2   a type checker would catch these
+  SILENT        -   not checked: the behaviour pass was skipped (--no-behaviour)
+  widened       0   not breaking: existing calls still work
+  added         0
+
+  reshaped:
+    urllib3.BaseHTTPResponse
+      was: ...bytes] | None' = None, status: 'int', version: 'int', reason: 'str | None', decode_content: 'bool', ...
+      now: ...bytes] | None' = None, status: 'int', version: 'int', version_string: 'str', reason: 'str | None', d...
+    urllib3.HTTPResponse
+      was: ...status: 'int' = 0, version: 'int' = 0, reason: 'str | None' = None, preload_content: 'bool' = True, ...
+      now: ...status: 'int' = 0, version: 'int' = 0, version_string: 'str' = 'HTTP/?', reason: 'str | None' = None...
+```
+
+A behaviour-pass example, where the change is silent, is under *One upgrade in depth*
+below.
 
 ## Results
 
@@ -72,8 +89,7 @@ already excludes calendar-versioned packages. All five were clean, so excluding 
 minor row. The major row is 2 of 3 and gets no percentage.
 
 Small enough to name every instance, which is the point — a percentage with no names behind
-it is not checkable. Full method, the three rows' dependence, the per-symbol view and four
-earlier corrections: [`docs/SEMVER.md`](https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md).
+it is not checkable. Full method, the three rows' dependence and the per-symbol view: [`docs/SEMVER.md`](https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md).
 
 **`urllib3` 2.2.1 → 2.2.2**, a patch release, added a **required** keyword-only parameter to
 `BaseHTTPResponse.__init__`, inserted between `version` and `reason`:
@@ -87,14 +103,7 @@ Every subclass calling `super().__init__(...)` now raises `TypeError`. `HTTPResp
 the same parameter positionally, so positional callers have `reason` land silently in
 `version_string`.
 
-The first version of this sweep said **38%** for patch releases. Three bugs in the probe
-were inflating it — aliased symbols counted once per importing module, internal module moves
-read as removals, and internal churn weighed the same as published API. A fourth took the
-minor row from **44% to 22%**: an added *optional* parameter was being counted as a break.
-It cannot break a caller, and is now reported as `widened`. Every correction moved a number
-down.
-
-&#128202; **[The full sweep, every break named, and the three corrections &rarr;](https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md)**
+&#128202; **[The full sweep, every break named &rarr;](https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md)**
 
 ### One upgrade in depth
 
@@ -171,22 +180,6 @@ by reason rather than as one "could not be called" number: a function this tool 
 managed to hand a valid argument is a fact about the tool, and one that ran and refused is a
 fact about the package.
 
-An earlier run reported one silent change here, `BashComplete.source`: on a machine with no
-`bash`, 8.1.6 raises *Couldn't detect Bash version* and 8.1.7 warns and returns the
-completion script. That difference is real - call it directly and it shows - but the
-behaviour pass now refuses to let a probed function start a process, so both versions fail
-at the same `subprocess.run` and it is not reported. That is the price of the guard
-described under [Scope](https://github.com/hammasbuilds/blast-radius#scope).
-
-The first runs exercised none of it. Four fixes, none of them about click, made the pass work at all:
-
-| | |
-|---|---|
-| the payload went on the **command line** | 12,290 characters returned nothing with exit code 0; on Windows the behaviour pass silently did nothing on any package worth checking |
-| `SystemExit` was not caught | it inherits `BaseException`, so `except Exception` missed it, and one click command calling `sys.exit()` ended the whole run |
-| `_params` mis-parsed a **return annotation** | `(value: int, name: str = "x") -> bool` was read as taking ONE parameter, so every annotated function was called short and raised `TypeError` |
-| a class needing a constructor argument was **refused** | now built with a generated argument where the annotation allows a guess |
-
 See [docs/RESULTS.md](https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md) for all three runs; the
 JSON each number is read from is committed next to it.
 
@@ -229,14 +222,9 @@ was bound to.
 
 The layering is measured, not asserted. **28 escape routes** are run against the sandbox
 by `tests/test_sandbox_os_level.py` and `tests/test_sandbox_c_level.py`, and a third test
-checks that this number is the number those two assert - it read 28 here while the tests
-ran 10, because the full battery lived in a scratch directory and only the routes that had
-once escaped were kept. The routes are: `nt`/`posix` (the C module `os` wraps) under every name, references bound before
+checks that this number is the number those two assert. The routes are: `nt`/`posix` (the C module `os` wraps) under every name, references bound before
 the sandbox installed, `_socket` under `socket.socket`, `io.FileIO` and `_io` under `io`,
-`sqlite3` opening a file in C, and `shutil` operating on paths outside the root. **8 of
-those 28 escaped an earlier version of the sandbox** — `nt.unlink`, `nt.rename`, `nt.mkdir`,
-`nt.utime`, `nt.truncate`, two pre-bound `os` references, and a raw `_socket` connect that
-reached the real internet and failed only on a timeout. All 28 are refused now, and
+`sqlite3` opening a file in C, and `shutil` operating on paths outside the root. All 28 are refused, and
 `tests/test_sandbox_os_level.py` fails if any of them stops being.
 
 None of those are hostile calls. Ordinary library code deletes a stale cache entry, renames
@@ -253,6 +241,13 @@ output that is not itself a package. Files are decoded the way Python decodes th
 (PEP 263 coding cookies included), and any file it cannot read or parse is counted and
 named in the output rather than skipped in silence.
 
+## Tech stack
+
+- Python 3.11+, standard library only at runtime: `inspect` for signatures, `ast` for
+  call-site matching in `--used-by`, `subprocess` probes, an audit hook for the sandbox
+- `uv` (or `pip`) to install the two versions into throwaway directories
+- pytest and ruff; GitHub Actions also builds the wheel and smoke-tests the installed CLI
+
 ## Run it
 
 ```bash
@@ -265,9 +260,6 @@ blast-radius check packaging 21.3 24.0 --out report/         # also writes REPOR
 blast-radius check packaging 21.3 24.0 --json | jq .counts    # the JSON on stdout
 ```
 
-PyPI release coming: `pip install blast-radius` (or `uv tool install` / `pipx install`)
-will work once it is published.
-
 `--json` prints the same object as `blast-radius.json` and nothing else on stdout; the
 human report moves to stderr. If the run cannot finish, stdout stays empty and the exit
 status is 2.
@@ -276,6 +268,14 @@ Needs no model, no API key, no GPU. It installs both versions itself, with `uv` 
 and `pip` otherwise, into throwaway directories it cleans up. The name you install and the
 name you import may differ (`beautifulsoup4` is `bs4`); it reads the right one from the
 package's metadata, and `--import-name` overrides.
+
+The behaviour pass runs the package's own public functions with generated arguments, in a
+subprocess that sees only the standard library and the installed version, inside a
+throwaway temp dir: starting a process, opening a network connection, reading the console
+and writing outside the temp dir are refused, and functions named for acting on the machine
+(`launch`, `edit`, `prompt`, ...) are not run. That guards against ordinary library code,
+not code written to escape, so run it on packages you would install anyway. A function
+that never returns costs one `--timeout` (default 20 s) per version.
 
 ### In CI
 
@@ -316,51 +316,10 @@ scripts/
   semver_sweep.py   re-runs the 44-pair measurement behind docs/SEMVER.md
 ```
 
-284 tests. `pytest --cov=blast_radius` reports **91%** of statements, with one gap worth
+286 tests. `pytest --cov=blast_radius` reports **91%** of statements, with one gap worth
 naming: the sandbox is a source string executed in the probe's subprocesses, so coverage
 cannot see it at all and the 91% says nothing about the part that guards your machine.
 That is measured separately, by running 28 escape routes against it.
-
-## Scope
-
-- **It does not read changelogs.** Deliberately. The changelog is the claim being checked.
-- **It cannot reach every API.** A class whose constructor takes an argument is built with a
-  generated one where the annotation allows a guess, and reported as needing an instance
-  where the guess fails. On `click` 8.1.6 → 8.1.7 that is **42 of 234** stable callables.
-- **Generated arguments, not real ones.** A pool of literals chosen per parameter from its
-  annotation, varied one at a time. A behaviour change that only shows on a complex input
-  will be missed. On click, **56 of 234** rejected every generated input and **4** were
-  never handed an argument of the right type.
-- **Public surface only.** A project reaching into private names is not covered.
-- **It runs the package's code, behind a guard.** The behaviour pass calls public functions
-  with generated arguments, in a subprocess that sees only the standard library and the
-  installed version (not the environment blast-radius runs in), works in a throwaway temp
-  dir, and has stdin closed. Functions whose names say they act on the machine are not run
-  at all, and in the rest, starting a process, opening a network connection, reading the
-  console and writing outside the temp dir raise `PermissionError` - in both versions
-  alike, so it compares as a refusal. Deleting, renaming or touching a file outside the
-  root is refused too, and so is `ctypes`. Two layers do it: name patches for what Python
-  code reaches by name, and an audit hook underneath for what a library does in C. **28
-  escape routes are run against it as a test; 8 of them escaped an earlier version.**
-  That guards against *ordinary library code* - a stale cache entry deleted on import,
-  a file renamed into place - and is not a security boundary against code written to
-  break out: run it on packages you would install anyway. The price is that a behaviour
-  change which needs a child process or the network is not seen.
-- **Method calls on runtime objects are "possible", not proven.** `obj.contains(...)`
-  cannot be tied to a class without running the code, so such sites are listed separately
-  and do not trip `--fail-on used`.
-- **An import path that disappears while the object survives is not reported.** Symbols
-  are keyed on the object, so `packaging.specifiers.parse` (21.3 imported `parse` into that
-  module; 24.0 does not) is folded into `packaging.version.parse`. Code importing through
-  such an incidental path is still matched, but the path's removal is not listed as `gone`.
-- **A function that never returns costs one `--timeout`, per version.** The probe abandons
-  it after `--timeout` seconds (default 20) and carries on with the rest. The usual cause,
-  a function waiting on the console (`click.getchar`, `click.prompt`), no longer gets that
-  far: those are skipped by name and `input()` gets end-of-file, which is why the click
-  runs take seconds where they used to take seven minutes.
-- **Two packages.** `packaging` and `click`. Two upgrades are not a general claim about
-  upgrades, and nothing here says how this behaves on a package shaped differently from
-  both.
 
 ## Also worth reading
 
@@ -372,13 +331,6 @@ That is measured separately, by running 28 escape routes against it.
 | **[pr-referee](https://github.com/hammasbuilds/pr-referee)** | And pointed at a diff |
 | **[repo-surgeon](https://github.com/hammasbuilds/repo-surgeon)** | And at a migration, refusing what it cannot prove |
 
-## Keywords
+## Licence
 
-dependency upgrade &middot; breaking change &middot; semantic versioning &middot; API diff
-&middot; differential testing &middot; regression detection &middot; supply chain &middot;
-dependabot &middot; CI &middot; python packaging &middot; inspect &middot; AST &middot;
-call site analysis
-
-## License
-
-MIT - see [LICENSE](https://github.com/hammasbuilds/blast-radius/blob/main/LICENSE).
+MIT - see [LICENSE](LICENSE).
