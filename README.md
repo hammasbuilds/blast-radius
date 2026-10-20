@@ -28,6 +28,25 @@ sorts what actually changed by **how likely it is to reach production unnoticed*
 
 > **A changelog is a claim. This is the diff.**
 
+## Screenshots
+
+A small browser front end drives the package for demonstrations. It is a local demo and is **not part of
+the package** — the package has no web surface and no runtime dependencies. Every result on these screens
+is a live call into the library.
+
+![Overview](https://raw.githubusercontent.com/hammasbuilds/blast-radius/main/docs/screenshots/00-overview.png)
+*The front end as it opens: every feature is a tab, and the page states that nothing on it is precomputed.*
+
+![Compare Two Versions](https://raw.githubusercontent.com/hammasbuilds/blast-radius/main/docs/screenshots/01-compare-two-versions.png)
+*What changed between two versions, sorted by how quietly it reaches production: gone, reshaped, widened, and silent.*
+
+![The Two Versions](https://raw.githubusercontent.com/hammasbuilds/blast-radius/main/docs/screenshots/02-the-two-versions.png)
+*The source of both versions, side by side.*
+
+![Running Safely](https://raw.githubusercontent.com/hammasbuilds/blast-radius/main/docs/screenshots/03-running-safely.png)
+*Both versions executed on the same inputs inside the sandbox that blocks the machine.*
+
+
 ## Sample input / output
 
 `python demo.py` - a real check of `urllib3` 2.2.1 to 2.2.2, a patch release (about five
