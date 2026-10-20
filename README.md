@@ -28,6 +28,16 @@ sorts what actually changed by **how likely it is to reach production unnoticed*
 
 > **A changelog is a claim. This is the diff.**
 
+## Architecture
+
+![Pipeline](https://raw.githubusercontent.com/hammasbuilds/blast-radius/main/docs/screenshots/architecture.png)
+*The path a call travels, stage by stage: install both -> read both surfaces -> compare shape -> execute both -> order by reach. Every stage is a module in this
+repository. Animated: [`docs/architecture.html`](https://github.com/hammasbuilds/blast-radius/blob/main/docs/architecture.html) — one file, no
+dependencies, opens in any browser.*
+
+![Decision architecture](https://raw.githubusercontent.com/hammasbuilds/blast-radius/main/docs/screenshots/architecture-deep.png)
+*Each public symbol falls out at the gate that would have warned you - or at the one that never does. Only 'gone' announces itself. Animated: [`docs/architecture-deep.html`](https://github.com/hammasbuilds/blast-radius/blob/main/docs/architecture-deep.html).*
+
 ## Screenshots
 
 A small browser front end drives the package for demonstrations. It is a local demo and is **not part of
