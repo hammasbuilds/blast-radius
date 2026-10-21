@@ -351,4 +351,4 @@ That is measured separately, by running 28 escape routes against it.
 
 ## Licence
 
-MIT - see [LICENSE](LICENSE).
+MIT - see [LICENSE](https://github.com/hammasbuilds/blast-radius/blob/main/LICENSE).
