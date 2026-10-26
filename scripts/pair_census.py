@@ -38,9 +38,11 @@ import json
 import re
 import sys
 import tempfile
+import threading
 import time
 import urllib.error
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -116,6 +118,12 @@ def main() -> int:
     ap.add_argument("--since", default="2021-01-01",
                     help="a pair counts only if the newer version was published on or "
                          "after this date (2021-01-01)")
+    ap.add_argument("--workers", type=int, default=1,
+                    help="pairs measured at once. A pair is mostly waiting on network "
+                         "and disk, and each worker installs into its own directory; "
+                         "the only shared state is uv's cache (1)")
+    ap.add_argument("--resume", action="store_true",
+                    help="keep pairs already present in --out and measure only the rest")
     ap.add_argument("--out", default="census.json")
     ap.add_argument("--plan-only", action="store_true",
                     help="choose the pairs and write them, without installing anything")
@@ -148,25 +156,53 @@ def main() -> int:
         print(f"\nplan written to {out}")
         return 0
 
-    results, started = [], time.time()
-    with tempfile.TemporaryDirectory(prefix="pair-census-") as tmp:
-        root = Path(tmp)
-        for i, p in enumerate(plan, 1):
-            work = root / f"{p['package']}-{i}"
-            work.mkdir(parents=True, exist_ok=True)
-            row = dict(p)
-            try:
-                row.update(measure(p["package"], p["old"], p["new"], work))
-            except Exception as exc:  # noqa: BLE001 - a crash is a result, and is recorded
-                row["error"] = f"{type(exc).__name__}: {exc}"
+    results: list[dict] = []
+    if args.resume and out.exists():
+        try:
+            prior = json.loads(out.read_text(encoding="utf-8"))
+            results = prior["results"] if isinstance(prior, dict) else list(prior)
+        except (OSError, ValueError, KeyError):
+            results = []
+    seen = {(r["package"], r["old"], r["new"]) for r in results}
+    todo = [p for p in plan if (p["package"], p["old"], p["new"]) not in seen]
+    if seen:
+        print(f"resuming: {len(seen):,} pairs already measured, {len(todo):,} to go")
+
+    started = time.time()
+    done_count = 0
+    lock = threading.Lock()
+
+    def one(index_and_pair: tuple[int, dict], root: Path) -> dict:
+        nonlocal done_count
+        index, spec = index_and_pair
+        work = root / f"{spec['package']}-{index}"
+        work.mkdir(parents=True, exist_ok=True)
+        row = dict(spec)
+        try:
+            row.update(measure(spec["package"], spec["old"], spec["new"], work))
+        except Exception as exc:  # noqa: BLE001 - a crash is a result, and is recorded
+            row["error"] = f"{type(exc).__name__}: {exc}"
+        with lock:
             results.append(row)
-            done = "error" if "error" in row else "ok"
-            rate = (time.time() - started) / i
-            print(f"  [{i}/{len(plan)}] {p['package']} {p['old']}->{p['new']} "
-                  f"({p['cohort']}) {done}  {rate:.1f}s/pair "
-                  f"~{rate * (len(plan) - i) / 60:.0f}min left", flush=True)
+            done_count += 1
+            n = done_count
+            rate = (time.time() - started) / n
+            print(f"  [{len(seen) + n}/{len(plan)}] {spec['package']} "
+                  f"{spec['old']}->{spec['new']} ({spec['cohort']}) "
+                  f"{'error' if 'error' in row else 'ok'}  {rate:.1f}s/pair "
+                  f"~{rate * (len(todo) - n) / 60:.0f}min left", flush=True)
             out.write_text(json.dumps({"since": args.since, "plan_counts": counts,
                                        "results": results}, indent=1), encoding="utf-8")
+        return row
+
+    with tempfile.TemporaryDirectory(prefix="pair-census-") as tmp:
+        root = Path(tmp)
+        if args.workers > 1:
+            with ThreadPoolExecutor(max_workers=args.workers) as pool:
+                list(pool.map(lambda ip: one(ip, root), enumerate(todo, 1)))
+        else:
+            for pair in enumerate(todo, 1):
+                one(pair, root)
 
     ok = [r for r in results if "error" not in r]
     print(f"\n{len(ok)} of {len(results)} pairs produced a surface; "
