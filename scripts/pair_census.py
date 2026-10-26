@@ -69,8 +69,8 @@ def top_packages(count: int) -> list[str]:
     return [r["project"] for r in rows[:count]]
 
 
-def released_versions(package: str) -> list[str]:
-    """Every non-yanked final release of a package, oldest upload first."""
+def released_versions(package: str) -> list[tuple[str, str]]:
+    """Every non-yanked final release as (upload date, version), oldest first."""
     try:
         data = fetch_json(f"https://pypi.org/pypi/{package}/json")
     except Exception:  # noqa: BLE001 - a package that cannot be read is reported, not raised
@@ -82,14 +82,28 @@ def released_versions(package: str) -> list[str]:
         if all(f.get("yanked") for f in files):
             continue
         dated.append((min(f["upload_time_iso_8601"] for f in files), version))
-    return [v for _, v in sorted(dated)]
+    return sorted(dated)
 
 
-def pairs_for(package: str) -> dict[str, tuple[str, str]]:
-    """The most recent consecutive pair of each bump class. Outcome is never consulted."""
+def pairs_for(package: str, since: str) -> dict[str, tuple[str, str]]:
+    """The most recent consecutive pair of each bump class, within a recency window.
+
+    The window is not a convenience. Without it the rule picks, for every mature
+    package, the last 0.x pair it ever had - `requests` 0.13.9 from 2013, `idna` 0.8 -
+    because that is genuinely the most recent pair of that class. Those releases often
+    cannot be installed at all on a current interpreter (requests 0.13.9 imports `cgi`,
+    removed from the standard library in 3.13), and a decade-old release is not evidence
+    about how projects version today.
+
+    So a pair qualifies only when the NEWER version was published on or after `since`.
+    The cut is on the release date, never on the result, and it is reported with the
+    table so a reader can see what the sample covers.
+    """
     versions = released_versions(package)
     chosen: dict[str, tuple[str, str]] = {}
-    for old, new in zip(versions, versions[1:]):
+    for (_, old), (new_date, new) in zip(versions, versions[1:]):
+        if new_date < since:
+            continue
         chosen[classify(old, new)] = (old, new)  # later pairs overwrite earlier ones
     return chosen
 
@@ -99,6 +113,9 @@ def main() -> int:
     ap.add_argument("--packages", type=int, default=200,
                     help="how many of the top packages to walk")
     ap.add_argument("--cohorts", default=",".join(SEMVER_COHORTS + ZERO_COHORTS))
+    ap.add_argument("--since", default="2021-01-01",
+                    help="a pair counts only if the newer version was published on or "
+                         "after this date (2021-01-01)")
     ap.add_argument("--out", default="census.json")
     ap.add_argument("--plan-only", action="store_true",
                     help="choose the pairs and write them, without installing anything")
@@ -106,11 +123,12 @@ def main() -> int:
     wanted = set(args.cohorts.split(","))
 
     names = top_packages(args.packages)
-    print(f"{len(names)} packages from the external top-downloads list")
+    print(f"{len(names)} packages from the external top-downloads list, "
+          f"pairs released on or after {args.since}")
 
     plan = []
     for i, name in enumerate(names, 1):
-        for cohort, (old, new) in sorted(pairs_for(name).items()):
+        for cohort, (old, new) in sorted(pairs_for(name, args.since).items()):
             if cohort in wanted:
                 plan.append({"package": name, "old": old, "new": new, "cohort": cohort})
         if i % 25 == 0:
@@ -125,7 +143,8 @@ def main() -> int:
 
     out = Path(args.out)
     if args.plan_only:
-        out.write_text(json.dumps({"plan": plan, "counts": counts}, indent=1), encoding="utf-8")
+        out.write_text(json.dumps({"since": args.since, "plan": plan, "counts": counts},
+                                  indent=1), encoding="utf-8")
         print(f"\nplan written to {out}")
         return 0
 
@@ -146,8 +165,8 @@ def main() -> int:
             print(f"  [{i}/{len(plan)}] {p['package']} {p['old']}->{p['new']} "
                   f"({p['cohort']}) {done}  {rate:.1f}s/pair "
                   f"~{rate * (len(plan) - i) / 60:.0f}min left", flush=True)
-            out.write_text(json.dumps({"plan_counts": counts, "results": results},
-                                      indent=1), encoding="utf-8")
+            out.write_text(json.dumps({"since": args.since, "plan_counts": counts,
+                                       "results": results}, indent=1), encoding="utf-8")
 
     ok = [r for r in results if "error" not in r]
     print(f"\n{len(ok)} of {len(results)} pairs produced a surface; "
