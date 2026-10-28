@@ -20,3 +20,14 @@ run_m.bat
 .coverage.*
 htmlcov/
 coverage.xml
+
+# The raw release-pair census: 1.9 MB and growing, because every pair carries the full
+# list of symbols that went or changed shape. docs/census-summary.json is the committed
+# reduction of it, and that is what the README's census figures and
+# tests/test_census_pairs.py read. Regenerate the raw file with scripts/pair_census.py
+# and the summary with scripts/census_summary.py.
+#
+# It was committed twice before this line existed, the second time mid-run, so the commit
+# holds a partial sweep - a census is an artefact of a run, not a source file.
+docs/pair-census.json
+docs/*-census.json.poisoned
