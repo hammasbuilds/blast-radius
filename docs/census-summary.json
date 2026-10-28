@@ -1,6 +1,8 @@
 {
- "summarised_at": "f5e9af6",
+ "summarised_at": "8e25999",
  "since": "2021-01-01",
+ "run": "not recorded",
+ "packages_in_the_rows": 1389,
  "planned": {
   "minor": 996,
   "patch": 981,

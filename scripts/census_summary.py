@@ -112,8 +112,9 @@ def read_census(path: Path) -> dict:
     if path.suffix == ".gz":
         with gzip.open(path, "rb") as fh:
             blob = json.loads(fh.read().decode("utf-8"))
-        return {"since": blob.get("since"), "plan_counts": blob.get("plan_counts") or {},
-                "results": blob["rows"]}
+        out = {k: v for k, v in blob.items() if k != "rows"}
+        out["results"] = blob["rows"]
+        return out
     return json.loads(path.read_text(encoding="utf-8"))
 
 
@@ -172,6 +173,12 @@ def summarise(census: dict) -> dict:
     total_broke = sum(c["broke_exported"] for c in cohorts.values())
     return {
         "since": census.get("since"),
+        # Whatever the run recorded about itself, carried through rather than restated.
+        # A census written before this existed has none, and the summary says so.
+        "run": {k: census[k] for k in (
+            "packages_requested", "cohorts", "workers", "top_downloads_list",
+            "revision_of_this_run", "command") if k in census} or "not recorded",
+        "packages_in_the_rows": len({r.get("package") for r in rows}),
         "planned": dict(census.get("plan_counts") or {}),
         "rows": len(rows),
         "revisions": revisions_of(rows),
@@ -213,7 +220,9 @@ def main() -> int:
             "somewhere else, or point --census at the raw census"
         )
     lines = ledger(census["results"])
-    header = {"since": census.get("since"), "plan_counts": census.get("plan_counts") or {}}
+    header = {k: census[k] for k in (
+        "since", "packages_requested", "cohorts", "workers", "top_downloads_list",
+        "revision_of_this_run", "command", "plan_counts") if k in census}
     # mtime=0: gzip stores a timestamp, and a ledger that is byte-identical except for
     # when it was written is a diff every time the script runs.
     with gzip.GzipFile(args.ledger, "wb", mtime=0) as fh:

@@ -260,8 +260,13 @@ def main() -> int:
     _pin_temp_to_scratch_drive()
     out = Path(args.out)
     if args.plan_only:
-        out.write_text(json.dumps({"since": args.since, "plan": plan, "counts": counts},
-                                  indent=1), encoding="utf-8")
+        out.write_text(
+            json.dumps({"since": args.since, "packages_requested": args.packages,
+                        "cohorts": sorted(wanted), "top_downloads_list": TOP,
+                        "command": "python " + " ".join(["scripts/pair_census.py",
+                                                         *sys.argv[1:]]),
+                        "plan": plan, "counts": counts}, indent=1),
+            encoding="utf-8")
         print(f"\nplan written to {out}")
         return 0
 
@@ -286,6 +291,18 @@ def main() -> int:
     lock = threading.Lock()
     here = revision()
     print(f"measuring at {here}")
+    # The run's own arguments, in its output. Without them the file cannot say how many
+    # package names it was given, which is the first thing anyone writing up its rates
+    # needs - `since` and the plan counts were all it carried.
+    provenance = {
+        "since": args.since,
+        "packages_requested": args.packages,
+        "cohorts": sorted(wanted),
+        "workers": args.workers,
+        "top_downloads_list": TOP,
+        "revision_of_this_run": here,
+        "command": "python " + " ".join(["scripts/pair_census.py", *sys.argv[1:]]),
+    }
 
     def one(index_and_pair: tuple[int, dict], root: Path) -> dict:
         nonlocal done_count
@@ -307,7 +324,7 @@ def main() -> int:
                   f"{spec['old']}->{spec['new']} ({spec['cohort']}) "
                   f"{'error' if 'error' in row else 'ok'}  {rate:.1f}s/pair "
                   f"~{rate * (len(todo) - n) / 60:.0f}min left", flush=True)
-            out.write_text(json.dumps({"since": args.since, "plan_counts": counts,
+            out.write_text(json.dumps({**provenance, "plan_counts": counts,
                                        "results": results}, indent=1), encoding="utf-8")
         return row
 

@@ -13,6 +13,18 @@ time with `blast-radius check <package> <old> <new> --no-behaviour`. Last re-run
 2026-10-07 (Python 3.14, Windows); every row below is read from
 [`semver-sweep.json`](semver-sweep.json), the script's output from that run.
 
+> **Superseded for the rate.** A census of **2,937 upgrade pairs across 1,204 packages**
+> now measures the same question, and it puts patch releases at **2.5%**, not the 15% in
+> the table below. This page's 27 pairs were hand-chosen, and two of its packages supply
+> every break in it; the census takes one pair per class per package across **1,389
+> packages** from PyPI's top-downloads list and does not choose which. Read the census figures in
+> the [README](https://github.com/hammasbuilds/blast-radius#readme) as the answer, and
+> this page for the named instances - it is small enough to list every break, which is
+> what makes it checkable, and that is the reason to keep it.
+>
+> The numbers below were measured and are right about these pairs. What changed is which
+> of them a reader should take away.
+
 ## The result
 
 | Bump | Pairs | Broke exported API | Broken symbols | Of exported symbols |
@@ -289,8 +301,18 @@ root and uses `__all__` sparsely. The exported count is a measure of what a pack
 declare. Comparing the counts across rows is not meaningful; comparing a package to itself
 across versions is.
 
-**27 pairs is a sample, not a census.** These are popular, well-maintained packages, which
-if anything biases toward *better* semver discipline than average.
+**27 pairs is a sample, not a census - and the guess about its bias was wrong.** This
+paragraph used to end "These are popular, well-maintained packages, which if anything
+biases toward *better* semver discipline than average." A census of 2,937 pairs across
+1,204 packages puts the patch rate at **2.5%** against this page's **15%**, so the sample
+broke six times as often as the population, not less often. The reason is three paragraphs
+up and was in this document all along: all six breaks come from two packages, and those
+two packages are in a 27-pair sweep because their upgrades are the ones worth writing about.
+Choosing interesting pairs biases toward breakage however well-maintained the packages are,
+and "well-maintained" was never the variable that mattered.
+
+A prediction about the direction of a bias is a measurement waiting to be made. This one
+sat in the document for three weeks.
 
 **Four pairs could not be measured**: `pyyaml` 6.0.1 has no wheel for this interpreter and
 builds from source, and three `pydantic` pairs failed the same way. Excluded rather than
