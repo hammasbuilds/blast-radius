@@ -1,0 +1,12 @@
+{
+ "census": "pair-census.json",
+ "measured_pairs_in_census": 2997,
+ "re_measured": 60,
+ "comparable": 60,
+ "verdict_flips": 0,
+ "symbol_list_changes": 0,
+ "unmeasurable_now": [],
+ "changed": [],
+ "seed": 20261028,
+ "minutes": 31.4
+}
