@@ -95,19 +95,29 @@ entries for one line of code, none of them the class actually being called.
 
 | | count |
 |---|---:|
-| gone | 12 |
+| gone | 16 |
 | reshaped | 11 |
 | **silent** | **4** |
 | widened | 9 |
 | added | 51 |
 
-184 functions kept a call shape every old call still binds to. 21 were not run because
-their names say they act on the machine (`launch`, `edit`, `prompt`, `getchar`, ...); of the
-163 run in both versions, behaviour was compared on 87, and 76 could not be called in either
-(41 rejected every generated input, 31 need an instance this tool could not build, 3 were
-never handed an argument of the right type, 1 needed different constructor arguments in the
-two versions). About six seconds. Seven signatures were readable in only one version and
-are neither compared nor counted as reshaped.
+253 public symbols in 7.1.2, 287 in 8.1.7. 184 functions kept a call shape every old call
+still binds to. 21 were not run because their names say they act on the machine (`launch`,
+`edit`, `prompt`, `getchar`, ...); of the 163 run in both versions, behaviour was compared
+on 86, and 77 could not be called in either (42 rejected every generated input, 31 need an
+instance this tool could not build, 3 were never handed an argument of the right type, 1
+needed different constructor arguments in the two versions). About four seconds. Seven
+signatures were readable in only one version and are neither compared nor counted as
+reshaped.
+
+**Four of the sixteen removals are constants, not functions**, and until
+[COMPARISON.md](COMPARISON.md) was measured this tool could not see them at all:
+`click.core.SUBCOMMAND_METAVAR`, `click.core.SUBCOMMANDS_METAVAR`,
+`click.core.DEPRECATED_HELP_NOTICE` and `click.core.DEPRECATED_INVOKE_NOTICE`. The surface
+walk described a name only when it was a routine or a class, so `from click.core import
+SUBCOMMAND_METAVAR` - an `ImportError` at startup under click 8 - was absent from a report
+whose first line is *an import error at startup*. `click.formatting.FORCED_WIDTH` is the
+one public constant that survives the upgrade, and it is in both surfaces.
 
 The four silent changes, each a real difference in what click 8 returns:
 
@@ -120,14 +130,26 @@ The four silent changes, each a real difference in what click 8 returns:
 
 Not counted, and listed in the report as such:
 
-- five functions differ only where one version raised `TypeError` or `AttributeError` on a
+- seven functions differ only where one version raised `TypeError` or `AttributeError` on a
   generated argument (`Argument.get_default("")` passes a string where a `Context` belongs,
   and 7.1.2 happened to ignore it). No real caller passes those.
+- one of those seven, `click.formatting.iter_rows`, was reported as a **silent change** until
+  this page was re-measured. Both versions yield nothing and then raise `TypeError` on
+  `([1, 2], "")`; click 8 words it *object of type 'int' has no len()* where click 7 said
+  *'int' object is not iterable*. The filter that drops wrong-typed arguments only read rows
+  whose verdict was `raise`, and a generator that is drained before it raises is reported
+  with the verdict `ok` and the exception after `...then` - so every wrong-typed argument
+  handed to a generator walked past it. A caller catches a class, not a sentence.
 - `click.Path.convert` disagreed with *itself* when re-run, so its difference is dropped as
   non-deterministic rather than reported.
 - decorators such as `help_option` and `version_option` return a closure that click 8 builds
   through `option()`, so it reprs as `option.<locals>.decorator`. Closure reprs are
   normalised before comparing.
+
+This page said gone 12, silent 5, compared 87 before 2026-10-28, when constants entered the
+surface (+4 gone) and the reworded `TypeError` left the silent count (-1). The compared
+count moved 87 -> 86 with it: `iter_rows` is still exercised, and is no longer counted as a
+difference.
 
 The first runs of this comparison reported gone 50, reshaped 68, added 292 (before aliases
 were de-duplicated and additive signature changes became `widened`). The previous version

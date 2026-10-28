@@ -726,10 +726,47 @@ def _strength(a: list, b: list) -> int:
 
 _WRONG_TYPE = ("TypeError", "AttributeError")
 
+WRONG_TYPE_REASON = "one version rejects the generated argument as the wrong type"
+MESSAGE_ONLY_REASON = "both versions raise the same exception, worded differently"
+
+
+def _raised(row: list) -> tuple[str, str] | None:
+    """(what came back before the exception, the exception class) or None.
+
+    Two renderings carry an exception. `raise: TypeError: ...` is one. The other is a
+    generator or iterator that yielded and then raised, which renders with the verdict
+    `ok` and the exception after `...then` - and reading only the verdict, as this
+    module did, calls that a clean return.
+    """
+    text = str(row[1])
+    if row[0] == "raise":
+        return "", text.split(":", 1)[0].strip()
+    if row[0] == "ok" and "...then " in text:
+        before, after = text.split("...then ", 1)
+        return before, after.split(":", 1)[0].strip()
+    return None
+
 
 def _wrong_type(a: list, b: list) -> bool:
     """Does one side of this disagreement reject the argument as the wrong type?"""
-    return any(row[0] == "raise" and str(row[1]).startswith(_WRONG_TYPE) for row in (a, b))
+    for row in (a, b):
+        raised = _raised(row)
+        if raised is not None and raised[1].startswith(_WRONG_TYPE):
+            return True
+    return False
+
+
+def _message_only(a: list, b: list) -> bool:
+    """Same return, then the same exception class, and only the wording differs.
+
+    A caller catches a class. click 8 rewording TypeError's message turned
+    `click.formatting.iter_rows` into a reported SILENT change in which neither version
+    returns anything and both raise TypeError.
+    """
+    left, right = _raised(a), _raised(b)
+    if left is None or right is None:
+        return False
+    return left == right and str(a[1]) != str(b[1])
 
 
 class Behaviour(NamedTuple):
@@ -908,8 +945,19 @@ def behaviour_changes(
         # Lead with a disagreement where both sides returned a value: two differing
         # results are unarguable, where two differing exception types on an argument
         # neither version wanted mostly says the argument was wrong.
-        strong = [i for i in diffs if not _wrong_type(rows_a[i], rows_b[i])]
+        strong = [
+            i
+            for i in diffs
+            if not _wrong_type(rows_a[i], rows_b[i]) and not _message_only(rows_a[i], rows_b[i])
+        ]
         best = min(strong or diffs, key=lambda i: _strength(rows_a[i], rows_b[i]))
+        # Which reason, when there is no strong disagreement left: whichever applies to
+        # the witness actually published, so the sentence and the evidence agree.
+        reason = (
+            WRONG_TYPE_REASON
+            if _wrong_type(rows_a[best], rows_b[best])
+            else MESSAGE_ONLY_REASON
+        )
         (changes if strong else weak).append(
             Change(
                 Kind.SILENT,
@@ -925,6 +973,7 @@ def behaviour_changes(
                     "old": f"{rows_a[best][0]}: {rows_a[best][1]}",
                     "new": f"{rows_b[best][0]}: {rows_b[best][1]}",
                 },
+                weak_reason="" if strong else reason,
             )
         )
     return Behaviour(changes, compared, unreachable, stopped_on, reasons, weak, nondeterministic)

@@ -403,7 +403,7 @@ def _br_sandbox():
 """
 
 COMMON = r"""
-import importlib, inspect, json, os, pkgutil, sys, warnings
+import importlib, inspect, json, os, pkgutil, re, sys, warnings
 
 warnings.simplefilter("ignore")
 
@@ -451,6 +451,9 @@ owned = config["owned"]
 EXCLUDED = {"tests", "test", "conftest", "vendor", "vendored", "benchmarks", "benchmark"}
 
 out = {}
+# Separate from `out`: every record in `out` is keyed by a definition site and carries a
+# call shape, and the behaviour pass walks it. A constant has neither.
+constants = {}
 
 
 def is_excluded(dotted):
@@ -525,6 +528,56 @@ def describe(obj, qualname, exported=False):
     }
 
 
+# A constant's TYPE. Only immutable, printable values, and only one level deep: a
+# module-level list or dict is not a constant whose name a caller imports for its value,
+# and an instance of the package's own class reprs with an id() in it.
+CONST_TYPES = (str, bytes, bool, int, float, complex, type(None))
+
+
+def simple_value(value):
+    if isinstance(value, CONST_TYPES):
+        return True
+    if isinstance(value, (tuple, frozenset)):
+        return all(isinstance(item, CONST_TYPES) for item in value)
+    return False
+
+
+_assigned = {}
+
+
+def assigned_here(mod, name):
+    # Is `name` written at the top level of THIS module's own file?
+    #
+    # A constant the module merely imported (`from socket import AF_INET`) is reachable
+    # through it, and dropping that import does break `from pkg.mod import AF_INET` -
+    # but it is the other project's name, and crediting it here is the mistake
+    # `owned_by` documents about pyparsing. `__module__` cannot answer this, because a
+    # str does not have one; the file does.
+    #
+    # A top-level assignment, including an annotated one and one inside a top-level
+    # `if`. A name built in a loop or by setattr is not matched, and so not reported.
+    path = getattr(mod, "__file__", None)
+    if not path:
+        return False
+    names = _assigned.get(path)
+    if names is None:
+        try:
+            with open(path, encoding="utf-8", errors="replace") as fh:
+                text = fh.read()
+        except OSError:
+            text = ""
+        names = set(re.findall(r"(?m)^[ \t]*([A-Za-z_][A-Za-z_0-9]*)[ \t]*(?::[^=\n]+)?=[^=]", text))
+        _assigned[path] = names
+    return name in names
+
+
+def names_itself_a_constant(name, allowed):
+    # Declared in `__all__`, or spelled the way Python spells a constant.
+    if allowed is not None and name in allowed:
+        return True
+    return name.replace("_", "").isupper() and any(c.isalpha() for c in name)
+
+
 def walk(mod, prefix, top):
     allowed = getattr(mod, "__all__", None)
     for name in dir(mod):
@@ -536,10 +589,29 @@ def walk(mod, prefix, top):
             obj = getattr(mod, name)
         except Exception:
             continue
-        if not owned_by(obj):
-            continue
         qual = prefix + "." + name
         exported = allowed is not None or prefix == top
+        # Constants are keyed by where they are REACHED, not by a definition site: a
+        # value has no __module__ and two modules holding the same string are not the
+        # same name. Only the NAME is reported - a constant whose value changed is a
+        # behaviour change with no witness, and `__version__` changes every release.
+        if (
+            simple_value(obj)
+            and names_itself_a_constant(name, allowed)
+            and assigned_here(mod, name)
+        ):
+            constants.setdefault(qual, {
+                "name": qual,
+                "aliases": [qual],
+                "exported": exported,
+                "kind": "constant",
+                "signature": "",
+                "shape": None,
+                "doc": "",
+            })
+            continue
+        if not owned_by(obj):
+            continue
         if inspect.isroutine(obj) or inspect.isclass(obj):
             describe(obj, qual, exported)
         if inspect.isclass(obj):
@@ -626,6 +698,9 @@ for record in out.values():
         previous["shadowed"] = True
         continue
     final[name] = record
+# After the callables, and never over one: a name that is both is the callable.
+for name, record in sorted(constants.items()):
+    final.setdefault(name, record)
 final["__meta__"] = meta
 print("__BR_JSON__" + json.dumps(final))
 """

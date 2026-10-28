@@ -31,3 +31,8 @@ coverage.xml
 # holds a partial sweep - a census is an artefact of a run, not a source file.
 docs/pair-census.json
 docs/*-census.json.poisoned
+
+# Two installed copies per package, kept so griffe and this tool read the same bytes.
+# docs/griffe-comparison.json is the committed result; scripts/griffe_comparison.py
+# rebuilds the directories.
+.griffe-targets/

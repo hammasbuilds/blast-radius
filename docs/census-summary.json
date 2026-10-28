@@ -1,83 +1,77 @@
 {
  "since": "2021-01-01",
  "planned": {
-  "minor": 985,
-  "patch": 969,
-  "major": 748,
-  "0.x-breaking": 465,
-  "0.x-patch": 497,
+  "minor": 996,
+  "patch": 981,
+  "major": 756,
+  "0.x-breaking": 470,
+  "0.x-patch": 501,
   "0.0.z": 72
  },
- "rows": 2217,
- "dropped_not_an_upgrade": 21,
- "measured": 1701,
- "broke_exported": 249,
- "broke_exported_share": 0.1464,
+ "rows": 2406,
+ "dropped_not_an_upgrade": 20,
+ "measured": 1982,
+ "broke_exported": 304,
+ "broke_exported_share": 0.1534,
  "cohorts": {
   "0.0.z": {
-   "pairs": 38,
-   "measured": 24,
+   "pairs": 44,
+   "measured": 31,
    "broke_exported": 6,
-   "broke_exported_share": 0.25,
+   "broke_exported_share": 0.1935,
    "unmeasured": {
-    "no importable module (stub-only or namespace package)": 8,
-    "this machine failed (retried, not a finding)": 4,
-    "install failed": 2
+    "no importable module (stub-only or namespace package)": 10,
+    "install failed": 3
    }
   },
   "0.x-breaking": {
-   "pairs": 276,
-   "measured": 198,
-   "broke_exported": 32,
-   "broke_exported_share": 0.1616,
+   "pairs": 280,
+   "measured": 224,
+   "broke_exported": 38,
+   "broke_exported_share": 0.1696,
    "unmeasured": {
-    "this machine failed (retried, not a finding)": 34,
-    "no importable module (stub-only or namespace package)": 26,
-    "install failed": 18
-   }
-  },
-  "0.x-patch": {
-   "pairs": 298,
-   "measured": 210,
-   "broke_exported": 18,
-   "broke_exported_share": 0.0857,
-   "unmeasured": {
-    "no importable module (stub-only or namespace package)": 37,
-    "this machine failed (retried, not a finding)": 37,
-    "install failed": 14
-   }
-  },
-  "major": {
-   "pairs": 433,
-   "measured": 309,
-   "broke_exported": 126,
-   "broke_exported_share": 0.4078,
-   "unmeasured": {
-    "no importable module (stub-only or namespace package)": 57,
-    "this machine failed (retried, not a finding)": 36,
-    "install failed": 31
-   }
-  },
-  "minor": {
-   "pairs": 588,
-   "measured": 482,
-   "broke_exported": 60,
-   "broke_exported_share": 0.1245,
-   "unmeasured": {
-    "no importable module (stub-only or namespace package)": 45,
-    "this machine failed (retried, not a finding)": 36,
+    "no importable module (stub-only or namespace package)": 31,
     "install failed": 25
    }
   },
-  "patch": {
-   "pairs": 584,
-   "measured": 478,
-   "broke_exported": 7,
-   "broke_exported_share": 0.0146,
+  "0.x-patch": {
+   "pairs": 309,
+   "measured": 242,
+   "broke_exported": 21,
+   "broke_exported_share": 0.0868,
    "unmeasured": {
-    "no importable module (stub-only or namespace package)": 49,
-    "this machine failed (retried, not a finding)": 39,
-    "install failed": 18
+    "no importable module (stub-only or namespace package)": 47,
+    "install failed": 20
+   }
+  },
+  "major": {
+   "pairs": 468,
+   "measured": 355,
+   "broke_exported": 151,
+   "broke_exported_share": 0.4254,
+   "unmeasured": {
+    "no importable module (stub-only or namespace package)": 77,
+    "install failed": 36
+   }
+  },
+  "minor": {
+   "pairs": 655,
+   "measured": 568,
+   "broke_exported": 77,
+   "broke_exported_share": 0.1356,
+   "unmeasured": {
+    "no importable module (stub-only or namespace package)": 55,
+    "install failed": 32
+   }
+  },
+  "patch": {
+   "pairs": 650,
+   "measured": 562,
+   "broke_exported": 11,
+   "broke_exported_share": 0.0196,
+   "unmeasured": {
+    "no importable module (stub-only or namespace package)": 65,
+    "install failed": 23
    }
   }
  }

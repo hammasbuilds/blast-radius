@@ -26,6 +26,21 @@ HEADLINE = {
 }
 
 
+def _weak_by_reason(report: Report) -> dict[str, list[Change]]:
+    """The uncounted differences, grouped by why each is uncounted.
+
+    One sentence used to cover every one of them: "differ only where one version rejects
+    a generated argument as the wrong type". That is a claim about the arguments, and it
+    is false about a function where both versions raise the same exception and only its
+    wording changed. Insertion order, so the report is stable.
+    """
+    groups: dict[str, list[Change]] = {}
+    for change in report.weak:
+        reason = change.weak_reason or "not counted as a silent change"
+        groups.setdefault(reason, []).append(change)
+    return groups
+
+
 def around_difference(a: str, b: str, width: int = 90) -> tuple[str, str]:
     """Both strings cut to `width`, around the first place they differ.
 
@@ -146,13 +161,11 @@ def summary(report: Report) -> str:
         if len(silent) > 10:
             lines.append(f"  ... and {len(silent) - 10} more (--out writes them all)")
 
-    if report.weak:
-        names = ", ".join(c.qualname for c in report.weak[:6])
-        more = " ..." if len(report.weak) > 6 else ""
+    for reason, group in _weak_by_reason(report).items():
+        names = ", ".join(c.qualname for c in group[:6])
+        more = " ..." if len(group) > 6 else ""
         lines.append(
-            f"\n  Not counted: {len(report.weak)} function(s) differ only where one version"
-            " rejects a generated\n  argument as the wrong type (TypeError/AttributeError)"
-            f" - no real caller passes those.\n    {names}{more}"
+            f"\n  Not counted ({len(group)}): {reason}.\n    {names}{more}"
         )
 
     for kind in (Kind.GONE, Kind.RESHAPED):
@@ -315,17 +328,16 @@ def write_markdown(report: Report, path: Path) -> None:
             )
         out.append("")
 
-    if report.weak:
+    for reason, group in _weak_by_reason(report).items():
         out += [
-            f"## Not counted: differences only on wrong-typed arguments ({len(report.weak)})",
+            f"## Not counted: {reason} ({len(group)})",
             "",
-            "One version raised TypeError or AttributeError on a generated argument no real",
-            "caller would pass. Listed for completeness; not a silent change.",
+            "Listed for completeness; not a silent change.",
             "",
             f"| function | input | {report.old_version} | {report.new_version} |",
             "|---|---|---|---|",
         ]
-        for c in report.weak:
+        for c in group:
             w = c.witness or {}
             out.append(
                 f"| `{c.qualname}` | `{_esc(w.get('args'))}` | `{_esc(w.get('old'), 80)}` | "

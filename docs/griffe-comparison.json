@@ -1,0 +1,1766 @@
+{
+ "measured": "2026-10-28",
+ "machine": "one machine, one interpreter, the same two installed directories per pair",
+ "griffe": {
+  "version": "2.4.1",
+  "how": "griffe.load(package, search_paths=[dir]) on each version, then griffe.find_breaking_changes(old, new); allow_inspection=False, so nothing is imported",
+  "note": "griffe's own one-line explanations, with its ANSI colour codes stripped and the local target directory removed from each path",
+  "runs": [
+   {
+    "breakages": 104,
+    "distinct_owners": 32,
+    "by_kind": {
+     "Positional parameter was moved": 40,
+     "Public object was removed": 28,
+     "Base class was removed": 15,
+     "Parameter was added as required": 6,
+     "Parameter was removed": 6,
+     "Parameter default was changed": 4,
+     "Parameter is now required": 4,
+     "Public object points to a different kind of object": 1
+    },
+    "objects_walked_old": 806,
+    "objects_walked_new": 868,
+    "seconds": 0.4,
+    "rows": [
+     {
+      "kind": "Public object was removed",
+      "path": "click.disable_unicode_literals_warning",
+      "owner": "click",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\__init__.py:77: disable_unicode_literals_warning: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.core.SUBCOMMAND_METAVAR",
+      "owner": "click.core",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\core.py:41: SUBCOMMAND_METAVAR: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.core.SUBCOMMANDS_METAVAR",
+      "owner": "click.core",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\core.py:42: SUBCOMMANDS_METAVAR: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.core.DEPRECATED_HELP_NOTICE",
+      "owner": "click.core",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\core.py:44: DEPRECATED_HELP_NOTICE: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.core.DEPRECATED_INVOKE_NOTICE",
+      "owner": "click.core",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\core.py:45: DEPRECATED_INVOKE_NOTICE: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.core.fast_exit",
+      "owner": "click.core",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\core.py:53: fast_exit: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.core.invoke_param_callback",
+      "owner": "click.core",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\core.py:108: invoke_param_callback: Public object was removed"
+     },
+     {
+      "kind": "Base class was removed",
+      "path": "click.core.Context",
+      "owner": "click.core",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:160: Context: Base class was removed: [object] -> []"
+     },
+     {
+      "kind": "Parameter was added as required",
+      "path": "click.core.Context.invoke",
+      "owner": "click.core.Context",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:732: Context.invoke(__self): Parameter was added as required"
+     },
+     {
+      "kind": "Parameter was added as required",
+      "path": "click.core.Context.invoke",
+      "owner": "click.core.Context",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:732: Context.invoke(__callback): Parameter was added as required"
+     },
+     {
+      "kind": "Parameter was added as required",
+      "path": "click.core.Context.forward",
+      "owner": "click.core.Context",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:785: Context.forward(__self): Parameter was added as required"
+     },
+     {
+      "kind": "Parameter was added as required",
+      "path": "click.core.Context.forward",
+      "owner": "click.core.Context",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:785: Context.forward(__cmd): Parameter was added as required"
+     },
+     {
+      "kind": "Base class was removed",
+      "path": "click.core.BaseCommand",
+      "owner": "click.core",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:834: BaseCommand: Base class was removed: [object] -> []"
+     },
+     {
+      "kind": "Public object points to a different kind of object",
+      "path": "click.core.MultiCommand.result_callback",
+      "owner": "click.core.MultiCommand",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:1566: MultiCommand.result_callback: Public object points to a different kind of object: attribute -> function"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.core.MultiCommand.resultcallback",
+      "owner": "click.core.MultiCommand",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\core.py:1139: MultiCommand.resultcallback: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.core.Group.resultcallback",
+      "owner": "click.core.Group",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\core.py:0: Group.resultcallback: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.core.CommandCollection.resultcallback",
+      "owner": "click.core.CommandCollection",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\core.py:0: CommandCollection.resultcallback: Public object was removed"
+     },
+     {
+      "kind": "Base class was removed",
+      "path": "click.core.Parameter",
+      "owner": "click.core",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2012: Parameter: Base class was removed: [object] -> []"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.core.Parameter.__init__",
+      "owner": "click.core.Parameter",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2088: Parameter.__init__(metavar): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.core.Parameter.__init__",
+      "owner": "click.core.Parameter",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2088: Parameter.__init__(expose_value): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.core.Parameter.__init__",
+      "owner": "click.core.Parameter",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2088: Parameter.__init__(is_eager): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.core.Parameter.__init__",
+      "owner": "click.core.Parameter",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2088: Parameter.__init__(envvar): Positional parameter was moved"
+     },
+     {
+      "kind": "Parameter was removed",
+      "path": "click.core.Parameter.__init__",
+      "owner": "click.core.Parameter",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2088: Parameter.__init__(autocompletion): Parameter was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.core.Parameter.autocompletion",
+      "owner": "click.core.Parameter",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\core.py:1505: Parameter.autocompletion: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.core.Parameter.full_process_value",
+      "owner": "click.core.Parameter",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\core.py:1588: Parameter.full_process_value: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.core.Option.autocompletion",
+      "owner": "click.core.Option",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\core.py:0: Option.autocompletion: Public object was removed"
+     },
+     {
+      "kind": "Parameter default was changed",
+      "path": "click.core.Option.__init__",
+      "owner": "click.core.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2512: Option.__init__(show_default): Parameter default was changed: False -> None"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.core.Option.__init__",
+      "owner": "click.core.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2512: Option.__init__(hide_input): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.core.Option.__init__",
+      "owner": "click.core.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2512: Option.__init__(is_flag): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.core.Option.__init__",
+      "owner": "click.core.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2512: Option.__init__(flag_value): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.core.Option.__init__",
+      "owner": "click.core.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2512: Option.__init__(multiple): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.core.Option.__init__",
+      "owner": "click.core.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2512: Option.__init__(count): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.core.Option.__init__",
+      "owner": "click.core.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2512: Option.__init__(allow_from_autoenv): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.core.Option.__init__",
+      "owner": "click.core.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2512: Option.__init__(type): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.core.Option.__init__",
+      "owner": "click.core.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2512: Option.__init__(help): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.core.Option.__init__",
+      "owner": "click.core.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2512: Option.__init__(hidden): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.core.Option.__init__",
+      "owner": "click.core.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2512: Option.__init__(show_choices): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.core.Option.__init__",
+      "owner": "click.core.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2512: Option.__init__(show_envvar): Positional parameter was moved"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.core.Option.full_process_value",
+      "owner": "click.core.Option",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\core.py:1962: Option.full_process_value: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.core.Argument.autocompletion",
+      "owner": "click.core.Argument",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\core.py:0: Argument.autocompletion: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.core.Argument.full_process_value",
+      "owner": "click.core.Argument",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\core.py:0: Argument.full_process_value: Public object was removed"
+     },
+     {
+      "kind": "Parameter was removed",
+      "path": "click.decorators.confirmation_option",
+      "owner": "click.decorators",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\decorators.py:379: confirmation_option(attrs): Parameter was removed"
+     },
+     {
+      "kind": "Parameter was removed",
+      "path": "click.decorators.password_option",
+      "owner": "click.decorators",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\decorators.py:403: password_option(attrs): Parameter was removed"
+     },
+     {
+      "kind": "Parameter was removed",
+      "path": "click.decorators.version_option",
+      "owner": "click.decorators",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\decorators.py:420: version_option(attrs): Parameter was removed"
+     },
+     {
+      "kind": "Parameter was removed",
+      "path": "click.decorators.help_option",
+      "owner": "click.decorators",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\decorators.py:533: help_option(attrs): Parameter was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.exceptions.ClickException.__unicode__",
+      "owner": "click.exceptions.ClickException",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\exceptions.py:34: ClickException.__unicode__: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.exceptions.UsageError.__unicode__",
+      "owner": "click.exceptions.UsageError",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\exceptions.py:0: UsageError.__unicode__: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.exceptions.BadParameter.__unicode__",
+      "owner": "click.exceptions.BadParameter",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\exceptions.py:0: BadParameter.__unicode__: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.exceptions.MissingParameter.__unicode__",
+      "owner": "click.exceptions.MissingParameter",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\exceptions.py:166: MissingParameter.__unicode__: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.exceptions.NoSuchOption.__unicode__",
+      "owner": "click.exceptions.NoSuchOption",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\exceptions.py:0: NoSuchOption.__unicode__: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.exceptions.BadOptionUsage.__unicode__",
+      "owner": "click.exceptions.BadOptionUsage",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\exceptions.py:0: BadOptionUsage.__unicode__: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.exceptions.BadArgumentUsage.__unicode__",
+      "owner": "click.exceptions.BadArgumentUsage",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\exceptions.py:0: BadArgumentUsage.__unicode__: Public object was removed"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.exceptions.FileError.__unicode__",
+      "owner": "click.exceptions.FileError",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\exceptions.py:0: FileError.__unicode__: Public object was removed"
+     },
+     {
+      "kind": "Base class was removed",
+      "path": "click.formatting.HelpFormatter",
+      "owner": "click.formatting",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\formatting.py:102: HelpFormatter: Base class was removed: [object] -> []"
+     },
+     {
+      "kind": "Parameter default was changed",
+      "path": "click.formatting.HelpFormatter.write_usage",
+      "owner": "click.formatting.HelpFormatter",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\formatting.py:145: HelpFormatter.write_usage(prefix): Parameter default was changed: 'Usage: ' -> None"
+     },
+     {
+      "kind": "Base class was removed",
+      "path": "click.parser.Option",
+      "owner": "click.parser",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:159: Option: Base class was removed: [object] -> []"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.Option.__init__",
+      "owner": "click.parser.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:160: Option.__init__(opts): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.Option.__init__",
+      "owner": "click.parser.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:160: Option.__init__(dest): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.Option.__init__",
+      "owner": "click.parser.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:160: Option.__init__(action): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.Option.__init__",
+      "owner": "click.parser.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:160: Option.__init__(nargs): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.Option.__init__",
+      "owner": "click.parser.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:160: Option.__init__(const): Positional parameter was moved"
+     },
+     {
+      "kind": "Parameter is now required",
+      "path": "click.parser.Option.__init__",
+      "owner": "click.parser.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:160: Option.__init__(obj): Parameter is now required"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.Option.__init__",
+      "owner": "click.parser.Option",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:160: Option.__init__(obj): Positional parameter was moved"
+     },
+     {
+      "kind": "Base class was removed",
+      "path": "click.parser.Argument",
+      "owner": "click.parser",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:213: Argument: Base class was removed: [object] -> []"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.Argument.__init__",
+      "owner": "click.parser.Argument",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:214: Argument.__init__(dest): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.Argument.__init__",
+      "owner": "click.parser.Argument",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:214: Argument.__init__(nargs): Positional parameter was moved"
+     },
+     {
+      "kind": "Parameter is now required",
+      "path": "click.parser.Argument.__init__",
+      "owner": "click.parser.Argument",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:214: Argument.__init__(obj): Parameter is now required"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.Argument.__init__",
+      "owner": "click.parser.Argument",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:214: Argument.__init__(obj): Positional parameter was moved"
+     },
+     {
+      "kind": "Base class was removed",
+      "path": "click.parser.ParsingState",
+      "owner": "click.parser",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:245: ParsingState: Base class was removed: [object] -> []"
+     },
+     {
+      "kind": "Base class was removed",
+      "path": "click.parser.OptionParser",
+      "owner": "click.parser",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:253: OptionParser: Base class was removed: [object] -> []"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.OptionParser.add_option",
+      "owner": "click.parser.OptionParser",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:291: OptionParser.add_option(opts): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.OptionParser.add_option",
+      "owner": "click.parser.OptionParser",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:291: OptionParser.add_option(dest): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.OptionParser.add_option",
+      "owner": "click.parser.OptionParser",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:291: OptionParser.add_option(action): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.OptionParser.add_option",
+      "owner": "click.parser.OptionParser",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:291: OptionParser.add_option(nargs): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.OptionParser.add_option",
+      "owner": "click.parser.OptionParser",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:291: OptionParser.add_option(const): Positional parameter was moved"
+     },
+     {
+      "kind": "Parameter is now required",
+      "path": "click.parser.OptionParser.add_option",
+      "owner": "click.parser.OptionParser",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:291: OptionParser.add_option(obj): Parameter is now required"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.OptionParser.add_option",
+      "owner": "click.parser.OptionParser",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:291: OptionParser.add_option(obj): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.OptionParser.add_argument",
+      "owner": "click.parser.OptionParser",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:316: OptionParser.add_argument(dest): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.OptionParser.add_argument",
+      "owner": "click.parser.OptionParser",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:316: OptionParser.add_argument(nargs): Positional parameter was moved"
+     },
+     {
+      "kind": "Parameter is now required",
+      "path": "click.parser.OptionParser.add_argument",
+      "owner": "click.parser.OptionParser",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:316: OptionParser.add_argument(obj): Parameter is now required"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.parser.OptionParser.add_argument",
+      "owner": "click.parser.OptionParser",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:316: OptionParser.add_argument(obj): Positional parameter was moved"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.termui.get_terminal_size",
+      "owner": "click.termui",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\termui.py:218: get_terminal_size: Public object was removed"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.termui.style",
+      "owner": "click.termui",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\termui.py:462: style(blink): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.termui.style",
+      "owner": "click.termui",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\termui.py:462: style(reverse): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.termui.style",
+      "owner": "click.termui",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\termui.py:462: style(reset): Positional parameter was moved"
+     },
+     {
+      "kind": "Parameter default was changed",
+      "path": "click.termui.pause",
+      "owner": "click.termui",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\termui.py:753: pause(info): Parameter default was changed: 'Press any key to continue ...' -> None"
+     },
+     {
+      "kind": "Base class was removed",
+      "path": "click.testing.EchoingStdin",
+      "owner": "click.testing",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\testing.py:20: EchoingStdin: Base class was removed: [object] -> []"
+     },
+     {
+      "kind": "Base class was removed",
+      "path": "click.testing.Result",
+      "owner": "click.testing",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\testing.py:101: Result: Base class was removed: [object] -> []"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.testing.Result.__init__",
+      "owner": "click.testing.Result",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\testing.py:104: Result.__init__(exit_code): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.testing.Result.__init__",
+      "owner": "click.testing.Result",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\testing.py:104: Result.__init__(exception): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.testing.Result.__init__",
+      "owner": "click.testing.Result",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\testing.py:104: Result.__init__(exc_info): Positional parameter was moved"
+     },
+     {
+      "kind": "Parameter was added as required",
+      "path": "click.testing.Result.__init__",
+      "owner": "click.testing.Result",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\testing.py:104: Result.__init__(return_value): Parameter was added as required"
+     },
+     {
+      "kind": "Base class was removed",
+      "path": "click.testing.CliRunner",
+      "owner": "click.testing",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\testing.py:159: CliRunner: Base class was removed: [object] -> []"
+     },
+     {
+      "kind": "Parameter default was changed",
+      "path": "click.testing.CliRunner.__init__",
+      "owner": "click.testing.CliRunner",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\testing.py:178: CliRunner.__init__(charset): Parameter default was changed: None -> 'utf-8'"
+     },
+     {
+      "kind": "Base class was removed",
+      "path": "click.types.ParamType",
+      "owner": "click.types",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\types.py:23: ParamType: Base class was removed: [object] -> []"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "click.types.FloatRange.__init__",
+      "owner": "click.types.FloatRange",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\types.py:568: FloatRange.__init__(clamp): Positional parameter was moved"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.types.Path.path_type",
+      "owner": "click.types.Path",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\types.py:582: Path.path_type: Public object was removed"
+     },
+     {
+      "kind": "Parameter was removed",
+      "path": "click.types.Path.coerce_path_result",
+      "owner": "click.types.Path",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\types.py:840: Path.coerce_path_result(rv): Parameter was removed"
+     },
+     {
+      "kind": "Parameter was added as required",
+      "path": "click.types.Path.coerce_path_result",
+      "owner": "click.types.Path",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\types.py:840: Path.coerce_path_result(value): Parameter was added as required"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.utils.echo_native_types",
+      "owner": "click.utils",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\utils.py:29: echo_native_types: Public object was removed"
+     },
+     {
+      "kind": "Base class was removed",
+      "path": "click.utils.LazyFile",
+      "owner": "click.utils",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\utils.py:106: LazyFile: Base class was removed: [object] -> []"
+     },
+     {
+      "kind": "Base class was removed",
+      "path": "click.utils.KeepOpenFile",
+      "owner": "click.utils",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\utils.py:194: KeepOpenFile: Base class was removed: [object] -> []"
+     },
+     {
+      "kind": "Public object was removed",
+      "path": "click.utils.get_os_args",
+      "owner": "click.utils",
+      "explain": ".griffe-targets\\click-7.1.2\\click\\utils.py:342: get_os_args: Public object was removed"
+     },
+     {
+      "kind": "Base class was removed",
+      "path": "click.utils.PacifyFlushWrapper",
+      "owner": "click.utils",
+      "explain": ".griffe-targets\\click-8.1.7\\click\\utils.py:495: PacifyFlushWrapper: Base class was removed: [object] -> []"
+     }
+    ],
+    "package": "click",
+    "old": "7.1.2",
+    "new": "8.1.7"
+   },
+   {
+    "breakages": 13,
+    "distinct_owners": 2,
+    "by_kind": {
+     "Positional parameter was moved": 12,
+     "Parameter was added as required": 1
+    },
+    "objects_walked_old": 1036,
+    "objects_walked_new": 1035,
+    "seconds": 0.8,
+    "rows": [
+     {
+      "kind": "Parameter was added as required",
+      "path": "urllib3.response.BaseHTTPResponse.__init__",
+      "owner": "urllib3.response.BaseHTTPResponse",
+      "explain": ".griffe-targets\\urllib3-2.2.2\\urllib3\\response.py:315: BaseHTTPResponse.__init__(version_string): Parameter was added as required"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "urllib3.response.HTTPResponse.__init__",
+      "owner": "urllib3.response.HTTPResponse",
+      "explain": ".griffe-targets\\urllib3-2.2.2\\urllib3\\response.py:573: HTTPResponse.__init__(reason): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "urllib3.response.HTTPResponse.__init__",
+      "owner": "urllib3.response.HTTPResponse",
+      "explain": ".griffe-targets\\urllib3-2.2.2\\urllib3\\response.py:573: HTTPResponse.__init__(preload_content): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "urllib3.response.HTTPResponse.__init__",
+      "owner": "urllib3.response.HTTPResponse",
+      "explain": ".griffe-targets\\urllib3-2.2.2\\urllib3\\response.py:573: HTTPResponse.__init__(decode_content): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "urllib3.response.HTTPResponse.__init__",
+      "owner": "urllib3.response.HTTPResponse",
+      "explain": ".griffe-targets\\urllib3-2.2.2\\urllib3\\response.py:573: HTTPResponse.__init__(original_response): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "urllib3.response.HTTPResponse.__init__",
+      "owner": "urllib3.response.HTTPResponse",
+      "explain": ".griffe-targets\\urllib3-2.2.2\\urllib3\\response.py:573: HTTPResponse.__init__(pool): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "urllib3.response.HTTPResponse.__init__",
+      "owner": "urllib3.response.HTTPResponse",
+      "explain": ".griffe-targets\\urllib3-2.2.2\\urllib3\\response.py:573: HTTPResponse.__init__(connection): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "urllib3.response.HTTPResponse.__init__",
+      "owner": "urllib3.response.HTTPResponse",
+      "explain": ".griffe-targets\\urllib3-2.2.2\\urllib3\\response.py:573: HTTPResponse.__init__(msg): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "urllib3.response.HTTPResponse.__init__",
+      "owner": "urllib3.response.HTTPResponse",
+      "explain": ".griffe-targets\\urllib3-2.2.2\\urllib3\\response.py:573: HTTPResponse.__init__(retries): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "urllib3.response.HTTPResponse.__init__",
+      "owner": "urllib3.response.HTTPResponse",
+      "explain": ".griffe-targets\\urllib3-2.2.2\\urllib3\\response.py:573: HTTPResponse.__init__(enforce_content_length): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "urllib3.response.HTTPResponse.__init__",
+      "owner": "urllib3.response.HTTPResponse",
+      "explain": ".griffe-targets\\urllib3-2.2.2\\urllib3\\response.py:573: HTTPResponse.__init__(request_method): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "urllib3.response.HTTPResponse.__init__",
+      "owner": "urllib3.response.HTTPResponse",
+      "explain": ".griffe-targets\\urllib3-2.2.2\\urllib3\\response.py:573: HTTPResponse.__init__(request_url): Positional parameter was moved"
+     },
+     {
+      "kind": "Positional parameter was moved",
+      "path": "urllib3.response.HTTPResponse.__init__",
+      "owner": "urllib3.response.HTTPResponse",
+      "explain": ".griffe-targets\\urllib3-2.2.2\\urllib3\\response.py:573: HTTPResponse.__init__(auto_close): Positional parameter was moved"
+     }
+    ],
+    "package": "urllib3",
+    "old": "2.2.1",
+    "new": "2.2.2"
+   }
+  ]
+ },
+ "blast_radius": {
+  "version": "0.1.0",
+  "how": "blast-radius check <package> <old> <new> --json, which installs both versions, imports each in its own subprocess, and executes the functions whose call shape survived",
+  "runs": {
+   "click 7.1.2 -> 8.1.7": {
+    "counts": {
+     "gone": 16,
+     "reshaped": 11,
+     "widened": 9,
+     "silent": 4,
+     "added": 51
+    },
+    "compared": 86,
+    "unreachable": 77,
+    "behaviour_candidates": 184,
+    "nondeterministic": [
+     "click.Path.convert"
+    ],
+    "unknown_signatures": 7,
+    "seconds": 3.9,
+    "wall_seconds": 4.1,
+    "changes": [
+     {
+      "kind": "silent",
+      "qualname": "click.Choice.get_missing_message",
+      "detail": "same signature (self, param); 12 of 12 exercised inputs disagree",
+      "witness": {
+       "args": "(\"\",)",
+       "old": "ok: 'Choose from:\\n\\tx.'",
+       "new": "ok: 'Choose from:\\n\\tx'"
+      },
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "silent",
+      "qualname": "click.FileError.format_message",
+      "detail": "same signature (self); 1 of 1 exercised inputs disagree",
+      "witness": {
+       "args": "()",
+       "old": "ok: 'Could not open file x: unknown error'",
+       "new": "ok: \"Could not open file 'x': unknown error\""
+      },
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "silent",
+      "qualname": "click.NoSuchOption.format_message",
+      "detail": "same signature (self); 1 of 1 exercised inputs disagree",
+      "witness": {
+       "args": "()",
+       "old": "ok: 'no such option: x'",
+       "new": "ok: 'No such option: x'"
+      },
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "silent",
+      "qualname": "click.types.StringParamType.convert",
+      "detail": "same signature (self, value, param, ctx); 5 of 12 exercised inputs disagree",
+      "witness": {
+       "args": "(0, \"\", \"\",)",
+       "old": "ok: 0",
+       "new": "ok: '0'"
+      },
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "gone",
+      "qualname": "click.Argument.full_process_value",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "gone",
+      "qualname": "click.Group.resultcallback",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "gone",
+      "qualname": "click.Option.full_process_value",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "gone",
+      "qualname": "click.core.DEPRECATED_HELP_NOTICE",
+      "detail": "a constant that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "gone",
+      "qualname": "click.core.DEPRECATED_INVOKE_NOTICE",
+      "detail": "a constant that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "gone",
+      "qualname": "click.core.SUBCOMMANDS_METAVAR",
+      "detail": "a constant that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "gone",
+      "qualname": "click.core.SUBCOMMAND_METAVAR",
+      "detail": "a constant that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "gone",
+      "qualname": "click.core.fast_exit",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "gone",
+      "qualname": "click.core.invoke_param_callback",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "gone",
+      "qualname": "click.core.iteritems",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "gone",
+      "qualname": "click.get_os_args",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "gone",
+      "qualname": "click.get_terminal_size",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "gone",
+      "qualname": "click.types.filename_to_ui",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "gone",
+      "qualname": "click.types.get_filesystem_encoding",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "gone",
+      "qualname": "click.types.get_streerror",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "gone",
+      "qualname": "click.utils.is_bytes",
+      "detail": "a function that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "reshaped",
+      "qualname": "click.FloatRange",
+      "detail": "(min=None, max=None, clamp=False) -> (min: Optional[float] = None, max: Optional[float] = None, min_open: bool = False, max_open: bool = False, clamp: bool = False) -> None",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "reshaped",
+      "qualname": "click.IntRange",
+      "detail": "(min=None, max=None, clamp=False) -> (min: Optional[float] = None, max: Optional[float] = None, min_open: bool = False, max_open: bool = False, clamp: bool = False) -> None",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "reshaped",
+      "qualname": "click.Option",
+      "detail": "(param_decls=None, show_default=False, prompt=False, confirmation_prompt=False, hide_input=False, is_flag=None, flag_value=None, multiple=False, count=False, allow_from_autoenv=True, type=None, help=None, hidden=False, show_choices=True, show_envvar=False, **attrs) -> (param_decls: Optional[Sequence",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "reshaped",
+      "qualname": "click.OptionParser.add_argument",
+      "detail": "(self, dest, nargs=1, obj=None) -> (self, obj: 'CoreArgument', dest: Optional[str], nargs: int = 1) -> None",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "reshaped",
+      "qualname": "click.OptionParser.add_option",
+      "detail": "(self, opts, dest, action=None, nargs=1, const=None, obj=None) -> (self, obj: 'CoreOption', opts: Sequence[str], dest: Optional[str], action: Optional[str] = None, nargs: int = 1, const: Optional[Any] = None) -> None",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "reshaped",
+      "qualname": "click.Parameter",
+      "detail": "(param_decls=None, type=None, required=False, default=None, callback=None, nargs=None, metavar=None, expose_value=True, is_eager=False, envvar=None, autocompletion=None) -> (param_decls: Optional[Sequence[str]] = None, type: Union[click.types.ParamType, Any, NoneType] = None, required: bool = False,",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "reshaped",
+      "qualname": "click.Path.coerce_path_result",
+      "detail": "(self, rv) -> (self, value: 't.Union[str, os.PathLike[str]]') -> 't.Union[str, bytes, os.PathLike[str]]'",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "reshaped",
+      "qualname": "click.parser.Argument",
+      "detail": "(dest, nargs=1, obj=None) -> (obj: 'CoreArgument', dest: Optional[str], nargs: int = 1)",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "reshaped",
+      "qualname": "click.parser.Option",
+      "detail": "(opts, dest, action=None, nargs=1, const=None, obj=None) -> (obj: 'CoreOption', opts: Sequence[str], dest: Optional[str], action: Optional[str] = None, nargs: int = 1, const: Optional[Any] = None)",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "reshaped",
+      "qualname": "click.style",
+      "detail": "(text, fg=None, bg=None, bold=None, dim=None, underline=None, blink=None, reverse=None, reset=True) -> (text: Any, fg: Union[int, Tuple[int, int, int], str, NoneType] = None, bg: Union[int, Tuple[int, int, int], str, NoneType] = None, bold: Optional[bool] = None, dim: Optional[bool] = None, underlin",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "reshaped",
+      "qualname": "click.testing.Result",
+      "detail": "(runner, stdout_bytes, stderr_bytes, exit_code, exception, exc_info=None) -> (runner: 'CliRunner', stdout_bytes: bytes, stderr_bytes: Optional[bytes], return_value: Any, exit_code: int, exception: Optional[BaseException], exc_info: Optional[Tuple[Type[BaseException], BaseException, traceback]] = Non",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "widened",
+      "qualname": "click.Argument.get_default",
+      "detail": "(self, ctx) -> (self, ctx: click.core.Context, call: bool = True) -> Union[Any, Callable[[], Any], NoneType]",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "widened",
+      "qualname": "click.Context.lookup_default",
+      "detail": "(self, name) -> (self, name: str, call: bool = True) -> Optional[Any]",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "widened",
+      "qualname": "click.Group.main",
+      "detail": "(self, args=None, prog_name=None, complete_var=None, standalone_mode=True, **extra) -> (self, args: Optional[Sequence[str]] = None, prog_name: Optional[str] = None, complete_var: Optional[str] = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any) -> Any",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "widened",
+      "qualname": "click.Option.get_default",
+      "detail": "(self, ctx) -> (self, ctx: click.core.Context, call: bool = True) -> Union[Any, Callable[[], Any], NoneType]",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "widened",
+      "qualname": "click.Path",
+      "detail": "(exists=False, file_okay=True, dir_okay=True, writable=False, readable=True, resolve_path=False, allow_dash=False, path_type=None) -> (exists: bool = False, file_okay: bool = True, dir_okay: bool = True, writable: bool = False, readable: bool = True, resolve_path: bool = False, allow_dash: bool = Fa",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "widened",
+      "qualname": "click.group",
+      "detail": "(name=None, **attrs) -> (name: Union[str, Callable[..., Any], NoneType] = None, cls: Optional[Type[~GrpType]] = None, **attrs: Any) -> Union[click.core.Group, Callable[[Callable[..., Any]], Union[click.core.Group, ~GrpType]]]",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "widened",
+      "qualname": "click.progressbar",
+      "detail": "(iterable=None, length=None, label=None, show_eta=True, show_percent=None, show_pos=False, item_show_func=None, fill_char='#', empty_char='-', bar_template='%(label)s  [%(bar)s]  %(info)s', info_sep='  ', width=36, file=None, color=None) -> (iterable: Optional[Iterable[~V]] = None, length: Optional[",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "widened",
+      "qualname": "click.testing.CliRunner.isolated_filesystem",
+      "detail": "(self) -> (self, temp_dir: Union[str, ForwardRef('os.PathLike[str]'), NoneType] = None) -> Iterator[str]",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "widened",
+      "qualname": "click.version_option",
+      "detail": "(version=None, *param_decls, **attrs) -> (version: Optional[str] = None, *param_decls: str, package_name: Optional[str] = None, prog_name: Optional[str] = None, message: Optional[str] = None, **kwargs: Any) -> Callable[[~FC], ~FC]",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Argument.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.BaseCommand.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.BaseCommand.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Choice.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Choice.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Command.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Command.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Context.get_parameter_source",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Context.set_parameter_source",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Context.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Context.with_resource",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.DateTime.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.File.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.File.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Group.result_callback",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Group.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Group.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.IntRange.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Option.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Option.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.ParamType.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Path.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Path.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Tuple.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.Tuple.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.core.ParameterSource",
+      "detail": "new class",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.decorators.pass_meta_key",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.BashComplete",
+      "detail": "new class",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.BashComplete.format_completion",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.BashComplete.get_completion_args",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.BashComplete.source",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.CompletionItem",
+      "detail": "new class",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.FishComplete",
+      "detail": "new class",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.FishComplete.format_completion",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.FishComplete.get_completion_args",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.ShellComplete",
+      "detail": "new class",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.ShellComplete.complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.ShellComplete.format_completion",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.ShellComplete.get_completion_args",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.ShellComplete.get_completions",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.ShellComplete.source",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.ShellComplete.source_vars",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.ZshComplete",
+      "detail": "new class",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.ZshComplete.format_completion",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.ZshComplete.get_completion_args",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.add_completion_class",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.get_completion_class",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.shell_completion.shell_complete",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.testing.EchoingStdin.read1",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.types.FuncParamType.to_info_dict",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "click.utils.auto_wrap_for_ansi",
+      "detail": "new function",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     }
+    ],
+    "weak_differences": [
+     {
+      "kind": "silent",
+      "qualname": "click.Argument.get_default",
+      "detail": "old calls still bind (signature widened from (self, ctx)); 12 of 12 exercised inputs disagree",
+      "witness": {
+       "args": "(\"\",)",
+       "old": "ok: None",
+       "new": "raise: AttributeError: 'str' object has no attribute 'lookup_default'"
+      },
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": "one version rejects the generated argument as the wrong type"
+     },
+     {
+      "kind": "silent",
+      "qualname": "click.Choice.get_metavar",
+      "detail": "same signature (self, param); 12 of 12 exercised inputs disagree",
+      "witness": {
+       "args": "(\"\",)",
+       "old": "ok: '[x]'",
+       "new": "raise: AttributeError: 'str' object has no attribute 'required'"
+      },
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": "one version rejects the generated argument as the wrong type"
+     },
+     {
+      "kind": "silent",
+      "qualname": "click.File.resolve_lazy_flag",
+      "detail": "same signature (self, value); 5 of 12 exercised inputs disagree",
+      "witness": {
+       "args": "(0,)",
+       "old": "ok: False",
+       "new": "raise: TypeError: expected str, bytes or os.PathLike object, not int"
+      },
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": "one version rejects the generated argument as the wrong type"
+     },
+     {
+      "kind": "silent",
+      "qualname": "click.format_filename",
+      "detail": "same signature (filename, shorten=False); 2 of 12 exercised inputs disagree",
+      "witness": {
+       "args": "(__import__(\"pathlib\").Path(\".\"), \"\",)",
+       "old": "raise: AttributeError: 'WindowsPath' object has no attribute 'encode'",
+       "new": "ok: '.'"
+      },
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": "one version rejects the generated argument as the wrong type"
+     },
+     {
+      "kind": "silent",
+      "qualname": "click.formatting.iter_rows",
+      "detail": "same signature (rows, col_count); 1 of 12 exercised inputs disagree",
+      "witness": {
+       "args": "([1, 2], \"\",)",
+       "old": "ok: []...then TypeError: 'int' object is not iterable",
+       "new": "ok: []...then TypeError: object of type 'int' has no len()"
+      },
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": "one version rejects the generated argument as the wrong type"
+     },
+     {
+      "kind": "silent",
+      "qualname": "click.parser.split_arg_string",
+      "detail": "same signature (string); 1 of 8 exercised inputs disagree",
+      "witness": {
+       "args": "(None,)",
+       "old": "raise: TypeError: expected string or bytes-like object, got 'NoneType'",
+       "new": "ok: []"
+      },
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": "one version rejects the generated argument as the wrong type"
+     },
+     {
+      "kind": "silent",
+      "qualname": "click.types.BoolParamType.convert",
+      "detail": "same signature (self, value, param, ctx); 2 of 2 exercised inputs disagree",
+      "witness": {
+       "args": "(0, \"\", \"\",)",
+       "old": "raise: AttributeError: 'int' object has no attribute 'lower'",
+       "new": "ok: False"
+      },
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": "one version rejects the generated argument as the wrong type"
+     }
+    ]
+   },
+   "urllib3 2.2.1 -> 2.2.2": {
+    "counts": {
+     "gone": 0,
+     "reshaped": 2,
+     "widened": 0,
+     "silent": 1,
+     "added": 1
+    },
+    "compared": 75,
+    "unreachable": 53,
+    "behaviour_candidates": 147,
+    "nondeterministic": [
+     "urllib3.filepost.choose_boundary"
+    ],
+    "unknown_signatures": 0,
+    "seconds": 3.3,
+    "wall_seconds": 3.4,
+    "changes": [
+     {
+      "kind": "silent",
+      "qualname": "urllib3.HTTPResponse.read",
+      "detail": "same signature (self, amt: 'int | None' = None, decode_content: 'bool | None' = None, cache_content: 'bool' = False) -> 'bytes'; 1 of 12 exercised inputs disagree",
+      "witness": {
+       "args": "(-1, True, True,)",
+       "old": "raise: RuntimeError: buffer is empty",
+       "new": "ok: None"
+      },
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "reshaped",
+      "qualname": "urllib3.BaseHTTPResponse",
+      "detail": "(*, headers: 'typing.Mapping[str, str] | typing.Mapping[bytes, bytes] | None' = None, status: 'int', version: 'int', reason: 'str | None', decode_content: 'bool', request_url: 'str | None', retries: 'Retry | None' = None) -> 'None' -> (*, headers: 'typing.Mapping[str, str] | typing.Mapping[bytes, by",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "reshaped",
+      "qualname": "urllib3.HTTPResponse",
+      "detail": "(body: '_TYPE_BODY' = '', headers: 'typing.Mapping[str, str] | typing.Mapping[bytes, bytes] | None' = None, status: 'int' = 0, version: 'int' = 0, reason: 'str | None' = None, preload_content: 'bool' = True, decode_content: 'bool' = True, original_response: '_HttplibHTTPResponse | None' = None, pool",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     },
+     {
+      "kind": "added",
+      "qualname": "urllib3.response.HAS_ZSTD",
+      "detail": "new constant",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+     }
+    ],
+    "weak_differences": []
+   }
+  }
+ }
+}

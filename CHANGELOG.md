@@ -5,6 +5,31 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Module-level constants are part of the public surface.** The surface walk described a
+  name only when it was a routine or a class, so a removed constant - an `ImportError` at
+  startup, the loudest thing this tool reports - appeared in no report. click 7.1.2 -> 8.1.7
+  removes four from `click.core` alone, and its `gone` count moves 12 -> 16. A name counts
+  when its value is immutable and printable, it is in `__all__` or spelled in capitals, and
+  it is assigned in that module's own file. Only the name is compared, never the value.
+- `docs/COMPARISON.md` — the same two upgrades through griffe 2.4.1, with
+  `docs/griffe-comparison.json` as the artefact. It is what found the constants.
+
+### Fixed
+
+- **A reworded exception message is no longer a silent behaviour change.** Both click
+  versions raise `TypeError` from `click.formatting.iter_rows` on the same input and only
+  the wording differs, and that was reported as SILENT - the one category this tool exists
+  for. Two causes: nothing compared exception classes, and the filter for wrong-typed
+  arguments read only rows whose verdict was `raise`, so an iterator that yielded before it
+  raised (verdict `ok`, exception after `...then`) walked past it.
+- Uncounted differences are grouped by **why** they are uncounted, in both reports, and
+  `weak_reason` now reaches `--json`. One sentence covered every one of them, and it was
+  false about any difference that was not about the arguments.
+
 ## [0.1.0] — 2026-09-24
 
 First release.

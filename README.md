@@ -56,8 +56,8 @@ installing urllib3==2.2.1 ...
 installing urllib3==2.2.2 ...
 
 reading both public surfaces...
-  2.2.1: 212 public symbols (reports version 2.2.1)
-  2.2.2: 212 public symbols (reports version 2.2.2)
+  2.2.1: 222 public symbols (reports version 2.2.1)
+  2.2.2: 223 public symbols (reports version 2.2.2)
 
 ==============================================================================
 BLAST RADIUS - urllib3 2.2.1 -> 2.2.2
@@ -66,7 +66,7 @@ BLAST RADIUS - urllib3 2.2.1 -> 2.2.2
   reshaped      2   a type checker would catch these
   SILENT        -   not checked: the behaviour pass was skipped (--no-behaviour)
   widened       0   not breaking: existing calls still work
-  added         0
+  added         1
 
   reshaped:
     urllib3.BaseHTTPResponse
@@ -211,6 +211,15 @@ and **the probe proves which file it loaded** before reporting anything.
 **Only the package's own names.** `dir(module)` returns everything reachable, third-party
 imports included. Symbols are filtered by `__module__`.
 
+**Callables, and the constants a module declares.** A removed constant is an `ImportError`
+at startup exactly as a removed function is, and for its first year this tool read only
+routines and classes: the four constants click 8 removes from `click.core` were in no
+report. A name counts as a constant when its value is immutable and printable, it is in
+`__all__` or spelled in capitals, and it is assigned in that module's own file - the last
+condition is what keeps `from socket import AF_INET` out of the package's surface. Only the
+NAME is compared: a constant whose value changed is a behaviour change with no witness, and
+`__version__` changes every release.
+
 **Call shape, not signature text.** Two signatures are "the same" when their parameter
 names, kinds and defaults match. Annotations are excluded on purpose: adding a type hint
 cannot break a caller.
@@ -331,7 +340,13 @@ src/blast_radius/
   report.py   sorted by what can reach you, silent changes first
   types.py    the kinds of change, and why they are ordered that way
 scripts/
-  semver_sweep.py   re-runs the 44-pair measurement behind docs/SEMVER.md
+  semver_sweep.py       re-runs the 44-pair measurement behind docs/SEMVER.md
+  pair_census.py        walks thousands of consecutive release pairs; the raw output is
+                        not committed, docs/census-summary.json is
+  census_summary.py     reduces that census to the figures quoted, with denominators
+  census_table.py       the per-cohort table this README prints
+  griffe_comparison.py  installs both versions once and runs griffe and this tool over
+                        the same bytes -> docs/griffe-comparison.json
 ```
 
 286 tests. `pytest --cov=blast_radius` reports **91%** of statements, with one gap worth
@@ -345,6 +360,7 @@ That is measured separately, by running 28 escape routes against it.
 |---|---|
 | &#128200; **[The semver sweep](https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md)** | 44 pairs: the 22 that made the promise, and 22 more on 0.x, which promises nothing. Every break named, API surface only |
 | &#128202; **[Results](https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md)** | All three runs in full, with the limits |
+| &#9878; **[Next to griffe](https://github.com/hammasbuilds/blast-radius/blob/main/docs/COMPARISON.md)** | The same two upgrades through mkdocstrings' API differ. It found four removed constants this tool could not see, which is now fixed; it cannot report a behaviour change |
 | **[suite-auditor](https://github.com/hammasbuilds/suite-auditor)** | The same differential idea, pointed at a test suite |
 | **[pr-referee](https://github.com/hammasbuilds/pr-referee)** | And pointed at a diff |
 | **[repo-surgeon](https://github.com/hammasbuilds/repo-surgeon)** | And at a migration, refusing what it cannot prove |

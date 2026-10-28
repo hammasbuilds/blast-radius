@@ -74,6 +74,15 @@ class Change:
     aliases: list[str] = field(default_factory=list)
     """Other import paths for the same object, so a caller writing any of them is matched."""
 
+    weak_reason: str = ""
+    """For a difference kept OUT of `changes`: why it is not counted.
+
+    There is more than one reason, and they are not the same claim. One version rejecting
+    a generated argument says the argument was wrong; both versions raising the same
+    exception class with different wording says the text changed and the behaviour did
+    not. A single sentence in the report covering both would be false about one of them.
+    """
+
     @property
     def severity(self) -> int:
         # A change you actually call outranks one you do not, whatever its kind.
@@ -87,6 +96,11 @@ class Change:
             "witness": self.witness,
             "used_at": self.used_at[:10],
             "maybe_at": self.maybe_at[:10],
+            # Always present, never only when set. `weak_differences` in the JSON used to
+            # carry the witness and not the reason, so the one thing a reader needs to
+            # know about an uncounted difference - why it is uncounted - reached the human
+            # report and not the machine-readable one. Empty for a counted change.
+            "weak_reason": self.weak_reason,
         }
 
 
