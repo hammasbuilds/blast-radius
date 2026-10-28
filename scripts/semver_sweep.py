@@ -206,8 +206,45 @@ def one_pair_per_package(rows: list[dict]) -> tuple[list[dict], list[dict]]:
     return list(kept.values()), dropped
 
 
+def _named(modules: list[str], limit: int = 3) -> str:
+    """A few module names and a count, never the whole list.
+
+    ansible's import plan is 6,846 modules, and the failure message joined every one of
+    them: one census row, 1.1 MB, with the reason somewhere in the middle of it.
+    """
+    shown = ",".join(modules[:limit])
+    if len(modules) > limit:
+        shown += f" (and {len(modules) - limit} more module(s))"
+    return shown or "(no module)"
+
+
+def _why_empty(version: str, got: dict | None, modules: list[str], timeout: float) -> str:
+    """Why a surface walk produced nothing - and these are not the same thing.
+
+    `surface()` returns None when the probe did not finish, and a dict holding only
+    `__meta__` when the imports themselves failed. One sentence used to cover both, so a
+    package too big to walk in the time allowed was filed as a package that imports
+    nothing. ansible is the first: 6,846 modules, and the walk does not finish in 1,800
+    seconds on the machine this was measured on, let alone 300.
+    """
+    if got is None:
+        return (f"the surface probe for {version} did not finish within {timeout:.0f}s "
+                f"({len(modules)} module(s) planned)")
+    failed = (got.get("__meta__") or {}).get("failed") or {}
+    if failed:
+        first = sorted(failed)[0]
+        return (f"import {_named(sorted(failed))} failed in {version}: "
+                f"{str(failed[first])[:120]}")
+    return f"import {_named(modules)} found nothing public in {version}"
+
+
 def measure(
-    package: str, old_v: str, new_v: str, work: Path, install_timeout: float = 600.0
+    package: str,
+    old_v: str,
+    new_v: str,
+    work: Path,
+    install_timeout: float = 600.0,
+    surface_timeout: float = 300.0,
 ) -> dict:
     for v in (old_v, new_v):
         ok, why = install(package, v, work / v, timeout=install_timeout)
@@ -215,17 +252,15 @@ def measure(
             return {"error": f"install {v}: {why.splitlines()[-1] if why else '?'}"}
     plan = import_plan(work / old_v, package)
     owned = sorted(set(plan.owned) | set(import_plan(work / new_v, package).owned))
-    module = ",".join(plan.modules)
-    old = surface(work / old_v, plan.modules, owned=owned)
-    new = surface(work / new_v, plan.modules, owned=owned)
-    if not old or not new or len(old) < 2 or len(new) < 2:
-        # Named, not listed. ansible's import plan is about forty thousand modules, and
-        # this message joined every one of them: one census row, 1.1 MB, and the reason
-        # it failed was somewhere in the middle of it.
-        shown = ",".join(plan.modules[:3])
-        if len(plan.modules) > 3:
-            shown += f" (and {len(plan.modules) - 3} more module(s))"
-        return {"error": f"import {shown} failed or found nothing"}
+    # Named, with a count, for the same reason the failure message is: joining 6,846
+    # module names into a field that exists to say WHICH modules were compared makes a
+    # 300 KB row, and the per-pair ledger carries this field.
+    module = _named(plan.modules, limit=8)
+    old = surface(work / old_v, plan.modules, owned=owned, timeout=surface_timeout)
+    new = surface(work / new_v, plan.modules, owned=owned, timeout=surface_timeout)
+    for version, got in ((old_v, old), (new_v, new)):
+        if not got or len(got) < 2:
+            return {"error": _why_empty(version, got, plan.modules, surface_timeout)}
     exported = {k for k, v in old.items() if k != "__meta__" and v.get("exported")}
     resolved = resolve_names(work / new_v, gone_candidates(old, new))
     rows: dict[str, list[str]] = {}
@@ -234,7 +269,8 @@ def measure(
             continue
         scope = "exported" if c.qualname in exported else "internal"
         rows.setdefault(f"{scope}_{c.kind.value}", []).append(c.qualname)
-    return {"module": module, "exported_symbols": len(exported), **rows}
+    return {"module": module, "modules_compared": len(plan.modules),
+            "exported_symbols": len(exported), **rows}
 
 
 def main() -> int:

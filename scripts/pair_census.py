@@ -38,6 +38,7 @@ import json
 import os
 import pathlib
 import re
+import subprocess
 import sys
 import tempfile
 import threading
@@ -194,6 +195,28 @@ def pairs_for(package: str, since: str) -> dict[str, tuple[str, str]]:
     return chosen
 
 
+def revision() -> str:
+    """The commit this run measures at, stamped on every row it writes.
+
+    A census is resumed across days, and across commits: the first full sweep holds rows
+    measured by code that no longer exists, and one of them reports 1,240 removed names
+    for an ansible pair whose surface walk does not finish in 1,800 seconds at any
+    revision now in the tree. The summary carried ONE revision for the whole file, which
+    was tidy and not true of it.
+
+    'unknown' rather than a guess when git cannot answer.
+    """
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(Path(__file__).resolve().parent.parent),
+             "rev-parse", "--short", "HEAD"],
+            capture_output=True, text=True, timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return "unknown"
+    return out.stdout.strip() or "unknown" if out.returncode == 0 else "unknown"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--packages", type=int, default=200,
@@ -261,6 +284,8 @@ def main() -> int:
     started = time.time()
     done_count = 0
     lock = threading.Lock()
+    here = revision()
+    print(f"measuring at {here}")
 
     def one(index_and_pair: tuple[int, dict], root: Path) -> dict:
         nonlocal done_count
@@ -268,6 +293,7 @@ def main() -> int:
         work = root / f"{spec['package']}-{index}"
         work.mkdir(parents=True, exist_ok=True)
         row = dict(spec)
+        row["measured_at"] = here
         try:
             row.update(measure(spec["package"], spec["old"], spec["new"], work))
         except Exception as exc:  # noqa: BLE001 - a crash is a result, and is recorded

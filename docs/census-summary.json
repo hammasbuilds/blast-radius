@@ -1,5 +1,5 @@
 {
- "measured_at_revision": "e23233d",
+ "summarised_at": "eef0db4",
  "since": "2021-01-01",
  "planned": {
   "minor": 996,
@@ -10,6 +10,10 @@
   "0.0.z": 72
  },
  "rows": 3705,
+ "revisions": {
+  "not recorded": 3698,
+  "261259a": 7
+ },
  "dropped_not_an_upgrade": 20,
  "dropped_second_pair_for_a_package": 52,
  "second_pairs": [
@@ -66,9 +70,9 @@
   "virtualenv 21.14.13->21.15.0 (minor)",
   "virtualenv 21.15.0->21.15.1 (patch)"
  ],
- "measured": 2935,
- "broke_exported": 456,
- "broke_exported_share": 0.1554,
+ "measured": 2937,
+ "broke_exported": 457,
+ "broke_exported_share": 0.1556,
  "cohorts": {
   "0.0.z": {
    "pairs": 69,
@@ -102,23 +106,23 @@
   },
   "major": {
    "pairs": 742,
-   "measured": 531,
-   "broke_exported": 220,
-   "broke_exported_share": 0.4143,
+   "measured": 532,
+   "broke_exported": 221,
+   "broke_exported_share": 0.4154,
    "unmeasured": {
-    "no importable module (stub-only or namespace package)": 143,
-    "install failed": 66,
+    "no importable module (stub-only or namespace package)": 144,
+    "install failed": 64,
     "WrongVersionImported: the import did not come from the targe": 2
    }
   },
   "minor": {
    "pairs": 982,
-   "measured": 829,
+   "measured": 830,
    "broke_exported": 114,
-   "broke_exported_share": 0.1375,
+   "broke_exported_share": 0.1373,
    "unmeasured": {
     "no importable module (stub-only or namespace package)": 105,
-    "install failed": 48
+    "install failed": 47
    }
   },
   "patch": {
@@ -127,8 +131,8 @@
    "broke_exported": 20,
    "broke_exported_share": 0.0248,
    "unmeasured": {
-    "no importable module (stub-only or namespace package)": 115,
-    "install failed": 42
+    "no importable module (stub-only or namespace package)": 116,
+    "install failed": 41
    }
   }
  }
