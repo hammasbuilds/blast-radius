@@ -35,6 +35,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import pathlib
 import re
 import sys
 import tempfile
@@ -46,7 +48,82 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from semver_sweep import SEMVER_COHORTS, ZERO_COHORTS, classify, measure  # noqa: E402
+from semver_sweep import (  # noqa: E402
+    SEMVER_COHORTS,
+    ZERO_COHORTS,
+    classify,
+    is_upgrade,
+    measure,
+)
+
+# A census installs thousands of packages. The system temp directory is on C: here,
+# which filled to zero bytes free; `uv venv` then failed, and the failure was recorded
+# as a property of the package rather than of the run.
+SCRATCH = Path(os.environ.get("CENSUS_SCRATCH", r"D:\_census_scratch"))
+
+# Owned by _pin_temp_to_scratch_drive(); sweep_scratch() must leave them alone.
+PINNED_DIRS = frozenset({"tmp", "uv-cache"})
+
+
+# Phrases that describe the run rather than the candidate. A row excluded for one of
+# these was never measured, so --resume drops it and measures it again. C: filling to
+# zero bytes free produced 295 such rows across two censuses; keeping them would have
+# published an infrastructure failure as a property of those packages.
+# Phrases that mean "this machine failed", never "this project cannot be measured".
+# The first list came from the failures visible at the time. A completed 1,000-project
+# census then still carried seven rows this list did not match: five reading
+# "failed to write to file C:\...\uv\cache\..." - uv's wording when the drive it
+# caches to is full, which never contains the phrase "not enough space" - and two
+# TimeoutExpired on `uv pip install`, produced while three censuses shared one throttled
+# link. Matching on the symptom one failure happened to print is how six hours of
+# measurement keeps a verdict about the machine as a verdict about a package, so each
+# entry below names a mechanism and the wordings it is known to take.
+INFRA_FAILURES = (
+    "could not create a venv",
+    # Disk full, in every wording seen: Python's, the OS's, and uv's.
+    "not enough space on the disk",
+    "no space left on device",
+    "failed to write to file",
+    "OSError: [WinError 112]",
+    # Index unreachable or too slow to use - a property of the link, not the package.
+    "could not reach the index",
+    "IndexUnreachable",
+    "TimeoutExpired: Command '['uv', 'pip', 'install'",
+)
+
+
+def _is_infra_failure(row: dict) -> bool:
+    """True when this row records a failure of the harness, not a fact about the target."""
+    text = f"{row.get('excluded') or ''} {row.get('error') or ''}"
+    return any(phrase.lower() in text.lower() for phrase in INFRA_FAILURES)
+
+
+def _pin_temp_to_scratch_drive() -> None:
+    """Send every temp path a child process may use to the scratch drive.
+
+    SCRATCH alone is not enough. `tempfile.mkdtemp` inside the tools and inside the
+    suites under test follows TMPDIR, and uv caches downloads under %LOCALAPPDATA%;
+    both are on C: by default here, and C: filled to zero bytes because of it. Set
+    before the first subprocess so everything spawned inherits it.
+    """
+    tmp = SCRATCH / "tmp"
+    cache = SCRATCH / "uv-cache"
+    tmp.mkdir(parents=True, exist_ok=True)
+    cache.mkdir(parents=True, exist_ok=True)
+    for name in ("TMPDIR", "TMP", "TEMP"):
+        os.environ[name] = str(tmp)
+    os.environ.setdefault("UV_CACHE_DIR", str(cache))
+    tempfile.tempdir = None  # drop any value tempfile cached from the old TMPDIR
+    # Assert, do not announce. tempfile silently ignores an unusable TMPDIR and falls
+    # back to the system temp, so printing the intended path proves nothing.
+    landed = pathlib.Path(tempfile.gettempdir()).resolve()
+    if landed.drive.upper() != SCRATCH.resolve().drive.upper():
+        raise RuntimeError(
+            f"temp did not pin: wanted a path on {SCRATCH.resolve().drive}, "
+            f"tempfile resolves to {landed}. Refusing to run - this is how C: filled."
+        )
+    print(f"temp pinned to {landed}")
+    print(f"uv cache pinned to {os.environ['UV_CACHE_DIR']}")
 
 TOP = ("https://raw.githubusercontent.com/hugovk/top-pypi-packages/main/"
        "top-pypi-packages.min.json")
@@ -106,6 +183,13 @@ def pairs_for(package: str, since: str) -> dict[str, tuple[str, str]]:
     for (_, old), (new_date, new) in zip(versions, versions[1:]):
         if new_date < since:
             continue
+        # Consecutive BY DATE is not consecutive by version. A project that ships a
+        # backport after a newer release gives a pair that runs backwards, and the
+        # measurement then reports the symbols the newer release ADDED as removed. The
+        # label cannot catch it: classify() compares components for equality, so
+        # 5.1.0 -> 4.8.1 is a well-formed "major" pair to it.
+        if not is_upgrade(old, new):
+            continue
         chosen[classify(old, new)] = (old, new)  # later pairs overwrite earlier ones
     return chosen
 
@@ -149,6 +233,8 @@ def main() -> int:
     for cohort in sorted(counts):
         print(f"  {cohort:14} {counts[cohort]:4}")
 
+    SCRATCH.mkdir(parents=True, exist_ok=True)
+    _pin_temp_to_scratch_drive()
     out = Path(args.out)
     if args.plan_only:
         out.write_text(json.dumps({"since": args.since, "plan": plan, "counts": counts},
@@ -163,6 +249,10 @@ def main() -> int:
             results = prior["results"] if isinstance(prior, dict) else list(prior)
         except (OSError, ValueError, KeyError):
             results = []
+    retry = [r for r in results if _is_infra_failure(r)]
+    if retry:
+        print(f"retrying {len(retry):,} pairs whose failure was infrastructure, not a result")
+        results = [r for r in results if not _is_infra_failure(r)]
     seen = {(r["package"], r["old"], r["new"]) for r in results}
     todo = [p for p in plan if (p["package"], p["old"], p["new"]) not in seen]
     if seen:
@@ -195,7 +285,7 @@ def main() -> int:
                                        "results": results}, indent=1), encoding="utf-8")
         return row
 
-    with tempfile.TemporaryDirectory(prefix="pair-census-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="pair-census-", dir=SCRATCH) as tmp:
         root = Path(tmp)
         if args.workers > 1:
             with ThreadPoolExecutor(max_workers=args.workers) as pool:

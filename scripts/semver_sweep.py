@@ -33,6 +33,40 @@ from blast_radius.probe import resolve_names, surface  # noqa: E402
 from blast_radius.types import Kind  # noqa: E402
 
 
+def version_key(text: str) -> tuple[int, ...]:
+    """Every numeric component, for ORDERING two final releases.
+
+    Separate from classify()'s three padded components, which answer "which position
+    changed" and deliberately ignore anything past the third. Ordering needs them all:
+    1.2.19 and 1.2.19.1 agree on three and are not the same release.
+    """
+    out = []
+    for chunk in text.split("."):
+        digits = ""
+        for ch in chunk:
+            if not ch.isdigit():
+                break
+            digits += ch
+        out.append(int(digits) if digits else 0)
+    return tuple(out)
+
+
+def is_upgrade(old: str, new: str) -> bool:
+    """True when `new` is a later release than `old`.
+
+    The census pairs consecutive releases ordered by UPLOAD DATE, so a project that
+    publishes a backport after a newer release produces a pair that runs backwards:
+    dulwich 1.2.19 -> 1.2.18 was measured and published as a patch upgrade that removed
+    `dulwich.index.unchanged_entry_flags`, when in fact 1.2.19 added it.
+
+    classify() cannot catch this - it compares components for equality and never for
+    direction, so 5.1.0 -> 4.8.1 is a well-formed "major" pair to it. 21 of 2,238 pairs
+    in one run ran backwards, 5 of them counted as breaking an exported name, and the
+    worst read as "snowflake-connector-python 5.1.0 -> 4.8.1 removed symbols".
+    """
+    return version_key(new) > version_key(old)
+
+
 def classify(old: str, new: str) -> str:
     """Which promise this pair made, read off the versions rather than declared.
 
