@@ -36,3 +36,6 @@ docs/*-census.json.poisoned
 # docs/griffe-comparison.json is the committed result; scripts/griffe_comparison.py
 # rebuilds the directories.
 .griffe-targets/
+
+# A one-off watcher log.
+census_wait.log
