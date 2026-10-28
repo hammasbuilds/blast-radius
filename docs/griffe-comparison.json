@@ -1,5 +1,5 @@
 {
- "measured": "2026-10-28",
+ "measured": "2026-10-29",
  "machine": "one machine, one interpreter, the same two installed directories per pair",
  "griffe": {
   "version": "2.4.1",
@@ -21,7 +21,7 @@
     },
     "objects_walked_old": 806,
     "objects_walked_new": 868,
-    "seconds": 0.4,
+    "seconds": 1.2,
     "rows": [
      {
       "kind": "Public object was removed",
@@ -69,7 +69,8 @@
       "kind": "Base class was removed",
       "path": "click.core.Context",
       "owner": "click.core",
-      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:160: Context: Base class was removed: [object] -> []"
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:160: Context: Base class was removed: [object] -> []",
+      "bases_in_old_version": "object"
      },
      {
       "kind": "Parameter was added as required",
@@ -99,7 +100,8 @@
       "kind": "Base class was removed",
       "path": "click.core.BaseCommand",
       "owner": "click.core",
-      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:834: BaseCommand: Base class was removed: [object] -> []"
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:834: BaseCommand: Base class was removed: [object] -> []",
+      "bases_in_old_version": "object"
      },
      {
       "kind": "Public object points to a different kind of object",
@@ -129,7 +131,8 @@
       "kind": "Base class was removed",
       "path": "click.core.Parameter",
       "owner": "click.core",
-      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2012: Parameter: Base class was removed: [object] -> []"
+      "explain": ".griffe-targets\\click-8.1.7\\click\\core.py:2012: Parameter: Base class was removed: [object] -> []",
+      "bases_in_old_version": "object"
      },
      {
       "kind": "Positional parameter was moved",
@@ -345,7 +348,8 @@
       "kind": "Base class was removed",
       "path": "click.formatting.HelpFormatter",
       "owner": "click.formatting",
-      "explain": ".griffe-targets\\click-8.1.7\\click\\formatting.py:102: HelpFormatter: Base class was removed: [object] -> []"
+      "explain": ".griffe-targets\\click-8.1.7\\click\\formatting.py:102: HelpFormatter: Base class was removed: [object] -> []",
+      "bases_in_old_version": "object"
      },
      {
       "kind": "Parameter default was changed",
@@ -357,7 +361,8 @@
       "kind": "Base class was removed",
       "path": "click.parser.Option",
       "owner": "click.parser",
-      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:159: Option: Base class was removed: [object] -> []"
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:159: Option: Base class was removed: [object] -> []",
+      "bases_in_old_version": "object"
      },
      {
       "kind": "Positional parameter was moved",
@@ -405,7 +410,8 @@
       "kind": "Base class was removed",
       "path": "click.parser.Argument",
       "owner": "click.parser",
-      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:213: Argument: Base class was removed: [object] -> []"
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:213: Argument: Base class was removed: [object] -> []",
+      "bases_in_old_version": "object"
      },
      {
       "kind": "Positional parameter was moved",
@@ -435,13 +441,15 @@
       "kind": "Base class was removed",
       "path": "click.parser.ParsingState",
       "owner": "click.parser",
-      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:245: ParsingState: Base class was removed: [object] -> []"
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:245: ParsingState: Base class was removed: [object] -> []",
+      "bases_in_old_version": "object"
      },
      {
       "kind": "Base class was removed",
       "path": "click.parser.OptionParser",
       "owner": "click.parser",
-      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:253: OptionParser: Base class was removed: [object] -> []"
+      "explain": ".griffe-targets\\click-8.1.7\\click\\parser.py:253: OptionParser: Base class was removed: [object] -> []",
+      "bases_in_old_version": "object"
      },
      {
       "kind": "Positional parameter was moved",
@@ -543,13 +551,15 @@
       "kind": "Base class was removed",
       "path": "click.testing.EchoingStdin",
       "owner": "click.testing",
-      "explain": ".griffe-targets\\click-8.1.7\\click\\testing.py:20: EchoingStdin: Base class was removed: [object] -> []"
+      "explain": ".griffe-targets\\click-8.1.7\\click\\testing.py:20: EchoingStdin: Base class was removed: [object] -> []",
+      "bases_in_old_version": "object"
      },
      {
       "kind": "Base class was removed",
       "path": "click.testing.Result",
       "owner": "click.testing",
-      "explain": ".griffe-targets\\click-8.1.7\\click\\testing.py:101: Result: Base class was removed: [object] -> []"
+      "explain": ".griffe-targets\\click-8.1.7\\click\\testing.py:101: Result: Base class was removed: [object] -> []",
+      "bases_in_old_version": "object"
      },
      {
       "kind": "Positional parameter was moved",
@@ -579,7 +589,8 @@
       "kind": "Base class was removed",
       "path": "click.testing.CliRunner",
       "owner": "click.testing",
-      "explain": ".griffe-targets\\click-8.1.7\\click\\testing.py:159: CliRunner: Base class was removed: [object] -> []"
+      "explain": ".griffe-targets\\click-8.1.7\\click\\testing.py:159: CliRunner: Base class was removed: [object] -> []",
+      "bases_in_old_version": "object"
      },
      {
       "kind": "Parameter default was changed",
@@ -591,7 +602,8 @@
       "kind": "Base class was removed",
       "path": "click.types.ParamType",
       "owner": "click.types",
-      "explain": ".griffe-targets\\click-8.1.7\\click\\types.py:23: ParamType: Base class was removed: [object] -> []"
+      "explain": ".griffe-targets\\click-8.1.7\\click\\types.py:23: ParamType: Base class was removed: [object] -> []",
+      "bases_in_old_version": "object"
      },
      {
       "kind": "Positional parameter was moved",
@@ -627,13 +639,15 @@
       "kind": "Base class was removed",
       "path": "click.utils.LazyFile",
       "owner": "click.utils",
-      "explain": ".griffe-targets\\click-8.1.7\\click\\utils.py:106: LazyFile: Base class was removed: [object] -> []"
+      "explain": ".griffe-targets\\click-8.1.7\\click\\utils.py:106: LazyFile: Base class was removed: [object] -> []",
+      "bases_in_old_version": "object"
      },
      {
       "kind": "Base class was removed",
       "path": "click.utils.KeepOpenFile",
       "owner": "click.utils",
-      "explain": ".griffe-targets\\click-8.1.7\\click\\utils.py:194: KeepOpenFile: Base class was removed: [object] -> []"
+      "explain": ".griffe-targets\\click-8.1.7\\click\\utils.py:194: KeepOpenFile: Base class was removed: [object] -> []",
+      "bases_in_old_version": "object"
      },
      {
       "kind": "Public object was removed",
@@ -645,9 +659,15 @@
       "kind": "Base class was removed",
       "path": "click.utils.PacifyFlushWrapper",
       "owner": "click.utils",
-      "explain": ".griffe-targets\\click-8.1.7\\click\\utils.py:495: PacifyFlushWrapper: Base class was removed: [object] -> []"
+      "explain": ".griffe-targets\\click-8.1.7\\click\\utils.py:495: PacifyFlushWrapper: Base class was removed: [object] -> []",
+      "bases_in_old_version": "object"
      }
     ],
+    "base_class_removals": {
+     "rows": 15,
+     "bases_object_only": 15,
+     "bases_unreadable": 0
+    },
     "package": "click",
     "old": "7.1.2",
     "new": "8.1.7"
@@ -661,7 +681,7 @@
     },
     "objects_walked_old": 1036,
     "objects_walked_new": 1035,
-    "seconds": 0.8,
+    "seconds": 1.2,
     "rows": [
      {
       "kind": "Parameter was added as required",
@@ -742,6 +762,11 @@
       "explain": ".griffe-targets\\urllib3-2.2.2\\urllib3\\response.py:573: HTTPResponse.__init__(auto_close): Positional parameter was moved"
      }
     ],
+    "base_class_removals": {
+     "rows": 0,
+     "bases_object_only": 0,
+     "bases_unreadable": 0
+    },
     "package": "urllib3",
     "old": "2.2.1",
     "new": "2.2.2"
@@ -767,8 +792,8 @@
      "click.Path.convert"
     ],
     "unknown_signatures": 7,
-    "seconds": 3.9,
-    "wall_seconds": 4.1,
+    "seconds": 7.4,
+    "wall_seconds": 7.6,
     "changes": [
      {
       "kind": "silent",
@@ -1715,8 +1740,8 @@
      "urllib3.filepost.choose_boundary"
     ],
     "unknown_signatures": 0,
-    "seconds": 3.3,
-    "wall_seconds": 3.4,
+    "seconds": 9.0,
+    "wall_seconds": 9.2,
     "changes": [
      {
       "kind": "silent",

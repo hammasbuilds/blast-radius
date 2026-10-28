@@ -37,6 +37,11 @@ PAIRS = [("click", "7.1.2", "8.1.7"), ("urllib3", "2.2.1", "2.2.2")]
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 
+# griffe reports "Base class was removed" without saying which base. On click that is the
+# whole finding: all 15 are `object`, dropped when click 8 stopped writing
+# `class Context(object):` for Python 2, and nothing a caller does can trip on it.
+BASE_CLASS_REMOVED = "Base class was removed"
+
 # The griffe side runs in its own interpreter, so it is a script rather than an import.
 # `allow_inspection=False` is the whole point of comparing against it: griffe must not
 # fall back to importing the package, or both tools would be doing the same thing.
@@ -127,6 +132,30 @@ def install(package: str, version: str) -> Path:
     return target
 
 
+def bases_in(target: Path, dotted: str) -> str | None:
+    """The base list `class X(...):` is written with in this installed copy, or None.
+
+    Read from the OLD version, because that is the version the base still exists in. A
+    regex rather than an AST walk: the class may be nested or guarded, and all this has to
+    recover is the text between the parentheses of its `class` line.
+    """
+    parts = dotted.split(".")
+    cls = parts[-1]
+    for cut in range(len(parts) - 1, 0, -1):
+        for candidate in (target.joinpath(*parts[:cut]).with_suffix(".py"),
+                          target.joinpath(*parts[:cut], "__init__.py")):
+            if not candidate.exists():
+                continue
+            text = candidate.read_text(encoding="utf-8", errors="replace")
+            found = re.search(rf"^\s*class\s+{re.escape(cls)}\s*\(([^)]*)\)\s*:",
+                              text, re.M)
+            if found:
+                return " ".join(found.group(1).split())
+            if re.search(rf"^\s*class\s+{re.escape(cls)}\s*:", text, re.M):
+                return ""
+    return None
+
+
 def run_griffe(package: str, old: str, new: str) -> dict:
     old_dir, new_dir = install(package, old), install(package, new)
     proc = subprocess.run(
@@ -140,6 +169,18 @@ def run_griffe(package: str, old: str, new: str) -> dict:
     prefix = str(TARGETS) + os.sep
     for row in out["rows"]:
         row["explain"] = ANSI.sub("", row["explain"]).replace(prefix, "")
+        if row["kind"] == BASE_CLASS_REMOVED:
+            # None means the class line could not be found, which is a different thing
+            # from "it had no bases" (the empty string) and is published as itself.
+            row["bases_in_old_version"] = bases_in(old_dir, row["path"])
+    base_rows = [r for r in out["rows"] if r["kind"] == BASE_CLASS_REMOVED]
+    out["base_class_removals"] = {
+        "rows": len(base_rows),
+        "bases_object_only": sum(1 for r in base_rows
+                                 if r.get("bases_in_old_version") == "object"),
+        "bases_unreadable": sum(1 for r in base_rows
+                                if r.get("bases_in_old_version") is None),
+    }
     return out
 
 

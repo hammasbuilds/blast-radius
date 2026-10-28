@@ -219,7 +219,13 @@ def measure(
     old = surface(work / old_v, plan.modules, owned=owned)
     new = surface(work / new_v, plan.modules, owned=owned)
     if not old or not new or len(old) < 2 or len(new) < 2:
-        return {"error": f"import {module} failed or found nothing"}
+        # Named, not listed. ansible's import plan is about forty thousand modules, and
+        # this message joined every one of them: one census row, 1.1 MB, and the reason
+        # it failed was somewhere in the middle of it.
+        shown = ",".join(plan.modules[:3])
+        if len(plan.modules) > 3:
+            shown += f" (and {len(plan.modules) - 3} more module(s))"
+        return {"error": f"import {shown} failed or found nothing"}
     exported = {k for k, v in old.items() if k != "__meta__" and v.get("exported")}
     resolved = resolve_names(work / new_v, gone_candidates(old, new))
     rows: dict[str, list[str]] = {}

@@ -166,7 +166,7 @@ class ImportPlan:
     owned: list[str]
 
 
-def import_plan(target: Path, distribution: str) -> ImportPlan:
+def import_plan(target: Path | str, distribution: str) -> ImportPlan:
     """Read the import names from the distribution's own RECORD.
 
     The name you install is not the name you import (beautifulsoup4 is `bs4`), one
@@ -179,6 +179,10 @@ def import_plan(target: Path, distribution: str) -> ImportPlan:
     `pytest.fixture`, defined in `_pytest.fixtures`, counts as pytest's own.
     """
     guess = re.sub(r"[-]", "_", distribution)
+    # Coerced here, because `surface()` next door coerces and this did not: a str reached
+    # `target.glob` and the call died with AttributeError on 'str'. Two public functions
+    # taking the same argument disagreed about its type.
+    target = Path(target)
     info = _dist_info(target, distribution)
     roots: set[str] = set()
     if info is not None:

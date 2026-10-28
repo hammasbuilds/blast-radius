@@ -626,17 +626,45 @@ def walk(mod, prefix, top):
                     describe(m, qual + "." + mname, exported)
 
 
-# No real package nests this deep. The guard below is the real fix; this is the second
-# layer, for a tree that recurses without the directory repeating - a module __getattr__
-# that answers any name, for instance, where there is no path to compare.
+# No real package nests this deep.
 MAX_DEPTH = 24
+
+_real = {}
 
 
 def real(entry):
+    # Memoised: this is called once per package directory, ansible has about forty
+    # thousand of them, and realpath touches the filesystem. The first version of this
+    # guard called it twice per entry inside a comprehension and pushed two ansible pairs
+    # past the probe's 300s budget, so they were recorded as "import failed or found
+    # nothing" - a guard that makes the measurement fail is not a guard.
+    if entry in _real:
+        return _real[entry]
     try:
-        return os.path.normcase(os.path.realpath(entry))
+        out = os.path.normcase(os.path.realpath(entry))
     except (OSError, ValueError):
-        return None
+        out = None
+    _real[entry] = out
+    return out
+
+
+def cycles(dotted):
+    # Does this dotted name walk the same block twice?
+    #
+    # ansible_collections.infinidat.infinibox.infinidat.infinibox... repeats the same two
+    # segments about twenty times, and no real package does that: a class named after its
+    # module (`DomainValidationOptions.DomainValidationOptions`) repeats a segment ONCE
+    # and is ordinary Python, which is why the test is a repeated two-gram and not a
+    # repeated segment.
+    #
+    # This is the load-bearing guard. A collection that nests a copy of itself is made of
+    # real directories, so comparing resolved paths says nothing about it; the name is the
+    # evidence that was actually in hand.
+    parts = dotted.split(".")
+    if len(parts) <= 6:
+        return False
+    grams = [(parts[i], parts[i + 1]) for i in range(len(parts) - 1)]
+    return len(set(grams)) != len(grams)
 
 
 def submodules(name, path, seen=None):
@@ -666,7 +694,7 @@ def submodules(name, path, seen=None):
     except Exception:
         return
     for info in sorted(found, key=lambda i: i.name):
-        if is_excluded(info.name):
+        if is_excluded(info.name) or cycles(info.name):
             continue
         try:
             sub = importlib.import_module(info.name)
@@ -674,11 +702,11 @@ def submodules(name, path, seen=None):
             continue
         yield info.name, sub
         if info.ispkg and info.name.count(".") < MAX_DEPTH:
-            fresh = [
-                entry
-                for entry in getattr(sub, "__path__", [])
-                if real(entry) is not None and real(entry) not in seen
-            ]
+            fresh = []
+            for entry in getattr(sub, "__path__", []):
+                here = real(entry)
+                if here is not None and here not in seen:
+                    fresh.append(entry)
             if fresh:
                 yield from submodules(info.name, fresh, seen)
 
