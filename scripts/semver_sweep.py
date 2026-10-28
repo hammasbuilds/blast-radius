@@ -163,6 +163,49 @@ PAIRS = [
 ]
 
 
+def version_key(version: str) -> tuple:
+    """A sort key for a version string, numeric parts as numbers.
+
+    Not a full PEP 440 ordering - it does not need to be. It needs to be TOTAL and
+    deterministic, so that choosing between two pairs of the same package gives the same
+    answer whatever order they were measured in.
+    """
+    out = []
+    for part in str(version).replace("-", ".").replace("+", ".").split("."):
+        out.append((0, int(part), "") if part.isdigit() else (1, 0, part))
+    return tuple(out)
+
+
+def one_pair_per_package(rows: list[dict]) -> tuple[list[dict], list[dict]]:
+    """(kept, dropped) - at most one pair per package per cohort.
+
+    The census planner picks one pair per class per package, and that is what lets the
+    published table count packages as independent projects. A resumed run can still write
+    a second pair for a package: `--resume` keys on (package, old, new), and a release
+    published between two runs changes which pair is "the latest patch pair". 72 rows of
+    one 3,777-row census are second pairs.
+
+    A rule that lives only in the planner is not applied to the file, and the file is what
+    every rate is computed from.
+    """
+    kept: dict[tuple[str, str], dict] = {}
+    dropped: list[dict] = []
+    for row in rows:
+        key = (row.get("package", ""), row.get("cohort", ""))
+        here = (version_key(row.get("old", "")), version_key(row.get("new", "")))
+        sitting = kept.get(key)
+        if sitting is None:
+            kept[key] = row
+            continue
+        theirs = (version_key(sitting.get("old", "")), version_key(sitting.get("new", "")))
+        if here < theirs:
+            dropped.append(sitting)
+            kept[key] = row
+        else:
+            dropped.append(row)
+    return list(kept.values()), dropped
+
+
 def measure(package: str, old_v: str, new_v: str, work: Path) -> dict:
     for v in (old_v, new_v):
         ok, why = install(package, v, work / v)

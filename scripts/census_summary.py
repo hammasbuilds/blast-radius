@@ -32,7 +32,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from pair_census import _is_infra_failure  # noqa: E402
-from semver_sweep import is_upgrade  # noqa: E402
+from semver_sweep import is_upgrade, one_pair_per_package  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -61,6 +61,11 @@ def summarise(census: dict) -> dict:
     # published rate. Counted and reported, not silently removed.
     backwards = [r for r in rows if not is_upgrade(r["old"], r["new"])]
     rows = [r for r in rows if is_upgrade(r["old"], r["new"])]
+    # At most one pair per class per package, applied to the rows and not only to the
+    # plan that chose them: a run resumed across several days measures a second pair for
+    # a package whose release history moved under it. Counted and published, never
+    # silently dropped - 72 rows of the first full census, 10 of them breaking.
+    rows, second_pairs = one_pair_per_package(rows)
     by_cohort: dict[str, dict] = {}
     for row in rows:
         c = by_cohort.setdefault(
@@ -95,6 +100,10 @@ def summarise(census: dict) -> dict:
         "planned": dict(census.get("plan_counts") or {}),
         "rows": len(rows),
         "dropped_not_an_upgrade": len(backwards),
+        "dropped_second_pair_for_a_package": len(second_pairs),
+        "second_pairs": sorted(
+            f"{r['package']} {r['old']}->{r['new']} ({r['cohort']})" for r in second_pairs
+        ),
         "measured": total_measured,
         "broke_exported": total_broke,
         "broke_exported_share": (
@@ -122,6 +131,12 @@ def main() -> int:
     summary = {"measured_at_revision": args.revision or "not recorded", **summary}
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(summary, indent=1), encoding="utf-8")
+    if summary["dropped_second_pair_for_a_package"]:
+        print(
+            f"dropped {summary['dropped_second_pair_for_a_package']} row(s): a second "
+            f"pair for a package already represented in its cohort, which a run resumed "
+            f"across several days writes when PyPI moves under it\n"
+        )
     if summary["dropped_not_an_upgrade"]:
         print(
             f"dropped {summary['dropped_not_an_upgrade']} row(s) whose 'new' version is "

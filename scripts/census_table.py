@@ -28,7 +28,12 @@ from __future__ import annotations
 import argparse
 import collections
 import json
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from semver_sweep import one_pair_per_package  # noqa: E402
 
 MIN_FOR_RATE = 10  # below this, print the count and withhold the percentage
 
@@ -37,6 +42,11 @@ BREAKING = ("exported_gone", "exported_reshaped")
 
 
 def summarise(rows: list[dict]) -> dict[str, dict]:
+    # The same rule the census summary applies, by the same function: at most one pair
+    # per class per package. This module's own docstring promises it ("The census takes
+    # at most one pair per class per package"), and the promise was kept by the planner
+    # rather than by anything that reads the file.
+    rows, _ = one_pair_per_package(rows)
     out: dict[str, dict] = {}
     for cohort in ORDER:
         mine = [r for r in rows if r.get("cohort") == cohort]

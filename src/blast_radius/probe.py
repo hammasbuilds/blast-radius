@@ -626,10 +626,41 @@ def walk(mod, prefix, top):
                     describe(m, qual + "." + mname, exported)
 
 
-def submodules(name, path):
+# No real package nests this deep. The guard below is the real fix; this is the second
+# layer, for a tree that recurses without the directory repeating - a module __getattr__
+# that answers any name, for instance, where there is no path to compare.
+MAX_DEPTH = 24
+
+
+def real(entry):
+    try:
+        return os.path.normcase(os.path.realpath(entry))
+    except (OSError, ValueError):
+        return None
+
+
+def submodules(name, path, seen=None):
     # Our own walk rather than pkgutil.walk_packages, which imports every package it
     # finds in order to recurse - including the tests packages being skipped, and
     # whatever those import.
+    #
+    # `seen` holds the real path of every directory already walked. ansible ships
+    # collection trees in which a directory links back to an ancestor, so iter_modules
+    # yields a package whose directory has been walked already and the walk descends
+    # until the dotted names stop importing: the census recorded
+    # ansible_collections.infinidat.infinibox.infinidat.infinibox... twenty times over,
+    # 1,240 such names in one patch release, which was 81% of that cohort's removed
+    # symbols. The names all differ, so only the directory identifies the repeat.
+    #
+    # The cost: where two import names genuinely point at one directory, only the first
+    # is walked. describe() keys on the definition site, so the symbols are still found -
+    # what is lost is the second name as an alias.
+    if seen is None:
+        seen = set()
+    for entry in path:
+        here = real(entry)
+        if here is not None:
+            seen.add(here)
     try:
         found = list(pkgutil.iter_modules(path, name + "."))
     except Exception:
@@ -642,8 +673,14 @@ def submodules(name, path):
         except BaseException:
             continue
         yield info.name, sub
-        if info.ispkg:
-            yield from submodules(info.name, getattr(sub, "__path__", []))
+        if info.ispkg and info.name.count(".") < MAX_DEPTH:
+            fresh = [
+                entry
+                for entry in getattr(sub, "__path__", [])
+                if real(entry) is not None and real(entry) not in seen
+            ]
+            if fresh:
+                yield from submodules(info.name, fresh, seen)
 
 
 def origin_of(module):

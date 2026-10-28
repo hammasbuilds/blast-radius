@@ -1,4 +1,5 @@
 {
+ "measured_at_revision": "e23233d",
  "since": "2021-01-01",
  "planned": {
   "minor": 996,
@@ -8,70 +9,126 @@
   "0.x-patch": 501,
   "0.0.z": 72
  },
- "rows": 2406,
+ "rows": 3705,
  "dropped_not_an_upgrade": 20,
- "measured": 1982,
- "broke_exported": 304,
- "broke_exported_share": 0.1534,
+ "dropped_second_pair_for_a_package": 52,
+ "second_pairs": [
+  "awswrangler 3.17.1->3.18.0 (minor)",
+  "azure-identity 1.26.0->1.27.0 (minor)",
+  "azure-keyvault-secrets 4.11.3->4.12.0 (minor)",
+  "boto3 1.43.119->1.43.120 (patch)",
+  "boto3-stubs 1.43.119->1.43.120 (patch)",
+  "botocore 1.43.119->1.43.120 (patch)",
+  "botocore-stubs 1.43.119->1.43.120 (patch)",
+  "cachetools 7.2.5->7.2.6 (patch)",
+  "cyclopts 5.3.1->5.3.2 (patch)",
+  "diff-cover 10.6.0->11.0.0 (major)",
+  "flit-core 4.1.0->4.2.0 (minor)",
+  "fonttools 4.67.0->4.68.0 (minor)",
+  "ghapi 2.1.4->2.1.5 (patch)",
+  "grpcio-status 1.84.1->1.85.0 (minor)",
+  "hatchling 1.32.4->1.33.0 (minor)",
+  "jsonpatch 1.37->1.38 (minor)",
+  "jsonpointer 3.5->3.6 (minor)",
+  "langchain-openai 1.7.2->1.7.3 (patch)",
+  "langgraph 1.2.17->1.2.18 (patch)",
+  "langgraph-checkpoint 4.3.0->4.3.1 (patch)",
+  "langgraph-sdk 0.4.9->0.4.10 (0.x-patch)",
+  "langsmith 0.14.13->0.14.14 (0.x-patch)",
+  "litellm 1.105.6->1.106.5 (minor)",
+  "modal 1.6.2->1.6.3 (patch)",
+  "msgpack 1.2.3->1.2.4 (patch)",
+  "narwhals 2.27.1->2.28.0 (minor)",
+  "numba 0.68.0->0.68.1 (0.x-patch)",
+  "nvidia-cublas 13.8.1.7->13.8.2.12 (patch)",
+  "onnxruntime 1.31.0->1.31.1 (patch)",
+  "openai 3.39.0->3.40.0 (minor)",
+  "pg8000 1.31.5->1.31.6 (patch)",
+  "phonenumbers 9.0.41->9.0.42 (patch)",
+  "platformdirs 4.13.5->4.13.6 (patch)",
+  "portalocker 4.4.1->4.4.2 (patch)",
+  "posthog 7.75.11->7.76.0 (minor)",
+  "pyasn1 0.6.4->0.6.5 (0.x-patch)",
+  "pydantic-ai-slim 2.62.0->2.63.0 (minor)",
+  "pydantic-graph 2.62.0->2.63.0 (minor)",
+  "pymssql 2.4.5->2.4.6 (patch)",
+  "pypdf 6.21.2->6.21.3 (patch)",
+  "pytest 9.1.1->9.2.0 (minor)",
+  "pytest-env 1.8.2->1.8.3 (patch)",
+  "python-discovery 1.6.5->1.6.6 (patch)",
+  "python-engineio 4.14.0->4.15.0 (minor)",
+  "ruff 0.17.2->0.17.3 (0.x-patch)",
+  "spacy 3.8.17->3.8.18 (patch)",
+  "transformers 5.20.2->5.21.0 (minor)",
+  "triton 3.8.0->3.9.0 (minor)",
+  "ty 0.0.92->0.0.93 (0.0.z)",
+  "uv 0.13.5->0.13.6 (0.x-patch)",
+  "virtualenv 21.14.13->21.15.0 (minor)",
+  "virtualenv 21.15.0->21.15.1 (patch)"
+ ],
+ "measured": 2939,
+ "broke_exported": 459,
+ "broke_exported_share": 0.1562,
  "cohorts": {
   "0.0.z": {
-   "pairs": 44,
-   "measured": 31,
-   "broke_exported": 6,
-   "broke_exported_share": 0.1935,
+   "pairs": 69,
+   "measured": 49,
+   "broke_exported": 8,
+   "broke_exported_share": 0.1633,
    "unmeasured": {
-    "no importable module (stub-only or namespace package)": 10,
-    "install failed": 3
+    "no importable module (stub-only or namespace package)": 16,
+    "install failed": 4
    }
   },
   "0.x-breaking": {
-   "pairs": 280,
-   "measured": 224,
-   "broke_exported": 38,
-   "broke_exported_share": 0.1696,
+   "pairs": 458,
+   "measured": 346,
+   "broke_exported": 65,
+   "broke_exported_share": 0.1879,
    "unmeasured": {
-    "no importable module (stub-only or namespace package)": 31,
-    "install failed": 25
+    "no importable module (stub-only or namespace package)": 67,
+    "install failed": 45
    }
   },
   "0.x-patch": {
-   "pairs": 309,
-   "measured": 242,
-   "broke_exported": 21,
-   "broke_exported_share": 0.0868,
+   "pairs": 489,
+   "measured": 372,
+   "broke_exported": 29,
+   "broke_exported_share": 0.078,
    "unmeasured": {
-    "no importable module (stub-only or namespace package)": 47,
-    "install failed": 20
+    "no importable module (stub-only or namespace package)": 83,
+    "install failed": 34
    }
   },
   "major": {
-   "pairs": 468,
-   "measured": 355,
-   "broke_exported": 151,
-   "broke_exported_share": 0.4254,
+   "pairs": 742,
+   "measured": 533,
+   "broke_exported": 222,
+   "broke_exported_share": 0.4165,
    "unmeasured": {
-    "no importable module (stub-only or namespace package)": 77,
-    "install failed": 36
+    "no importable module (stub-only or namespace package)": 143,
+    "install failed": 64,
+    "WrongVersionImported: the import did not come from the targe": 2
    }
   },
   "minor": {
-   "pairs": 655,
-   "measured": 568,
-   "broke_exported": 77,
-   "broke_exported_share": 0.1356,
+   "pairs": 982,
+   "measured": 830,
+   "broke_exported": 114,
+   "broke_exported_share": 0.1373,
    "unmeasured": {
-    "no importable module (stub-only or namespace package)": 55,
-    "install failed": 32
+    "no importable module (stub-only or namespace package)": 105,
+    "install failed": 47
    }
   },
   "patch": {
-   "pairs": 650,
-   "measured": 562,
-   "broke_exported": 11,
-   "broke_exported_share": 0.0196,
+   "pairs": 965,
+   "measured": 809,
+   "broke_exported": 21,
+   "broke_exported_share": 0.026,
    "unmeasured": {
-    "no importable module (stub-only or namespace package)": 65,
-    "install failed": 23
+    "no importable module (stub-only or namespace package)": 115,
+    "install failed": 41
    }
   }
  }
