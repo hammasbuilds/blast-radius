@@ -45,20 +45,6 @@ BREAKING = frozenset({Kind.GONE, Kind.RESHAPED, Kind.SILENT})
 """The kinds that can break a caller. WIDENED and ADDED cannot."""
 
 
-@dataclass(frozen=True)
-class Symbol:
-    """One public thing in a package, as it appears in one version."""
-
-    qualname: str
-    kind: str  # "function" | "class" | "method" | "other"
-    signature: str = ""
-    doc_first_line: str = ""
-
-    @property
-    def module(self) -> str:
-        return self.qualname.rpartition(".")[0]
-
-
 @dataclass
 class Change:
     kind: Kind
