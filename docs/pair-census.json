@@ -1,11 +1,11 @@
 {
  "since": "2021-01-01",
  "plan_counts": {
-  "minor": 985,
-  "patch": 969,
-  "major": 748,
-  "0.x-breaking": 465,
-  "0.x-patch": 497,
+  "minor": 996,
+  "patch": 981,
+  "major": 756,
+  "0.x-breaking": 470,
+  "0.x-patch": 501,
   "0.0.z": 72
  },
  "results": [
@@ -43801,20 +43801,6 @@
    "exported_symbols": 0
   },
   {
-   "package": "semgrep",
-   "old": "1.182.1",
-   "new": "1.181.1",
-   "cohort": "minor",
-   "error": "install 1.182.1:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "semgrep",
-   "old": "1.182.0",
-   "new": "1.182.1",
-   "cohort": "patch",
-   "error": "install 1.182.0:       There is not enough space on the disk. (os error 112)"
-  },
-  {
    "package": "datadog-api-client",
    "old": "2.33.0",
    "new": "2.33.1",
@@ -44115,13 +44101,6 @@
    "error": "import pandas_stubs failed or found nothing"
   },
   {
-   "package": "sphinx",
-   "old": "9.1.0",
-   "new": "9.1.1",
-   "cohort": "patch",
-   "error": "install 9.1.0:       There is not enough space on the disk. (os error 112)"
-  },
-  {
    "package": "id",
    "old": "1.5.0",
    "new": "1.6.1",
@@ -44137,347 +44116,11 @@
    "error": "install 9.2.0:       sphinx==9.2.0, we can conclude that your requirements are unsatisfiable."
   },
   {
-   "package": "oracledb",
-   "old": "4.0.2",
-   "new": "26.0.0",
-   "cohort": "major",
-   "error": "install 4.0.2:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "oracledb",
-   "old": "3.3.0",
-   "new": "3.4.0",
-   "cohort": "minor",
-   "error": "install 3.3.0:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "oracledb",
-   "old": "26.0.0",
-   "new": "26.0.1",
-   "cohort": "patch",
-   "error": "install 26.0.0:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pydeck",
-   "old": "0.8.0",
-   "new": "0.9.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.8.0:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pydeck",
-   "old": "0.9.2",
-   "new": "0.9.3",
-   "cohort": "0.x-patch",
-   "error": "install 0.9.2:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "sphinx",
-   "old": "8.2.3",
-   "new": "9.0.0",
-   "cohort": "major",
-   "error": "install 9.0.0:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "jupyter-builder",
-   "old": "0.0.8",
-   "new": "0.0.9",
-   "cohort": "0.0.z",
-   "error": "install 0.0.8:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "jupyter-builder",
-   "old": "0.0.9",
-   "new": "1.0.0",
-   "cohort": "major",
-   "error": "install 0.0.9:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "jupyter-builder",
-   "old": "1.1.1",
-   "new": "1.2.0",
-   "cohort": "minor",
-   "error": "install 1.1.1:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "jupyter-builder",
-   "old": "1.2.2",
-   "new": "1.2.3",
-   "cohort": "patch",
-   "error": "install 1.2.2:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pandas-gbq",
-   "old": "0.35.2",
-   "new": "0.35.3",
-   "cohort": "0.x-patch",
-   "error": "install 0.35.2:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pandas-gbq",
-   "old": "0.34.1",
-   "new": "0.35.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.34.1:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pydub",
-   "old": "0.25.0",
-   "new": "0.25.1",
-   "cohort": "0.x-patch",
-   "error": "install 0.25.1:   Caused by: failed to hardlink file from C:\\Users\\dell\\AppData\\Local\\Temp\\pair-census-ph555hc1\\pydub-1390\\0.25.1\\pydub-0.25.1.dist-info\\WHEEL to C:\\Users\\dell\\AppData\\Local\\uv\\cache\\archive-v0\\ho94tQSQyfjD_YTY\\pydub-0.25.1.dist-info\\WHEEL: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "accelerate",
-   "old": "0.33.0",
-   "new": "0.34.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.33.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpQCXaZX`: There is not enough space on the disk. (os error 112)"
-  },
-  {
    "package": "pydub",
    "old": "0.24.1",
    "new": "0.25.0",
    "cohort": "0.x-breaking",
    "error": "import pydub failed or found nothing"
-  },
-  {
-   "package": "accelerate",
-   "old": "0.34.1",
-   "new": "0.34.2",
-   "cohort": "0.x-patch",
-   "error": "install 0.34.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpjBJ3mK`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "accelerate",
-   "old": "0.34.2",
-   "new": "1.0.0",
-   "cohort": "major",
-   "error": "install 0.34.2:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpIj41Ck`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "accelerate",
-   "old": "1.14.0",
-   "new": "1.15.0",
-   "cohort": "minor",
-   "error": "install 1.14.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpwrgJvO`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "accelerate",
-   "old": "1.10.0",
-   "new": "1.10.1",
-   "cohort": "patch",
-   "error": "install 1.10.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpsZYD7F`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "jira",
-   "old": "2.0.0",
-   "new": "3.0.1",
-   "cohort": "major",
-   "error": "install 2.0.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpEvlWe4`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "jira",
-   "old": "3.8.0",
-   "new": "3.10.4",
-   "cohort": "minor",
-   "error": "install 3.8.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp4GTkcA`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "readme-renderer",
-   "old": "45.0",
-   "new": "46.0",
-   "cohort": "major",
-   "error": "install 45.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpE0B1GV`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "jira",
-   "old": "3.10.4",
-   "new": "3.10.5",
-   "cohort": "patch",
-   "error": "install 3.10.4:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp70i3f8`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "readme-renderer",
-   "old": "37.2",
-   "new": "37.3",
-   "cohort": "minor",
-   "error": "install 37.2:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpO0q5Hp`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "langchain-anthropic",
-   "old": "0.0.1",
-   "new": "0.0.2",
-   "cohort": "0.0.z",
-   "error": "install 0.0.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmppJlJDs`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "langchain-anthropic",
-   "old": "0.2.4",
-   "new": "0.3.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.2.4:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpR21NZd`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "langchain-anthropic",
-   "old": "0.3.21",
-   "new": "0.3.22",
-   "cohort": "0.x-patch",
-   "error": "install 0.3.21:   Caused by: There is not enough space on the disk. (os error 112) at path \"C:\\\\Users\\\\dell\\\\AppData\\\\Local\\\\uv\\\\cache\\\\simple-v24\\\\pypi\\\\.tmp8DA0oV\""
-  },
-  {
-   "package": "langchain-anthropic",
-   "old": "0.3.22",
-   "new": "1.0.0",
-   "cohort": "major",
-   "error": "install 0.3.22:   Caused by: There is not enough space on the disk. (os error 112) at path \"C:\\\\Users\\\\dell\\\\AppData\\\\Local\\\\uv\\\\cache\\\\simple-v24\\\\pypi\\\\.tmpabuklE\""
-  },
-  {
-   "package": "types-urllib3",
-   "old": "1.26.25.13",
-   "new": "1.26.25.14",
-   "cohort": "patch",
-   "error": "install 1.26.25.13:   Caused by: failed to open file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\types-urllib3.lock`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "emoji",
-   "old": "1.7.0",
-   "new": "2.0.0",
-   "cohort": "major",
-   "error": "OSError: [WinError 112] There is not enough space on the disk: 'C:\\\\Users\\\\dell\\\\AppData\\\\Local\\\\Temp\\\\pair-census-ph555hc1\\\\emoji-1408\\\\1.7.0'"
-  },
-  {
-   "package": "langchain-anthropic",
-   "old": "1.6.1",
-   "new": "1.7.0",
-   "cohort": "minor",
-   "error": "install 1.6.1:   Caused by: There is not enough space on the disk. (os error 112) at path \"C:\\\\Users\\\\dell\\\\AppData\\\\Local\\\\uv\\\\cache\\\\simple-v24\\\\pypi\\\\.tmp921sB2\""
-  },
-  {
-   "package": "fire",
-   "old": "0.6.0",
-   "new": "0.7.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.6.0:   Caused by: failed to open file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\fire.lock`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "langchain-anthropic",
-   "old": "1.7.5",
-   "new": "1.7.6",
-   "cohort": "patch",
-   "error": "install 1.7.5:   Caused by: There is not enough space on the disk. (os error 112) at path \"C:\\\\Users\\\\dell\\\\AppData\\\\Local\\\\uv\\\\cache\\\\simple-v24\\\\pypi\\\\.tmp1e0JZV\""
-  },
-  {
-   "package": "rich-click",
-   "old": "0.1.1",
-   "new": "0.1.2",
-   "cohort": "0.x-patch",
-   "error": "OSError: [WinError 112] There is not enough space on the disk: 'C:\\\\Users\\\\dell\\\\AppData\\\\Local\\\\Temp\\\\pair-census-ph555hc1\\\\rich-click-1463\\\\0.1.1'"
-  },
-  {
-   "package": "rich-click",
-   "old": "0.3.0",
-   "new": "1.0.0",
-   "cohort": "major",
-   "error": "OSError: [WinError 112] There is not enough space on the disk: 'C:\\\\Users\\\\dell\\\\AppData\\\\Local\\\\Temp\\\\pair-census-ph555hc1\\\\rich-click-1464\\\\0.3.0'"
-  },
-  {
-   "package": "syrupy",
-   "old": "5.5.3",
-   "new": "6.0.0",
-   "cohort": "major",
-   "error": "OSError: [WinError 112] There is not enough space on the disk: 'C:\\\\Users\\\\dell\\\\AppData\\\\Local\\\\Temp\\\\pair-census-ph555hc1\\\\syrupy-2038\\\\5.5.3'"
-  },
-  {
-   "package": "asyncssh",
-   "old": "2.24.0",
-   "new": "2.24.1",
-   "cohort": "patch",
-   "error": "OSError: [WinError 112] There is not enough space on the disk: 'C:\\\\Users\\\\dell\\\\AppData\\\\Local\\\\Temp\\\\pair-census-ph555hc1\\\\asyncssh-2043\\\\2.24.0'"
-  },
-  {
-   "package": "mkdocs-material-extensions",
-   "old": "1.2",
-   "new": "1.3",
-   "cohort": "minor",
-   "error": "OSError: [WinError 112] There is not enough space on the disk: 'C:\\\\Users\\\\dell\\\\AppData\\\\Local\\\\Temp\\\\pair-census-ph555hc1\\\\mkdocs-material-extensions-2044\\\\1.2'"
-  },
-  {
-   "package": "kestra",
-   "old": "0.21.14",
-   "new": "0.21.15",
-   "cohort": "0.x-patch",
-   "error": "OSError: [WinError 112] There is not enough space on the disk: 'C:\\\\Users\\\\dell\\\\AppData\\\\Local\\\\Temp\\\\pair-census-ph555hc1\\\\kestra-2051\\\\0.21.14'"
-  },
-  {
-   "package": "mypy-boto3-lambda",
-   "old": "1.42.94",
-   "new": "1.43.0",
-   "cohort": "minor",
-   "error": "OSError: [WinError 112] There is not enough space on the disk: 'C:\\\\Users\\\\dell\\\\AppData\\\\Local\\\\Temp\\\\pair-census-ph555hc1\\\\mypy-boto3-lambda-2368\\\\1.42.94'"
-  },
-  {
-   "package": "mypy-boto3-lambda",
-   "old": "1.43.114",
-   "new": "1.43.118",
-   "cohort": "patch",
-   "error": "OSError: [WinError 112] There is not enough space on the disk: 'C:\\\\Users\\\\dell\\\\AppData\\\\Local\\\\Temp\\\\pair-census-ph555hc1\\\\mypy-boto3-lambda-2369\\\\1.43.114'"
-  },
-  {
-   "package": "netaddr",
-   "old": "0.9.0",
-   "new": "0.10.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.9.0:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "netaddr",
-   "old": "0.10.1",
-   "new": "1.1.0",
-   "cohort": "major",
-   "error": "install 0.10.1:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "netaddr",
-   "old": "0.10.0",
-   "new": "0.10.1",
-   "cohort": "0.x-patch",
-   "error": "install 0.10.0:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pymupdf4llm",
-   "old": "0.0.26",
-   "new": "0.0.27",
-   "cohort": "0.0.z",
-   "error": "install 0.0.26:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp7P76JN`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "netaddr",
-   "old": "1.2.1",
-   "new": "1.3.0",
-   "cohort": "minor",
-   "error": "install 1.2.1:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pymupdf4llm",
-   "old": "0.2.9",
-   "new": "0.3.3",
-   "cohort": "0.x-breaking",
-   "error": "install 0.2.9:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp7GwpCs`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pymupdf4llm",
-   "old": "0.3.3",
-   "new": "0.3.4",
-   "cohort": "0.x-patch",
-   "error": "install 0.3.3:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpSYekxh`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pymupdf4llm",
-   "old": "1.28.2",
-   "new": "2.0",
-   "cohort": "major",
-   "error": "install 1.28.2:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpukoqqi`: There is not enough space on the disk. (os error 112)"
   },
   {
    "package": "pytest-playwright",
@@ -44494,963 +44137,260 @@
    "error": "install 0.9.0: hint: `pytest-base-url` (v2.1.0) was included because `pytest-playwright` (v0.9.0) depends on `pytest-base-url`"
   },
   {
-   "package": "pymupdf4llm",
-   "old": "1.27.2.3",
-   "new": "1.28.0",
-   "cohort": "minor",
-   "error": "install 1.27.2.3:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pymupdf4llm",
-   "old": "1.28.0",
-   "new": "1.28.2",
-   "cohort": "patch",
-   "error": "install 1.28.0:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "minio",
-   "old": "7.1.17",
-   "new": "7.2.0",
-   "cohort": "minor",
-   "error": "install 7.1.17:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "minio",
-   "old": "7.2.19",
-   "new": "7.2.20",
-   "cohort": "patch",
-   "error": "install 7.2.19:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpfAj2wH`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "azure-keyvault-certificates",
-   "old": "4.10.0",
-   "new": "4.11.0",
-   "cohort": "minor",
-   "error": "install 4.10.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmph0XNJB`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "azure-keyvault-certificates",
-   "old": "4.11.2",
-   "new": "4.11.3",
-   "cohort": "patch",
-   "error": "install 4.11.2:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpFnZW9Q`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "daytona-api-client-async",
-   "old": "0.225.0",
-   "new": "0.226.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.225.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmplnlK6i`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "daytona-api-client-async",
-   "old": "0.226.0",
-   "new": "0.226.1",
-   "cohort": "0.x-patch",
-   "error": "install 0.226.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpIT3DSP`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "faster-whisper",
-   "old": "0.9.0",
-   "new": "0.10.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.9.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpomVZz2`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "faster-whisper",
-   "old": "0.7.0",
-   "new": "0.7.1",
-   "cohort": "0.x-patch",
-   "error": "install 0.7.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpwBbuiE`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pytest-playwright",
-   "old": "0.7.1",
-   "new": "0.7.2",
-   "cohort": "0.x-patch",
-   "error": "install 0.7.1:   Caused by: failed to create directory `C:\\Users\\dell\\AppData\\Local\\Temp\\pair-census-ph555hc1\\pytest-playwright-2383\\0.7.1\\requests-2.34.2.dist-info`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "faster-whisper",
-   "old": "0.10.1",
-   "new": "1.0.1",
-   "cohort": "major",
-   "error": "install 0.10.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpuHpiW4`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "faster-whisper",
-   "old": "1.1.1",
-   "new": "1.2.0",
-   "cohort": "minor",
-   "error": "install 1.1.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpfN2eJx`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "faster-whisper",
-   "old": "1.2.0",
-   "new": "1.2.1",
-   "cohort": "patch",
-   "error": "install 1.2.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpjNwM2b`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "azure-mgmt-compute",
-   "old": "38.4.0",
-   "new": "39.0.0",
-   "cohort": "major",
-   "error": "install 38.4.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpabYIQ3`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "daytona-toolbox-api-client-async",
-   "old": "0.225.0",
-   "new": "0.226.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.225.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp13LAWt`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "azure-mgmt-compute",
-   "old": "38.3.0",
-   "new": "38.4.0",
-   "cohort": "minor",
-   "error": "install 38.3.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpdXxtSI`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "azure-mgmt-compute",
-   "old": "37.0.0",
-   "new": "37.0.1",
-   "cohort": "patch",
-   "error": "install 37.0.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpc4rQgP`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "daytona-api-client",
-   "old": "0.225.0",
-   "new": "0.226.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.225.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpaoLZb0`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "daytona-toolbox-api-client-async",
-   "old": "0.226.0",
-   "new": "0.226.1",
-   "cohort": "0.x-patch",
-   "error": "install 0.226.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpYYjiiP`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "tree-sitter-c",
-   "old": "0.23.6",
-   "new": "0.24.1",
-   "cohort": "0.x-breaking",
-   "error": "install 0.23.6:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpz2VWEk`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "tree-sitter-c",
-   "old": "0.24.1",
-   "new": "0.24.2",
-   "cohort": "0.x-patch",
-   "error": "install 0.24.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpAW8IYQ`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "daytona-api-client",
-   "old": "0.226.0",
-   "new": "0.226.1",
-   "cohort": "0.x-patch",
-   "error": "install 0.226.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp4lvL7k`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "databricks-cli",
-   "old": "0.17.8",
-   "new": "0.18.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.17.8:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpZednDY`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "asyncio",
-   "old": "3.4.3",
-   "new": "4.0.0",
-   "cohort": "major",
-   "error": "install 3.4.3:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpaWz0dx`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "databricks-cli",
-   "old": "0.17.7",
-   "new": "0.17.8",
-   "cohort": "0.x-patch",
-   "error": "install 0.17.7:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp5nImPN`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "tree-sitter-python",
-   "old": "0.23.6",
-   "new": "0.25.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.23.6:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpKqBhRG`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "daytona-toolbox-api-client",
-   "old": "0.225.0",
-   "new": "0.226.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.225.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpgUyjHB`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "daytona-toolbox-api-client",
-   "old": "0.226.0",
-   "new": "0.226.1",
-   "cohort": "0.x-patch",
-   "error": "install 0.226.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpYymRpf`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "tree-sitter-python",
-   "old": "0.23.5",
-   "new": "0.23.6",
-   "cohort": "0.x-patch",
-   "error": "install 0.23.5:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpLvkWh3`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "xmlsec",
-   "old": "1.3.16",
-   "new": "1.3.17",
-   "cohort": "patch",
-   "error": "install 1.3.16:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpgHDAbH`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "meson-python",
-   "old": "0.21.1",
-   "new": "0.22.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.21.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpAzAkIO`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "shap",
-   "old": "0.53.0",
-   "new": "0.54.1",
-   "cohort": "0.x-breaking",
-   "error": "install 0.53.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpdxDwP2`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "meson-python",
-   "old": "0.22.0",
-   "new": "0.22.1",
-   "cohort": "0.x-patch",
-   "error": "install 0.22.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpzJIC4a`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "shap",
-   "old": "0.47.1",
-   "new": "0.47.2",
-   "cohort": "0.x-patch",
-   "error": "install 0.47.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpZjUOxY`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "trimesh",
-   "old": "4.12.2",
-   "new": "5.0.0",
-   "cohort": "major",
-   "error": "install 4.12.2:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmphEvqW4`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "trimesh",
-   "old": "5.1.1",
-   "new": "5.2.0",
-   "cohort": "minor",
-   "error": "install 5.1.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp9tI0HF`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "primp",
-   "old": "0.14.0",
-   "new": "0.15.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.14.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpwtkRTS`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "primp",
-   "old": "0.12.0",
-   "new": "0.12.1",
-   "cohort": "0.x-patch",
-   "error": "install 0.12.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpR3BC6k`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "trimesh",
-   "old": "5.1.0",
-   "new": "5.1.1",
-   "cohort": "patch",
-   "error": "install 5.1.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmppYewdH`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "primp",
-   "old": "1.3.1",
-   "new": "2.0.0",
-   "cohort": "major",
-   "error": "install 1.3.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpHVLcjh`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "primp",
-   "old": "1.2.3",
-   "new": "1.3.0",
-   "cohort": "minor",
-   "error": "install 1.2.3:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpnUhNTv`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "primp",
-   "old": "2.0.0",
-   "new": "2.0.1",
-   "cohort": "patch",
-   "error": "install 2.0.0:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "jellyfish",
-   "old": "0.11.1",
-   "new": "0.11.2",
-   "cohort": "0.x-patch",
-   "error": "install 0.11.1:   -> There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "jellyfish",
-   "old": "0.10.0",
-   "new": "0.11.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.10.0:   -> There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "jellyfish",
-   "old": "0.11.2",
-   "new": "1.0.0",
-   "cohort": "major",
-   "error": "install 0.11.2:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\wheels-v6\\pypi\\jellyfish\\.tmpp6va9L`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "speechrecognition",
-   "old": "3.16.1",
-   "new": "3.17.0",
-   "cohort": "minor",
-   "error": "install 3.16.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpgq3t0Q`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "speechrecognition",
-   "old": "3.16.0",
-   "new": "3.16.1",
-   "cohort": "patch",
-   "error": "install 3.16.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp9qg12O`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "asgi-lifespan",
-   "old": "1.0.1",
-   "new": "2.0.0",
-   "cohort": "major",
-   "error": "install 1.0.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpI7OjAN`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "asgi-lifespan",
-   "old": "2.0.0",
-   "new": "2.1.0",
-   "cohort": "minor",
-   "error": "install 2.0.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpzVlsLe`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "google-cloud-language",
-   "old": "1.3.2",
-   "new": "2.5.1",
-   "cohort": "major",
-   "error": "install 1.3.2:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpn5lqZo`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "google-cloud-language",
-   "old": "2.21.0",
-   "new": "2.22.0",
-   "cohort": "minor",
-   "error": "install 2.21.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpYzG0SN`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "google-cloud-language",
-   "old": "2.17.1",
-   "new": "2.17.2",
-   "cohort": "patch",
-   "error": "install 2.17.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpqKue58`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "rank-bm25",
-   "old": "0.2.1",
-   "new": "0.2.2",
-   "cohort": "0.x-patch",
-   "error": "install 0.2.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpKK3iG6`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "adlfs",
-   "old": "0.6.3",
-   "new": "0.7.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.6.3:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpaLFliz`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "adlfs",
-   "old": "0.7.6",
-   "new": "0.7.7",
-   "cohort": "0.x-patch",
-   "error": "install 0.7.6:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpTmNwb8`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "adlfs",
-   "old": "2025.8.0",
-   "new": "2026.2.0",
-   "cohort": "major",
-   "error": "install 2025.8.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp1ynAzS`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "adlfs",
-   "old": "2026.5.0",
-   "new": "2026.8.0",
-   "cohort": "minor",
-   "error": "install 2026.5.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpuAYUgH`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "adlfs",
-   "old": "2024.4.0",
-   "new": "2024.4.1",
-   "cohort": "patch",
-   "error": "install 2024.4.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpFgqT4u`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "icalendar",
-   "old": "5.0.14",
-   "new": "7.0.0",
-   "cohort": "major",
-   "error": "install 5.0.14:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp92G8MA`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "icalendar",
-   "old": "7.2.2",
-   "new": "7.3.0",
-   "cohort": "minor",
-   "error": "install 7.2.2:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpwMB9p8`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "icalendar",
-   "old": "7.2.0",
-   "new": "7.2.2",
-   "cohort": "patch",
-   "error": "install 7.2.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpERTUrw`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "looker-sdk",
-   "old": "25.20.0",
-   "new": "26.0.0",
-   "cohort": "major",
-   "error": "install 25.20.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp9MzU8S`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "looker-sdk",
-   "old": "26.18.0",
-   "new": "26.20.0",
-   "cohort": "minor",
-   "error": "install 26.18.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmppKSdYU`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "jellyfish",
-   "old": "1.2.0",
-   "new": "1.2.1",
-   "cohort": "patch",
-   "error": "install 1.2.0:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "jellyfish",
-   "old": "1.2.1",
-   "new": "1.3.0",
-   "cohort": "minor",
-   "error": "install 1.2.1:       There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "looker-sdk",
-   "old": "26.6.0",
-   "new": "26.6.1",
-   "cohort": "patch",
-   "error": "install 26.6.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpNnnUxl`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "tree-sitter-typescript",
-   "old": "0.23.0",
-   "new": "0.23.2",
-   "cohort": "0.x-patch",
-   "error": "install 0.23.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp2uvJqh`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "tree-sitter-typescript",
-   "old": "0.21.2",
-   "new": "0.23.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.21.2:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp4Zsfqz`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "google-cloud-container",
-   "old": "1.0.3",
-   "new": "2.11.0",
-   "cohort": "major",
-   "error": "install 1.0.3:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpSSrTXR`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "google-cloud-container",
-   "old": "2.66.0",
-   "new": "2.67.0",
-   "cohort": "minor",
-   "error": "install 2.66.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpxVYuAk`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pyxlsb",
-   "old": "1.0.9",
-   "new": "1.0.10",
-   "cohort": "patch",
-   "error": "install 1.0.9:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpniv49d`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "google-cloud-container",
-   "old": "2.56.0",
-   "new": "2.56.1",
-   "cohort": "patch",
-   "error": "install 2.56.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp9MBM11`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "daytona",
-   "old": "0.225.0",
-   "new": "0.226.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.225.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp9dqo1n`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "daytona",
-   "old": "0.226.0",
-   "new": "0.226.1",
-   "cohort": "0.x-patch",
-   "error": "install 0.226.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpDUiFT4`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "google-cloud-trace",
-   "old": "0.24.2",
-   "new": "1.7.0",
-   "cohort": "major",
-   "error": "install 0.24.2:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpJZ5KzI`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "google-cloud-trace",
-   "old": "1.20.0",
-   "new": "1.21.0",
-   "cohort": "minor",
-   "error": "install 1.20.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp5RBCsz`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "slicer",
-   "old": "0.0.7",
-   "new": "0.0.8",
-   "cohort": "0.0.z",
-   "error": "install 0.0.7:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpnCwEK0`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "roman-numerals",
-   "old": "3.1.0",
-   "new": "4.0.0",
-   "cohort": "major",
-   "error": "install 3.1.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\wheels-v6\\pypi\\roman-numerals\\.tmpx14mUl`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "google-cloud-trace",
-   "old": "1.16.1",
-   "new": "1.16.2",
-   "cohort": "patch",
-   "error": "install 1.16.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp3fNoWd`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pyppmd",
-   "old": "0.17.4",
-   "new": "0.18.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.17.4:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpcUudj0`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "roman-numerals",
-   "old": "4.0.0",
-   "new": "4.1.0",
-   "cohort": "minor",
-   "error": "OSError: [Errno 28] No space left on device"
-  },
-  {
-   "package": "pyppmd",
-   "old": "0.18.2",
-   "new": "0.18.3",
-   "cohort": "0.x-patch",
-   "error": "install 0.18.2:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpesLFQa`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pyppmd",
-   "old": "0.18.3",
-   "new": "1.0.0",
-   "cohort": "major",
-   "error": "install 0.18.3:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpFyZc4u`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pyppmd",
-   "old": "1.2.0",
-   "new": "1.3.1",
-   "cohort": "minor",
-   "error": "install 1.2.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpZYK2wb`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "py7zr",
-   "old": "0.21.1",
-   "new": "0.22.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.21.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpTBpTyO`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pyppmd",
-   "old": "1.1.0",
-   "new": "1.1.1",
-   "cohort": "patch",
-   "error": "install 1.1.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpVhi50w`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "py7zr",
-   "old": "0.21.0",
-   "new": "0.21.1",
-   "cohort": "0.x-patch",
-   "error": "install 0.21.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp1qjcpn`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "py7zr",
-   "old": "0.22.0",
-   "new": "1.0.0",
-   "cohort": "major",
-   "error": "install 0.22.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpBYBFNn`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "py7zr",
-   "old": "1.0.0",
-   "new": "1.1.0",
-   "cohort": "minor",
-   "error": "install 1.0.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpFVdreN`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "tritonclient",
-   "old": "2.72.0",
-   "new": "2.73.0",
-   "cohort": "minor",
-   "error": "install 2.72.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp7GCALn`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "py7zr",
-   "old": "1.1.3",
-   "new": "1.1.4",
-   "cohort": "patch",
-   "error": "install 1.1.3:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpwGecgF`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "tritonclient",
-   "old": "2.41.0",
-   "new": "2.41.1",
-   "cohort": "patch",
-   "error": "install 2.41.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpjnBgz6`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pybcj",
-   "old": "0.5.3",
-   "new": "0.6.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.5.3:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp9E5QRM`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pybcj",
-   "old": "0.6.0",
-   "new": "0.6.1",
-   "cohort": "0.x-patch",
-   "error": "install 0.6.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpYXQZAv`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "jax",
-   "old": "0.11.2",
-   "new": "0.12.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.11.2:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpoVwyv4`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pybcj",
-   "old": "0.6.1",
-   "new": "1.0.0",
-   "cohort": "major",
-   "error": "install 0.6.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpHjpL22`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "jax",
-   "old": "0.12.0",
-   "new": "0.12.0.1",
-   "cohort": "0.x-patch",
-   "error": "install 0.12.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpeWtxuk`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "django-debug-toolbar",
-   "old": "7.1.1",
-   "new": "8.0.0",
-   "cohort": "major",
-   "error": "install 7.1.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpG1C7oB`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pybcj",
-   "old": "1.0.7",
-   "new": "1.0.8",
-   "cohort": "patch",
-   "error": "install 1.0.7:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpyxxWSX`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "django-debug-toolbar",
-   "old": "7.0.0",
-   "new": "7.1.0",
-   "cohort": "minor",
-   "error": "install 7.0.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmplEIuLK`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "django-debug-toolbar",
-   "old": "7.1.0",
-   "new": "7.1.1",
-   "cohort": "patch",
-   "error": "install 7.1.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpAV0Vbw`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "instructor",
-   "old": "0.5.2",
-   "new": "0.6.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.5.2:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpu54vUD`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "instructor",
-   "old": "0.6.7",
-   "new": "0.6.8",
-   "cohort": "0.x-patch",
-   "error": "install 0.6.7:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmppLkpnk`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "instructor",
-   "old": "0.6.8",
-   "new": "1.0.0",
-   "cohort": "major",
-   "error": "install 0.6.8:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpjgHpuZ`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "instructor",
-   "old": "1.16.0",
-   "new": "1.17.0",
-   "cohort": "minor",
-   "error": "install 1.16.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpRW2BRp`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "openinference-semantic-conventions",
-   "old": "0.0.1",
-   "new": "0.1.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.0.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpwvIAUW`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "instructor",
-   "old": "1.15.3",
-   "new": "1.15.4",
-   "cohort": "patch",
-   "error": "install 1.15.3:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpadgCbl`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "librosa",
-   "old": "0.10.2",
-   "new": "0.11.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.10.2:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpw8Sweo`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "librosa",
-   "old": "0.10.1",
-   "new": "0.10.2",
-   "cohort": "0.x-patch",
-   "error": "install 0.10.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmppmxNR6`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "openinference-semantic-conventions",
-   "old": "0.1.41",
-   "new": "0.1.42",
-   "cohort": "0.x-patch",
-   "error": "install 0.1.41:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpl7ugyH`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "librosa",
-   "old": "0.11.0",
-   "new": "1.0.0",
-   "cohort": "major",
-   "error": "install 0.11.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpOhearK`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "google-cloud-build",
-   "old": "2.0.2",
-   "new": "3.9.0",
-   "cohort": "major",
-   "error": "install 2.0.2:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpxXUYUb`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "google-cloud-build",
-   "old": "3.41.0",
-   "new": "3.42.0",
-   "cohort": "minor",
-   "error": "install 3.41.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpQlre7e`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "inflate64",
-   "old": "0.2.0",
-   "new": "0.3.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.2.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpgedHFk`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "inflate64",
-   "old": "0.3.0",
-   "new": "0.3.1",
-   "cohort": "0.x-patch",
-   "error": "install 0.3.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpUFEBUW`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "google-cloud-build",
-   "old": "3.38.0",
-   "new": "3.38.1",
-   "cohort": "patch",
-   "error": "install 3.38.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpI9vPRi`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "google-cloud-videointelligence",
-   "old": "1.16.3",
-   "new": "2.8.0",
-   "cohort": "major",
-   "error": "install 1.16.3:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpMJkvt9`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "inflate64",
-   "old": "0.3.1",
-   "new": "1.0.0",
-   "cohort": "major",
-   "error": "install 0.3.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpNSmARL`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "inflate64",
-   "old": "1.0.3",
-   "new": "1.0.4",
-   "cohort": "patch",
-   "error": "install 1.0.3:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp4lPTV5`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "google-cloud-videointelligence",
-   "old": "2.20.0",
-   "new": "2.21.0",
-   "cohort": "minor",
-   "error": "install 2.20.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpbBRqWs`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "google-cloud-videointelligence",
-   "old": "2.16.1",
-   "new": "2.16.2",
-   "cohort": "patch",
-   "error": "install 2.16.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpHoSikg`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "screeninfo",
-   "old": "0.7",
-   "new": "0.8",
-   "cohort": "0.x-breaking",
-   "error": "install 0.7:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpwvK4uH`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "blessed",
-   "old": "1.51.0",
-   "new": "1.52.0",
-   "cohort": "minor",
-   "error": "install 1.51.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpZVGUAd`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "screeninfo",
-   "old": "0.8",
-   "new": "0.8.1",
-   "cohort": "0.x-patch",
-   "error": "install 0.8:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpIVnQL6`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "svix",
-   "old": "0.84.1",
-   "new": "0.85.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.84.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpnhDaXB`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "blessed",
-   "old": "1.19.0",
-   "new": "1.19.1",
-   "cohort": "patch",
-   "error": "install 1.19.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpgPtyBj`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "svix",
-   "old": "0.85.0",
-   "new": "0.85.1",
-   "cohort": "0.x-patch",
-   "error": "install 0.85.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpH1hSi9`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "svix",
-   "old": "1.99.1",
-   "new": "2.0.0",
-   "cohort": "major",
-   "error": "install 1.99.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp8TdMl7`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "azure-eventhub",
-   "old": "5.14.0",
-   "new": "5.15.0",
-   "cohort": "minor",
-   "error": "install 5.14.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpKPgBaa`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "svix",
-   "old": "2.8.0",
-   "new": "2.9.0",
-   "cohort": "minor",
-   "error": "install 2.8.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp7TNeAC`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "azure-eventhub",
-   "old": "5.15.0",
-   "new": "5.15.1",
-   "cohort": "patch",
-   "error": "install 5.15.0:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmp6oyeyA`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "svix",
-   "old": "2.6.1",
-   "new": "2.6.2",
-   "cohort": "patch",
-   "error": "install 2.6.1:   Caused by: failed to write to file `C:\\Users\\dell\\AppData\\Local\\uv\\cache\\simple-v24\\pypi\\.tmpaPchut`: There is not enough space on the disk. (os error 112)"
-  },
-  {
-   "package": "pandera",
-   "old": "0.34.1",
-   "new": "0.35.0",
-   "cohort": "0.x-breaking",
-   "error": "OSError: [WinError 112] There is not enough space on the disk: 'C:\\\\Users\\\\dell\\\\AppData\\\\Local\\\\Temp\\\\pair-census-ph555hc1\\\\pandera-2516\\\\0.34.1'"
-  },
-  {
-   "package": "pyproject-metadata",
-   "old": "0.11.0",
-   "new": "0.12.0",
-   "cohort": "0.x-breaking",
-   "error": "install 0.11.0:   Caused by: There is not enough space on the disk. (os error 112) at path \"C:\\\\Users\\\\dell\\\\AppData\\\\Local\\\\uv\\\\cache\\\\simple-v24\\\\pypi\\\\.tmp0GPH7d\""
-  },
-  {
-   "package": "pyproject-metadata",
-   "old": "0.12.0",
-   "new": "0.12.1",
-   "cohort": "0.x-patch",
-   "error": "install 0.12.0:   Caused by: There is not enough space on the disk. (os error 112) at path \"C:\\\\Users\\\\dell\\\\AppData\\\\Local\\\\uv\\\\cache\\\\simple-v24\\\\pypi\\\\.tmp7EQl6B\""
-  },
-  {
    "package": "datadog-api-client",
    "old": "2.61.0",
    "new": "2.62.0",
    "cohort": "minor",
    "error": "import datadog_api_client failed or found nothing"
+  },
+  {
+   "package": "botocore",
+   "old": "1.43.119",
+   "new": "1.43.120",
+   "cohort": "patch",
+   "module": "botocore",
+   "exported_symbols": 4
+  },
+  {
+   "package": "boto3",
+   "old": "1.43.119",
+   "new": "1.43.120",
+   "cohort": "patch",
+   "module": "boto3",
+   "exported_symbols": 13
+  },
+  {
+   "package": "pytest",
+   "old": "9.1.1",
+   "new": "9.2.0",
+   "cohort": "minor",
+   "module": "pytest,py",
+   "exported_symbols": 373,
+   "exported_reshaped": [
+    "pytest.Metafunc.parametrize"
+   ]
+  },
+  {
+   "package": "platformdirs",
+   "old": "4.13.5",
+   "new": "4.13.6",
+   "cohort": "patch",
+   "module": "platformdirs",
+   "exported_symbols": 92
+  },
+  {
+   "package": "pyasn1",
+   "old": "0.6.4",
+   "new": "0.6.5",
+   "cohort": "0.x-patch",
+   "module": "pyasn1",
+   "exported_symbols": 198
+  },
+  {
+   "package": "hatchling",
+   "old": "1.32.4",
+   "new": "1.33.0",
+   "cohort": "minor",
+   "module": "hatchling",
+   "exported_symbols": 12
+  },
+  {
+   "package": "ruff",
+   "old": "0.17.2",
+   "new": "0.17.3",
+   "cohort": "0.x-patch",
+   "module": "ruff",
+   "exported_symbols": 1
+  },
+  {
+   "package": "tomli",
+   "old": "2.3.1",
+   "new": "2.5.0",
+   "cohort": "minor",
+   "module": "tomli",
+   "exported_symbols": 3
+  },
+  {
+   "package": "virtualenv",
+   "old": "21.14.13",
+   "new": "21.15.0",
+   "cohort": "minor",
+   "module": "virtualenv",
+   "exported_symbols": 370
+  },
+  {
+   "package": "virtualenv",
+   "old": "21.15.0",
+   "new": "21.15.1",
+   "cohort": "patch",
+   "module": "virtualenv",
+   "exported_symbols": 370,
+   "exported_gone": [
+    "virtualenv.util.path.copytree"
+   ],
+   "exported_widened": [
+    "virtualenv.util.subprocess.run_cmd"
+   ]
+  },
+  {
+   "package": "ghapi",
+   "old": "2.1.4",
+   "new": "2.1.5",
+   "cohort": "patch",
+   "module": "ghapi",
+   "exported_symbols": 153,
+   "exported_widened": [
+    "ghapi.core.GhApi.failed_step_log"
+   ]
+  },
+  {
+   "package": "cachetools",
+   "old": "7.2.5",
+   "new": "7.2.6",
+   "cohort": "patch",
+   "module": "cachetools",
+   "exported_symbols": 40
+  },
+  {
+   "package": "msgpack",
+   "old": "1.2.3",
+   "new": "1.2.4",
+   "cohort": "patch",
+   "module": "msgpack",
+   "exported_symbols": 37
+  },
+  {
+   "package": "openai",
+   "old": "3.39.0",
+   "new": "3.40.0",
+   "cohort": "minor",
+   "module": "openai",
+   "exported_symbols": 8590
+  },
+  {
+   "package": "python-discovery",
+   "old": "1.6.5",
+   "new": "1.6.6",
+   "cohort": "patch",
+   "module": "python_discovery",
+   "exported_symbols": 41
+  },
+  {
+   "package": "xxhash",
+   "old": "3.7.3",
+   "new": "4.0.2",
+   "cohort": "major",
+   "module": "xxhash",
+   "exported_symbols": 16
+  },
+  {
+   "package": "fonttools",
+   "old": "4.67.0",
+   "new": "4.68.0",
+   "cohort": "minor",
+   "module": "fontTools",
+   "exported_symbols": 754,
+   "internal_widened": [
+    "fontTools.cffLib.DictCompiler.arg_delta_blend",
+    "fontTools.cffLib.FDSelect",
+    "fontTools.cffLib.specializer.generalizeCommands",
+    "fontTools.cffLib.specializer.generalizeProgram",
+    "fontTools.cffLib.specializer.programToCommands",
+    "fontTools.cffLib.specializer.specializeCommands",
+    "fontTools.cffLib.specializer.specializeProgram",
+    "fontTools.otlLib.builder.buildBaseRecord",
+    "fontTools.otlLib.builder.buildComponentRecord",
+    "fontTools.otlLib.builder.buildLigatureAttach",
+    "fontTools.otlLib.builder.buildMark2Record",
+    "fontTools.otlLib.builder.buildMarkRecord",
+    "fontTools.ttLib.sfnt.writeTTCHeader",
+    "fontTools.ttLib.tables.otDataSchema.FieldSpec",
+    "fontTools.ttLib.tables.otTables.MultipleSubst.makeSequence_",
+    "fontTools.ttx.TTFont",
+    "fontTools.varLib.instancer.instantiateItemVariationStore",
+    "fontTools.varLib.instancer.instantiateTupleVariationStore",
+    "fontTools.varLib.varStore.Object_remap_device_varidxes"
+   ],
+   "exported_reshaped": [
+    "fontTools.fontBuilder.FontBuilder",
+    "fontTools.fontBuilder.FontBuilder.setupGlyf"
+   ],
+   "exported_gone": [
+    "fontTools.fontBuilder.FontBuilder.setupGVAR"
+   ],
+   "exported_widened": [
+    "fontTools.pens.basePen.AbstractPen.addVarComponent",
+    "fontTools.pens.basePen.NullPen.addVarComponent",
+    "fontTools.pens.pointPen.AbstractPointPen.addVarComponent",
+    "fontTools.pens.qtPen.QtPen.addVarComponent",
+    "fontTools.pens.recordingPen.RecordingPen.addVarComponent"
+   ],
+   "internal_reshaped": [
+    "fontTools.ttLib.woff2.WOFF2GlyfTable.closure_glyphs"
+   ]
+  },
+  {
+   "package": "jsonpointer",
+   "old": "3.5",
+   "new": "3.6",
+   "cohort": "minor",
+   "module": "jsonpointer",
+   "exported_symbols": 17
+  },
+  {
+   "package": "xxhash",
+   "old": "3.7.2",
+   "new": "3.8.1",
+   "cohort": "minor",
+   "module": "xxhash",
+   "exported_symbols": 16
+  },
+  {
+   "package": "pypdf",
+   "old": "6.21.2",
+   "new": "6.21.3",
+   "cohort": "patch",
+   "module": "pypdf",
+   "exported_symbols": 267,
+   "exported_widened": [
+    "pypdf.PdfReader",
+    "pypdf.generic.NamedReferenceLink.patch_reference"
+   ]
+  },
+  {
+   "package": "azure-identity",
+   "old": "1.26.0",
+   "new": "1.27.0",
+   "cohort": "minor",
+   "module": "azure.identity",
+   "exported_symbols": 124
+  },
+  {
+   "package": "narwhals",
+   "old": "2.27.1",
+   "new": "2.28.0",
+   "cohort": "minor",
+   "module": "narwhals",
+   "exported_symbols": 870,
+   "internal_gone": [
+    "narwhals.series.is_eager_allowed"
+   ]
+  },
+  {
+   "package": "jsonpatch",
+   "old": "1.37",
+   "new": "1.38",
+   "cohort": "minor",
+   "module": "jsonpatch,jsonpatch_cli",
+   "exported_symbols": 40
+  },
+  {
+   "package": "uv",
+   "old": "0.13.5",
+   "new": "0.13.6",
+   "cohort": "0.x-patch",
+   "module": "uv",
+   "exported_symbols": 1
   }
  ]
 }

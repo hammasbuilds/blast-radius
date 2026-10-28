@@ -173,7 +173,17 @@ class Report:
         return sorted(self.changes, key=lambda c: (-c.severity, c.qualname))
 
     def counts(self) -> dict[str, int]:
-        out: dict[str, int] = {}
+        """Every kind, including the ones that did not occur.
+
+        This returned only the kinds present, so `--json | jq .counts.gone` - the
+        README's own example - yielded `null` rather than 0 for a release that removed
+        nothing, and a CI gate written as `counts.gone > 0` compares against null and
+        passes whatever happened. The human report has always printed all five rows with
+        their zeros; the two outputs disagreed about the schema, which is the tell.
+
+        In Kind's own order, so the JSON reads in the same order as the report.
+        """
+        out: dict[str, int] = {kind.value: 0 for kind in Kind}
         for c in self.changes:
-            out[c.kind.value] = out.get(c.kind.value, 0) + 1
+            out[c.kind.value] += 1
         return out

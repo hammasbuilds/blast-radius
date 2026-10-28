@@ -508,7 +508,12 @@ def test_weak_differences_are_listed_apart_and_not_counted():
     report.weak = [Change(Kind.SILENT, "p.f", witness={"args": "('',)", "old": "ok", "new": "x"})]
     text = summary(report)
     assert "Not counted: 1 function(s)" in text
-    assert report.counts() == {}
+    # Every kind at zero: a weak difference must not raise any count, and "silent: 0" is
+    # the statement that it did not - an absent key would leave a consumer unable to tell
+    # "no silent changes" from "this field does not exist".
+    assert report.counts() == {
+        "gone": 0, "reshaped": 0, "widened": 0, "silent": 0, "added": 0
+    }
 
 
 def test_the_version_is_the_same_in_every_place_it_is_declared() -> None:

@@ -333,11 +333,24 @@ def test_all_marks_a_symbol_as_exported(tmp_path):
 
 def test_counts_group_by_kind():
     r = Report(changes=[Change(Kind.GONE, "a"), Change(Kind.GONE, "b"), Change(Kind.SILENT, "c")])
-    assert r.counts() == {"gone": 2, "silent": 1}
+    assert r.counts() == {"gone": 2, "reshaped": 0, "widened": 0, "silent": 1, "added": 0}
 
 
-def test_an_empty_report_has_no_counts():
-    assert Report().counts() == {}
+def test_every_kind_is_counted_even_at_zero():
+    """A kind that did not occur must read 0, not be missing.
+
+    This test asserted the opposite - `Report().counts() == {}` - and that is what the
+    README's own `--json | jq .counts.gone` returned for a release that removed nothing:
+    `null`, not 0. A CI gate written as `counts.gone > 0` compares against null and
+    passes whatever happened. The human report has always printed all five rows with
+    their zeros, so the two outputs disagreed about the schema.
+    """
+    assert Report().counts() == {
+        "gone": 0, "reshaped": 0, "widened": 0, "silent": 0, "added": 0
+    }
+    assert list(Report().counts()) == [k.value for k in Kind], (
+        "the JSON should read in the same order as the report"
+    )
 
 
 def test_a_change_with_no_call_sites_does_not_reach_you():
