@@ -16,7 +16,8 @@ rows in one run carried an error - a third of those because the package has no i
 module at all (the `types-*` stubs, `nvidia-*`) - and a rate over `pairs` would have
 counted every one of them as an upgrade that broke nothing.
 
-    python scripts/census_summary.py [--census docs/pair-census.json]
+    python scripts/census_summary.py --revision <the commit the census ran at>
+    python scripts/census_summary.py --revision e23233d --census docs/pair-census.json
 """
 
 from __future__ import annotations
@@ -107,10 +108,18 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--census", type=Path, default=ROOT / "docs" / "pair-census.json")
     ap.add_argument("--out", type=Path, default=ROOT / "docs" / "census-summary.json")
+    # Which revision of this tool produced the CENSUS, which is not the revision
+    # summarising it. The sweep takes about a day, and a change to what the surface walk
+    # reads moves every rate in this file without touching it - the constants change
+    # landed while a 3,776-pair census was still running. HEAD at summary time would be a
+    # wrong answer dressed as provenance, so this has no default.
+    ap.add_argument("--revision", default="",
+                    help="the commit the census itself ran at, e.g. e23233d")
     args = ap.parse_args()
     if not args.census.exists():
         raise SystemExit(f"no census at {args.census} - run scripts/pair_census.py first")
     summary = summarise(json.loads(args.census.read_text(encoding="utf-8")))
+    summary = {"measured_at_revision": args.revision or "not recorded", **summary}
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(summary, indent=1), encoding="utf-8")
     if summary["dropped_not_an_upgrade"]:
@@ -121,6 +130,11 @@ def main() -> int:
     print(f"{summary['rows']} rows, {summary['measured']} measured, "
           f"{summary['broke_exported']} broke an exported name "
           f"({(summary['broke_exported_share'] or 0) * 100:.1f}%)\n")
+    if not args.revision:
+        print(
+            "no --revision given: the summary says the revision is unknown, which is "
+            "true and useless. Pass the commit the census itself ran at.\n"
+        )
     print(f"  {'cohort':14}{'pairs':>7}{'measured':>10}{'broke':>7}{'share':>8}")
     for name, c in summary["cohorts"].items():
         share = "n/a" if c["broke_exported_share"] is None else f"{c['broke_exported_share']:.1%}"
