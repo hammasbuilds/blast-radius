@@ -1,5 +1,5 @@
 {
- "summarised_at": "eef0db4",
+ "summarised_at": "f5e9af6",
  "since": "2021-01-01",
  "planned": {
   "minor": 996,
@@ -12,7 +12,8 @@
  "rows": 3705,
  "revisions": {
   "not recorded": 3698,
-  "261259a": 7
+  "261259a": 5,
+  "eef0db4": 2
  },
  "dropped_not_an_upgrade": 20,
  "dropped_second_pair_for_a_package": 52,
@@ -110,9 +111,10 @@
    "broke_exported": 221,
    "broke_exported_share": 0.4154,
    "unmeasured": {
-    "no importable module (stub-only or namespace package)": 144,
+    "no importable module (stub-only or namespace package)": 143,
     "install failed": 64,
-    "WrongVersionImported: the import did not come from the targe": 2
+    "WrongVersionImported: the import did not come from the targe": 2,
+    "the surface probe for 13.8.0 did not finish within 300s (673": 1
    }
   },
   "minor": {
@@ -131,8 +133,9 @@
    "broke_exported": 20,
    "broke_exported_share": 0.0248,
    "unmeasured": {
-    "no importable module (stub-only or namespace package)": 116,
-    "install failed": 41
+    "no importable module (stub-only or namespace package)": 115,
+    "install failed": 41,
+    "the surface probe for 14.3.0 did not finish within 300s (684": 1
    }
   }
  }
