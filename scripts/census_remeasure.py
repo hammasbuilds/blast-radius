@@ -41,11 +41,26 @@ SYMBOL_KEYS = (
 def self_repeating(name: str) -> bool:
     """A dotted path that walks through the same directory twice.
 
-    `ansible_collections.infinidat.infinibox.infinidat.infinibox...` - the repeat is the
-    tell, and a long name on its own is not: some real packages nest deeply.
+    A repeated BLOCK, not a repeated segment:
+    `ansible_collections.infinidat.infinibox.infinidat.infinibox...` repeats the same two
+    segments twenty times over, where
+    `cfnlint.rules...DomainValidationOptions.DomainValidationOptions.check_value` is a
+    class with the same name as its module, which is ordinary Python. Matching single
+    repeats selected four rows that were never recursive, and they were re-measured for
+    nothing.
+
+    A long name on its own is not the tell either: some real packages nest deeply.
     """
     parts = name.split(".")
-    return len(parts) > 6 and len(set(parts)) != len(parts)
+    if len(parts) <= 6:
+        return False
+    grams = [tuple(parts[i:i + 2]) for i in range(len(parts) - 1)]
+    return len(set(grams)) != len(grams)
+
+
+def _timed_out_installing(row: dict) -> bool:
+    error = row.get("error") or ""
+    return error.startswith("install ") and "did not finish within" in error
 
 
 def rows_with_self_repeating_names(rows: list[dict]) -> list[dict]:
@@ -67,6 +82,11 @@ def main() -> int:
     ap.add_argument("--self-repeating", action="store_true",
                     help="also re-measure every row carrying a self-repeating dotted path")
     ap.add_argument("--dry-run", action="store_true", help="print what would be re-measured")
+    ap.add_argument("--install-timeout", type=float, default=600.0,
+                    help="seconds allowed for installing each version (default 600). "
+                         "ansible and sagemaker need several times that on a slow "
+                         "connection, and a timeout would otherwise replace a measured "
+                         "row with an error about this machine")
     args = ap.parse_args()
 
     census = json.loads(args.census.read_text(encoding="utf-8"))
@@ -99,20 +119,32 @@ def main() -> int:
               flush=True)
         start = time.time()
         with tempfile.TemporaryDirectory() as tmp:
-            fresh = measure(package, old, new, Path(tmp))
+            fresh = measure(package, old, new, Path(tmp),
+                            install_timeout=args.install_timeout)
         row = {"package": package, "old": old, "new": new, "cohort": was["cohort"],
                **fresh, "remeasured_at": args.revision}
         after = {k: len(row.get(k, [])) for k in SYMBOL_KEYS if row.get(k)}
+        if _timed_out_installing(fresh) and not was.get("error"):
+            # The old row stays. It was measured, this one was not, and the difference
+            # between them is this machine's network - which is not a fact about the
+            # upgrade. Recorded on the row so the file says the pair was tried.
+            row = {**was, "remeasure_failed": fresh.get("error", "install timed out"),
+                   "remeasure_attempted_at": args.revision}
+            print(f"            install timed out; keeping the measured row "
+                  f"({time.time() - start:.0f}s)", flush=True)
+        else:
+            print(f"            now {after or row.get('error') or 'nothing'} "
+                  f"({time.time() - start:.0f}s)", flush=True)
         rows[index[key]] = row
-        print(f"            now {after or row.get('error') or 'nothing'} "
-              f"({time.time() - start:.0f}s)", flush=True)
         # Written after every pair: these installs are large, and a run interrupted
         # halfway should leave the rows it finished replaced rather than all of them
         # unreplaced.
         args.census.write_text(json.dumps(census, indent=1), encoding="utf-8")
 
     stamped = sum(1 for r in rows if r.get("remeasured_at"))
-    print(f"\n{stamped} of {len(rows)} rows now carry remeasured_at")
+    kept = sum(1 for r in rows if r.get("remeasure_failed"))
+    print(f"\n{stamped} of {len(rows)} rows now carry remeasured_at; "
+          f"{kept} kept their old measurement because the install timed out")
     print(f"written to {args.census.name} - re-run scripts/census_summary.py")
     return 0
 

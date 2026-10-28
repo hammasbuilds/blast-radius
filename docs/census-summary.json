@@ -66,9 +66,9 @@
   "virtualenv 21.14.13->21.15.0 (minor)",
   "virtualenv 21.15.0->21.15.1 (patch)"
  ],
- "measured": 2939,
- "broke_exported": 459,
- "broke_exported_share": 0.1562,
+ "measured": 2935,
+ "broke_exported": 456,
+ "broke_exported_share": 0.1554,
  "cohorts": {
   "0.0.z": {
    "pairs": 69,
@@ -102,33 +102,33 @@
   },
   "major": {
    "pairs": 742,
-   "measured": 533,
-   "broke_exported": 222,
-   "broke_exported_share": 0.4165,
+   "measured": 531,
+   "broke_exported": 220,
+   "broke_exported_share": 0.4143,
    "unmeasured": {
     "no importable module (stub-only or namespace package)": 143,
-    "install failed": 64,
+    "install failed": 66,
     "WrongVersionImported: the import did not come from the targe": 2
    }
   },
   "minor": {
    "pairs": 982,
-   "measured": 830,
+   "measured": 829,
    "broke_exported": 114,
-   "broke_exported_share": 0.1373,
+   "broke_exported_share": 0.1375,
    "unmeasured": {
     "no importable module (stub-only or namespace package)": 105,
-    "install failed": 47
+    "install failed": 48
    }
   },
   "patch": {
    "pairs": 965,
-   "measured": 809,
-   "broke_exported": 21,
-   "broke_exported_share": 0.026,
+   "measured": 808,
+   "broke_exported": 20,
+   "broke_exported_share": 0.0248,
    "unmeasured": {
     "no importable module (stub-only or namespace package)": 115,
-    "install failed": 41
+    "install failed": 42
    }
   }
  }

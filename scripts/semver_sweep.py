@@ -206,9 +206,11 @@ def one_pair_per_package(rows: list[dict]) -> tuple[list[dict], list[dict]]:
     return list(kept.values()), dropped
 
 
-def measure(package: str, old_v: str, new_v: str, work: Path) -> dict:
+def measure(
+    package: str, old_v: str, new_v: str, work: Path, install_timeout: float = 600.0
+) -> dict:
     for v in (old_v, new_v):
-        ok, why = install(package, v, work / v)
+        ok, why = install(package, v, work / v, timeout=install_timeout)
         if not ok:
             return {"error": f"install {v}: {why.splitlines()[-1] if why else '?'}"}
     plan = import_plan(work / old_v, package)
