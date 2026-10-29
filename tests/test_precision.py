@@ -73,10 +73,49 @@ def test_every_public_top_level_module_is_compared(tmp_path, fake_index, capsys)
 
 
 def test_an_empty_surface_is_an_error_not_a_clean_bill_of_health(tmp_path, fake_index, capsys):
-    fake_index({v: {"fakepkg/__init__.py": "VERSION = 1\n"} for v in ("1.0.0", "2.0.0")})
+    """Nothing public at all - not one name of any kind.
+
+    This fixture used to be `VERSION = 1`, which was nothing public while the surface
+    walk read routines and classes only. Constants are read now, so that module has one
+    public name and the run is right to proceed; the claim being tested is about a surface
+    with nothing in it, so the fixture says so.
+    """
+    fake_index({v: {"fakepkg/__init__.py": "_private = 1\n"} for v in ("1.0.0", "2.0.0")})
     code = cli.main(["check", "fakepkg", "1.0.0", "2.0.0"])
     assert code == 2
     assert "found no public functions or classes" in capsys.readouterr().out
+
+
+def test_a_package_whose_whole_surface_is_one_constant_is_compared(fake_index, capsys):
+    """And the constant changing its value is not a change this tool reports.
+
+    Only the NAME is compared. A constant whose value moved is a behaviour change with no
+    witness, and `__version__` moves every release - so a package consisting of one
+    constant has an API that did not change.
+    """
+    fake_index({"1.0.0": {"fakepkg/__init__.py": "VERSION = 1\n"},
+                "2.0.0": {"fakepkg/__init__.py": "VERSION = 2\n"}})
+    code = cli.main(["check", "fakepkg", "1.0.0", "2.0.0", "--no-behaviour"])
+    out = capsys.readouterr().out
+    assert code == 0, out
+    assert "1 public symbols" in out
+    assert "gone          0" in out
+    assert "added         0" in out
+
+
+def test_a_removed_constant_is_gone(fake_index, capsys):
+    """The case the griffe comparison found: four of click 8's removals are strings."""
+    fake_index({"1.0.0": {"fakepkg/__init__.py": "LIMIT = 5\n\ndef f():\n    return 1\n"},
+                "2.0.0": {"fakepkg/__init__.py": "def f():\n    return 1\n"}})
+    code = cli.main(["check", "fakepkg", "1.0.0", "2.0.0", "--no-behaviour"])
+    out = capsys.readouterr().out
+    assert code == 0, out
+    assert "gone          1" in out
+    assert "fakepkg.LIMIT" in out
+    assert "fakepkg.LIMIT  (constant)" in out, (
+        "the terminal says a name is gone without saying what it was, so a removed "
+        "constant reads as a removed function"
+    )
 
 
 def test_a_namespace_package_is_imported_by_its_dotted_name(tmp_path, fake_index, capsys):

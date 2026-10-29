@@ -4,9 +4,57 @@
  "re_measured": 60,
  "comparable": 60,
  "verdict_flips": 0,
- "symbol_list_changes": 0,
+ "exported_symbol_changes_without_a_flip": 0,
+ "internal_only_changes": 2,
  "unmeasurable_now": [],
- "changed": [],
+ "changed": [
+  {
+   "pair": "pyiceberg 0.11.1->0.12.0 (0.x-breaking)",
+   "was": false,
+   "now": false,
+   "verdict_flipped": false,
+   "exported_symbols_moved": {},
+   "internal_symbols_moved": {
+    "internal_gone": {
+     "gained": [
+      "pyiceberg.catalog.rest.REST_SCAN_PLANNING_ENABLED",
+      "pyiceberg.catalog.rest.REST_SCAN_PLANNING_ENABLED_DEFAULT",
+      "pyiceberg.table.puffin.MAX_JAVA_SIGNED",
+      "pyiceberg.table.puffin.PROPERTY_REFERENCED_DATA_FILE"
+     ],
+     "lost": []
+    }
+   }
+  },
+  {
+   "pair": "aws-lambda-powertools 2.43.1->3.0.0 (major)",
+   "was": true,
+   "now": true,
+   "verdict_flipped": false,
+   "exported_symbols_moved": {},
+   "internal_symbols_moved": {
+    "internal_gone": {
+     "gained": [],
+     "lost": [
+      "aws_lambda_powertools.event_handler.bedrock_agent.BedrockAgentEvent.decoded_body",
+      "aws_lambda_powertools.event_handler.bedrock_agent.BedrockAgentEvent.json_body",
+      "aws_lambda_powertools.event_handler.lambda_function_url.LambdaFunctionUrlEvent.decoded_body",
+      "aws_lambda_powertools.event_handler.lambda_function_url.LambdaFunctionUrlEvent.json_body",
+      "aws_lambda_powertools.event_handler.router.ALBEvent.decoded_body",
+      "aws_lambda_powertools.event_handler.router.ALBEvent.json_body",
+      "aws_lambda_powertools.event_handler.router.APIGatewayProxyEvent.decoded_body",
+      "aws_lambda_powertools.event_handler.router.APIGatewayProxyEvent.json_body",
+      "aws_lambda_powertools.event_handler.router.APIGatewayProxyEventV2.decoded_body",
+      "aws_lambda_powertools.event_handler.router.APIGatewayProxyEventV2.json_body",
+      "aws_lambda_powertools.event_handler.router.LambdaFunctionUrlEvent.decoded_body",
+      "aws_lambda_powertools.event_handler.router.LambdaFunctionUrlEvent.json_body",
+      "aws_lambda_powertools.event_handler.vpc_lattice.VPCLatticeEvent.json_body",
+      "aws_lambda_powertools.event_handler.vpc_lattice.VPCLatticeEventV2.json_body"
+     ]
+    }
+   }
+  }
+ ],
  "seed": 20261028,
- "minutes": 31.4
+ "minutes": 13.3
 }

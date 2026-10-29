@@ -36,7 +36,10 @@ def _weak_by_reason(report: Report) -> dict[str, list[Change]]:
     """
     groups: dict[str, list[Change]] = {}
     for change in report.weak:
-        reason = change.weak_reason or "not counted as a silent change"
+        # Not "not counted as a silent change": that is where a reason belongs, and it
+        # printed "Not counted (1): not counted as a silent change." Every path in
+        # behaviour_changes sets one, so this reads as the defect it would be.
+        reason = change.weak_reason or "no reason recorded"
         groups.setdefault(reason, []).append(change)
     return groups
 
@@ -175,7 +178,12 @@ def summary(report: Report) -> str:
         lines.append(f"\n  {kind.value}:")
         for c in items[:15]:
             where = f"   <- your code: {c.used_at[0]}" if c.used_at else ""
-            lines.append(f"    {c.qualname}{where}")
+            # What it was, when it was not a function. A removed constant read as a
+            # removed function in the terminal, because the kind was in the JSON only.
+            # Not annotating functions is deliberate: `(function)` beside four hundred
+            # names is noise, and the one name that is not a function is the point.
+            was = f"  ({c.before})" if kind is Kind.GONE and c.before not in ("", "function") else ""
+            lines.append(f"    {c.qualname}{was}{where}")
             if kind is Kind.RESHAPED and c.before:
                 # Windowed around the difference: urllib3's new `version_string`
                 # sits 170 characters into a long signature, and a plain cut at

@@ -82,6 +82,82 @@ below.
 
 ## Results
 
+### 2,937 upgrade pairs: how often does a patch release break public API?
+
+Semantic versioning says a patch release changes nothing a caller can see, and a minor
+release only adds. Measured over every pair this tool could install and import, one pair
+per bump class per package, taken from **1,389 package names** on PyPI's top-downloads
+list - the most recent consecutive release pair of each class published since 2021:
+
+| Bump | Pairs | Broke exported API | Broken symbols | Of exported symbols | Largest pair's share |
+|---|---:|---:|---:|---:|---:|
+| **patch** | 808 | **20 (2.5%)** | 299 | 299 of 222,729 (0.13%) | 49% |
+| **minor** | 830 | **114 (13.7%)** | 732 | 732 of 190,079 (0.39%) | 23% |
+| **major** | 532 | **221 (41.5%)** | 13,999 | 13,999 of 121,606 (11.51%) | 21% |
+| 0.x-patch | 372 | 29 (7.8%) | 340 | 340 of 43,141 (0.79%) | 51% |
+| 0.x-breaking | 346 | 65 (18.8%) | 1,581 | 1,581 of 36,263 (4.36%) | 64% |
+| 0.0.z | 49 | 8 (16.3%) | 21 | 21 of 2,567 (0.82%) | 38% |
+
+One pair per class per package, so no package appears twice in a row and 808 patch pairs
+are 808 different projects. **3,777 pairs were walked**; 20 are dropped because PyPI's
+upload order put the older version second, 52 because a sweep resumed over several days
+measured a second pair for a package whose release history moved under it, and **768 could
+not be measured** - no importable module, an install that failed, or a surface walk that
+did not finish - each with its reason in
+[`census-rows.json.gz`](https://github.com/hammasbuilds/blast-radius/blob/main/docs/census-rows.json.gz).
+Rebuild the figures from that file alone with `python scripts/census_summary.py --census
+docs/census-rows.json.gz`.
+
+**This corrects [SEMVER.md](https://github.com/hammasbuilds/blast-radius/blob/main/docs/SEMVER.md),
+which put patch at 15%** from 27 hand-chosen pairs. That page predicted its own bias in
+the wrong direction, and its own text says why: all six of its breaks come from two
+packages, and those two are in a hand-chosen sweep because their upgrades are worth
+writing about.
+
+**Read the last column before the one before it.** A symbol count summed over a cohort is a
+number one package can own: `azure-mgmt-resource` 23.1.0 -> 23.1.1 is 49% of every exported
+symbol the patch cohort lost, and `meson` 0.63.3 -> 0.64.0 is 64% of the 0.x-breaking
+cohort's. The pair-level rates are not exposed to that - one pair is one unit whatever the
+size of its surface - which is why they are the headline and the symbol rates are reported
+with their largest contributor named.
+
+**`exported` understates what an import can break.** A name counts as exported when it is
+in a module's `__all__` or at the package root, which is a proxy for intended API. `scramp`
+1.4.18, a **patch** release, drops `MECHANISMS`, `CHANNEL_TYPES` and `MAX_ITERATION_COUNT`
+from module scope, so `from scramp.core import MECHANISMS` worked in 1.4.17 and raises now
+- and it is counted as internal here, because `scramp/core.py` declares no `__all__`.
+
+**The sweep spans revisions of this tool, and 3,698 of its 3,705 rows do not record which.**
+It ran for about a day per full pass and was resumed across several, and rows now carry the
+commit that measured them - these do not, because the stamping was added afterwards. One row
+reports `BedrockAgentEvent.decoded_body` removed, and `decoded_body` is a `@property`: no
+revision in the tree can put that name in a surface at all, which is as clear a
+demonstration as the file offers that part of it was written by code that no longer exists.
+
+So the drift is measured rather than argued about. `scripts/census_recheck.py` re-measures a
+stratified sample with the current code - 10 pairs per cohort, fixed seed, 60 pairs - and
+compares both the verdict each row carries and the symbols behind it:
+
+| | |
+|---|---:|
+| pairs re-measured | 60 |
+| verdicts that changed (would move a rate) | **0** |
+| exported symbols that moved without changing a verdict | **0** |
+| rows where only internal symbols moved | 2 |
+
+`--plant N` is what makes that zero worth printing: it corrupts N sampled rows with a
+removal of a symbol that never existed and reports whether each is contradicted. **Six of
+six caught**, and the run exits non-zero if any plant is missed, because a re-check that
+cannot find a planted change makes "nothing changed" worthless.
+
+The two internal differences are the constants the walk could not read until this week:
+`pyiceberg` 0.11.1 -> 0.12.0 loses four more than the census recorded
+(`REST_SCAN_PLANNING_ENABLED` among them), and `aws-lambda-powertools` 2.43.1 -> 3.0.0
+loses fourteen fewer - those fourteen being the properties above, which only an older
+revision could report.
+
+&#128202; **[Every cohort, every reason, and the per-pair ledger &rarr;](https://github.com/hammasbuilds/blast-radius/blob/main/docs/census-summary.json)**
+
 ### 22 upgrade pairs: how often does a patch release break public API?
 
 **API surface only.** This sweep runs `--no-behaviour`, so it sees names that vanished and
@@ -89,8 +165,9 @@ signatures that changed, and **cannot detect a single `SILENT` change** — the 
 opening of this README argues nothing else reports. The evidence for `SILENT` is the two
 packages in [`RESULTS.md`](https://github.com/hammasbuilds/blast-radius/blob/main/docs/RESULTS.md), not this table.
 
-Semantic versioning says a patch release changes nothing a caller can see, and a minor
-release only adds. Measured across widely-pinned packages:
+**Superseded by the census above for the rate**, and kept because 27 pairs are few enough
+to name every break, which is what makes them checkable. Measured across widely-pinned
+packages:
 
 | Bump | Pairs | Broke exported API | Broken symbols | Of exported symbols |
 |---|---:|---:|---:|---:|

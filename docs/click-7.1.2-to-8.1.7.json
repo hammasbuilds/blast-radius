@@ -3,15 +3,15 @@
   "old_version": "7.1.2",
   "new_version": "8.1.7",
   "counts": {
-    "gone": 12,
-    "widened": 9,
+    "gone": 16,
     "reshaped": 11,
-    "added": 51,
-    "silent": 4
+    "widened": 9,
+    "silent": 4,
+    "added": 51
   },
   "behaviour_checked": true,
-  "compared": 87,
-  "unreachable": 76,
+  "compared": 86,
+  "unreachable": 77,
   "reaching_you": 0,
   "modules": [
     "click"
@@ -55,7 +55,7 @@
     "click.password_option"
   ],
   "still_resolve": 0,
-  "seconds": 5.8,
+  "seconds": 4.4,
   "changes": [
     {
       "kind": "silent",
@@ -67,7 +67,8 @@
         "new": "ok: 'Choose from:\\n\\tx'"
       },
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "silent",
@@ -79,7 +80,8 @@
         "new": "ok: \"Could not open file 'x': unknown error\""
       },
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "silent",
@@ -91,7 +93,8 @@
         "new": "ok: 'No such option: x'"
       },
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "silent",
@@ -103,7 +106,8 @@
         "new": "ok: '0'"
       },
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "gone",
@@ -111,7 +115,8 @@
       "detail": "a function that no longer exists",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "gone",
@@ -119,7 +124,8 @@
       "detail": "a function that no longer exists",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "gone",
@@ -127,7 +133,44 @@
       "detail": "a function that no longer exists",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.DEPRECATED_HELP_NOTICE",
+      "detail": "a constant that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.DEPRECATED_INVOKE_NOTICE",
+      "detail": "a constant that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.SUBCOMMANDS_METAVAR",
+      "detail": "a constant that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
+    },
+    {
+      "kind": "gone",
+      "qualname": "click.core.SUBCOMMAND_METAVAR",
+      "detail": "a constant that no longer exists",
+      "witness": null,
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "gone",
@@ -135,7 +178,8 @@
       "detail": "a function that no longer exists",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "gone",
@@ -143,7 +187,8 @@
       "detail": "a function that no longer exists",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "gone",
@@ -151,7 +196,8 @@
       "detail": "a function that no longer exists",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "gone",
@@ -159,7 +205,8 @@
       "detail": "a function that no longer exists",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "gone",
@@ -167,7 +214,8 @@
       "detail": "a function that no longer exists",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "gone",
@@ -175,7 +223,8 @@
       "detail": "a function that no longer exists",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "gone",
@@ -183,7 +232,8 @@
       "detail": "a function that no longer exists",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "gone",
@@ -191,7 +241,8 @@
       "detail": "a function that no longer exists",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "gone",
@@ -199,7 +250,8 @@
       "detail": "a function that no longer exists",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "reshaped",
@@ -207,7 +259,8 @@
       "detail": "(min=None, max=None, clamp=False) -> (min: Optional[float] = None, max: Optional[float] = None, min_open: bool = False, max_open: bool = False, clamp: bool = False) -> None",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "reshaped",
@@ -215,7 +268,8 @@
       "detail": "(min=None, max=None, clamp=False) -> (min: Optional[float] = None, max: Optional[float] = None, min_open: bool = False, max_open: bool = False, clamp: bool = False) -> None",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "reshaped",
@@ -223,7 +277,8 @@
       "detail": "(param_decls=None, show_default=False, prompt=False, confirmation_prompt=False, hide_input=False, is_flag=None, flag_value=None, multiple=False, count=False, allow_from_autoenv=True, type=None, help=None, hidden=False, show_choices=True, show_envvar=False, **attrs) -> (param_decls: Optional[Sequence",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "reshaped",
@@ -231,7 +286,8 @@
       "detail": "(self, dest, nargs=1, obj=None) -> (self, obj: 'CoreArgument', dest: Optional[str], nargs: int = 1) -> None",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "reshaped",
@@ -239,7 +295,8 @@
       "detail": "(self, opts, dest, action=None, nargs=1, const=None, obj=None) -> (self, obj: 'CoreOption', opts: Sequence[str], dest: Optional[str], action: Optional[str] = None, nargs: int = 1, const: Optional[Any] = None) -> None",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "reshaped",
@@ -247,7 +304,8 @@
       "detail": "(param_decls=None, type=None, required=False, default=None, callback=None, nargs=None, metavar=None, expose_value=True, is_eager=False, envvar=None, autocompletion=None) -> (param_decls: Optional[Sequence[str]] = None, type: Union[click.types.ParamType, Any, NoneType] = None, required: bool = False,",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "reshaped",
@@ -255,7 +313,8 @@
       "detail": "(self, rv) -> (self, value: 't.Union[str, os.PathLike[str]]') -> 't.Union[str, bytes, os.PathLike[str]]'",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "reshaped",
@@ -263,7 +322,8 @@
       "detail": "(dest, nargs=1, obj=None) -> (obj: 'CoreArgument', dest: Optional[str], nargs: int = 1)",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "reshaped",
@@ -271,7 +331,8 @@
       "detail": "(opts, dest, action=None, nargs=1, const=None, obj=None) -> (obj: 'CoreOption', opts: Sequence[str], dest: Optional[str], action: Optional[str] = None, nargs: int = 1, const: Optional[Any] = None)",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "reshaped",
@@ -279,7 +340,8 @@
       "detail": "(text, fg=None, bg=None, bold=None, dim=None, underline=None, blink=None, reverse=None, reset=True) -> (text: Any, fg: Union[int, Tuple[int, int, int], str, NoneType] = None, bg: Union[int, Tuple[int, int, int], str, NoneType] = None, bold: Optional[bool] = None, dim: Optional[bool] = None, underlin",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "reshaped",
@@ -287,7 +349,8 @@
       "detail": "(runner, stdout_bytes, stderr_bytes, exit_code, exception, exc_info=None) -> (runner: 'CliRunner', stdout_bytes: bytes, stderr_bytes: Optional[bytes], return_value: Any, exit_code: int, exception: Optional[BaseException], exc_info: Optional[Tuple[Type[BaseException], BaseException, traceback]] = Non",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "widened",
@@ -295,7 +358,8 @@
       "detail": "(self, ctx) -> (self, ctx: click.core.Context, call: bool = True) -> Union[Any, Callable[[], Any], NoneType]",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "widened",
@@ -303,7 +367,8 @@
       "detail": "(self, name) -> (self, name: str, call: bool = True) -> Optional[Any]",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "widened",
@@ -311,7 +376,8 @@
       "detail": "(self, args=None, prog_name=None, complete_var=None, standalone_mode=True, **extra) -> (self, args: Optional[Sequence[str]] = None, prog_name: Optional[str] = None, complete_var: Optional[str] = None, standalone_mode: bool = True, windows_expand_args: bool = True, **extra: Any) -> Any",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "widened",
@@ -319,7 +385,8 @@
       "detail": "(self, ctx) -> (self, ctx: click.core.Context, call: bool = True) -> Union[Any, Callable[[], Any], NoneType]",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "widened",
@@ -327,7 +394,8 @@
       "detail": "(exists=False, file_okay=True, dir_okay=True, writable=False, readable=True, resolve_path=False, allow_dash=False, path_type=None) -> (exists: bool = False, file_okay: bool = True, dir_okay: bool = True, writable: bool = False, readable: bool = True, resolve_path: bool = False, allow_dash: bool = Fa",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "widened",
@@ -335,7 +403,8 @@
       "detail": "(name=None, **attrs) -> (name: Union[str, Callable[..., Any], NoneType] = None, cls: Optional[Type[~GrpType]] = None, **attrs: Any) -> Union[click.core.Group, Callable[[Callable[..., Any]], Union[click.core.Group, ~GrpType]]]",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "widened",
@@ -343,7 +412,8 @@
       "detail": "(iterable=None, length=None, label=None, show_eta=True, show_percent=None, show_pos=False, item_show_func=None, fill_char='#', empty_char='-', bar_template='%(label)s  [%(bar)s]  %(info)s', info_sep='  ', width=36, file=None, color=None) -> (iterable: Optional[Iterable[~V]] = None, length: Optional[",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "widened",
@@ -351,7 +421,8 @@
       "detail": "(self) -> (self, temp_dir: Union[str, ForwardRef('os.PathLike[str]'), NoneType] = None) -> Iterator[str]",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "widened",
@@ -359,7 +430,8 @@
       "detail": "(version=None, *param_decls, **attrs) -> (version: Optional[str] = None, *param_decls: str, package_name: Optional[str] = None, prog_name: Optional[str] = None, message: Optional[str] = None, **kwargs: Any) -> Callable[[~FC], ~FC]",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -367,7 +439,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -375,7 +448,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -383,7 +457,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -391,7 +466,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -399,7 +475,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -407,7 +484,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -415,7 +493,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -423,7 +502,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -431,7 +511,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -439,7 +520,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -447,7 +529,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -455,7 +538,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -463,7 +547,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -471,7 +556,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -479,7 +565,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -487,7 +574,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -495,7 +583,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -503,7 +592,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -511,7 +601,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -519,7 +610,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -527,7 +619,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -535,7 +628,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -543,7 +637,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -551,7 +646,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -559,7 +655,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -567,7 +664,8 @@
       "detail": "new class",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -575,7 +673,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -583,7 +682,8 @@
       "detail": "new class",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -591,7 +691,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -599,7 +700,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -607,7 +709,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -615,7 +718,8 @@
       "detail": "new class",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -623,7 +727,8 @@
       "detail": "new class",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -631,7 +736,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -639,7 +745,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -647,7 +754,8 @@
       "detail": "new class",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -655,7 +763,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -663,7 +772,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -671,7 +781,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -679,7 +790,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -687,7 +799,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -695,7 +808,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -703,7 +817,8 @@
       "detail": "new class",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -711,7 +826,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -719,7 +835,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -727,7 +844,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -735,7 +853,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -743,7 +862,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -751,7 +871,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -759,7 +880,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     },
     {
       "kind": "added",
@@ -767,7 +889,8 @@
       "detail": "new function",
       "witness": null,
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": ""
     }
   ],
   "weak_differences": [
@@ -781,7 +904,8 @@
         "new": "raise: AttributeError: 'str' object has no attribute 'lookup_default'"
       },
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": "one version rejects the generated argument as the wrong type"
     },
     {
       "kind": "silent",
@@ -793,7 +917,8 @@
         "new": "raise: AttributeError: 'str' object has no attribute 'required'"
       },
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": "one version rejects the generated argument as the wrong type"
     },
     {
       "kind": "silent",
@@ -805,7 +930,34 @@
         "new": "raise: TypeError: expected str, bytes or os.PathLike object, not int"
       },
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": "one version rejects the generated argument as the wrong type"
+    },
+    {
+      "kind": "silent",
+      "qualname": "click.format_filename",
+      "detail": "same signature (filename, shorten=False); 2 of 12 exercised inputs disagree",
+      "witness": {
+        "args": "(__import__(\"pathlib\").Path(\".\"), \"\",)",
+        "old": "raise: AttributeError: 'WindowsPath' object has no attribute 'encode'",
+        "new": "ok: '.'"
+      },
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": "one version rejects the generated argument as the wrong type"
+    },
+    {
+      "kind": "silent",
+      "qualname": "click.formatting.iter_rows",
+      "detail": "same signature (rows, col_count); 1 of 12 exercised inputs disagree",
+      "witness": {
+        "args": "([1, 2], \"\",)",
+        "old": "ok: []...then TypeError: 'int' object is not iterable",
+        "new": "ok: []...then TypeError: object of type 'int' has no len()"
+      },
+      "used_at": [],
+      "maybe_at": [],
+      "weak_reason": "one version rejects the generated argument as the wrong type"
     },
     {
       "kind": "silent",
@@ -817,7 +969,8 @@
         "new": "ok: []"
       },
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": "one version rejects the generated argument as the wrong type"
     },
     {
       "kind": "silent",
@@ -829,7 +982,8 @@
         "new": "ok: False"
       },
       "used_at": [],
-      "maybe_at": []
+      "maybe_at": [],
+      "weak_reason": "one version rejects the generated argument as the wrong type"
     }
   ]
 }

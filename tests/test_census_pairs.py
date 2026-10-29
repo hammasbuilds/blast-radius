@@ -59,10 +59,16 @@ def test_no_measured_pair_in_the_census_runs_backwards() -> None:
     census = json.loads(CENSUS.read_text(encoding="utf-8"))
     kept = [r for r in census["results"] if is_upgrade(r["old"], r["new"])]
     summary = census_summary.summarise(census)
-    assert summary["rows"] == len(kept), (
-        "the summary counts rows the direction check would drop"
+    # Two filters, not one: backwards pairs, and a second pair for a package already
+    # represented in its cohort - which a run resumed over several days writes when PyPI
+    # moves under it. This asserted `rows == len(kept)` and so failed the day the second
+    # filter arrived, which is the test doing its job; both deductions are published, and
+    # that is what makes this arithmetic checkable.
+    assert summary["rows"] == len(kept) - summary["dropped_second_pair_for_a_package"], (
+        "rows is not the row count after both of the summary's own deductions"
     )
     assert summary["dropped_not_an_upgrade"] == len(census["results"]) - len(kept)
+    assert len(summary["second_pairs"]) == summary["dropped_second_pair_for_a_package"]
 
 
 def test_every_published_share_states_its_denominator() -> None:

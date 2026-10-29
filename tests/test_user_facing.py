@@ -507,13 +507,60 @@ def test_weak_differences_are_listed_apart_and_not_counted():
     report.behaviour_checked = True
     report.weak = [Change(Kind.SILENT, "p.f", witness={"args": "('',)", "old": "ok", "new": "x"})]
     text = summary(report)
-    assert "Not counted: 1 function(s)" in text
+    # No reason on this change, so the report says so rather than inventing one. It used
+    # to print "Not counted: 1 function(s) differ only where one version rejects a
+    # generated argument as the wrong type", which is a claim about the arguments and is
+    # false of a difference that is only in an exception's wording.
+    assert "Not counted (1): no reason recorded" in text
     # Every kind at zero: a weak difference must not raise any count, and "silent: 0" is
     # the statement that it did not - an absent key would leave a consumer unable to tell
     # "no silent changes" from "this field does not exist".
     assert report.counts() == {
         "gone": 0, "reshaped": 0, "widened": 0, "silent": 0, "added": 0
     }
+
+
+def test_each_uncounted_reason_gets_its_own_block():
+    """Two reasons, two blocks, each with its own count.
+
+    One sentence used to cover both. A reader cannot tell from "differ only where one
+    version rejects a generated argument" that the function below it raises the same
+    exception in both versions and only the message changed.
+    """
+    from blast_radius.diff import MESSAGE_ONLY_REASON, WRONG_TYPE_REASON
+
+    report = _report()
+    report.behaviour_checked = True
+    report.weak = [
+        Change(Kind.SILENT, "p.rejects", weak_reason=WRONG_TYPE_REASON,
+               witness={"args": "('',)", "old": "raise: TypeError: x", "new": "ok: 1"}),
+        Change(Kind.SILENT, "p.reworded", weak_reason=MESSAGE_ONLY_REASON,
+               witness={"args": "('',)", "old": "raise: ValueError: a",
+                        "new": "raise: ValueError: b"}),
+        Change(Kind.SILENT, "p.reworded_too", weak_reason=MESSAGE_ONLY_REASON,
+               witness={"args": "()", "old": "raise: KeyError: a", "new": "raise: KeyError: b"}),
+    ]
+    text = summary(report)
+    assert f"Not counted (1): {WRONG_TYPE_REASON}." in text
+    assert f"Not counted (2): {MESSAGE_ONLY_REASON}." in text
+    assert "p.rejects" in text and "p.reworded" in text and "p.reworded_too" in text
+    assert report.counts()["silent"] == 0
+
+
+def test_an_uncounted_difference_carries_its_reason_into_the_json():
+    """The human report said why; the JSON did not.
+
+    `weak_differences` carried the witness and not the reason, so the one thing a reader
+    needs about an uncounted difference reached the terminal and not the machine-readable
+    output.
+    """
+    from blast_radius.diff import MESSAGE_ONLY_REASON
+
+    change = Change(Kind.SILENT, "p.f", weak_reason=MESSAGE_ONLY_REASON)
+    assert change.as_row()["weak_reason"] == MESSAGE_ONLY_REASON
+    # Present on every row, never only when set: a key that appears sometimes is how a
+    # consumer ends up unable to tell "no reason" from "field does not exist".
+    assert Change(Kind.GONE, "p.g").as_row()["weak_reason"] == ""
 
 
 def test_the_version_is_the_same_in_every_place_it_is_declared() -> None:

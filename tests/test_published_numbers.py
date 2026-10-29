@@ -153,7 +153,12 @@ def test_the_packaging_run_in_the_readme_is_the_committed_one():
 def test_the_click_patch_run_in_the_readme_is_the_committed_one():
     run = _load("click-8.1.6-to-8.1.7.json")
     readme = README.read_text(encoding="utf-8")
-    assert run["counts"] == {}
+    # Five zeros, not an empty object. This asserted `== {}`, which was the shape before
+    # counts() was changed to emit every kind - so it pinned the defect that change
+    # fixed: `--json | jq .counts.gone` returned null for a release that removed
+    # nothing, and a gate written as `counts.gone > 0` compared against null.
+    assert run["counts"] == {"gone": 0, "reshaped": 0, "widened": 0, "silent": 0,
+                            "added": 0}
     assert run["behaviour_candidates"] == 234
     assert f"| **exercised in both versions** | **{run['compared']}** |" in readme
     assert re.search(rf"acts on the machine .*\| {len(run['not_run_side_effects'])} \|", readme)

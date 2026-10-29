@@ -583,6 +583,10 @@ def api_changes(old: dict, new: dict, resolved: dict | None = None) -> list[Chan
                     name,
                     f"a {info['kind']} that no longer exists",
                     aliases=aliases(name, info),
+                    # The kind, where the report can read it without parsing the
+                    # sentence above. `before` is what it was; for GONE there is no
+                    # `after`, because there is nothing there any more.
+                    before=info["kind"],
                 )
             )
             continue
