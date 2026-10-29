@@ -150,6 +150,54 @@ def test_the_packaging_run_in_the_readme_is_the_committed_one():
     )
 
 
+def test_the_published_test_count_is_the_number_the_suite_collects():
+    """"N tests" in the README, against what pytest collects.
+
+    The README said 286 while the suite collected 325. Nothing checked it, so it was a
+    number from whenever someone last looked - and the same sentence publishes a coverage
+    figure, which makes it the sentence most likely to be read as current.
+
+    Collection only: it imports the test modules and runs nothing, so this does not run
+    the suite inside the suite.
+    """
+    import subprocess  # noqa: PLC0415
+
+    readme = README.read_text(encoding="utf-8")
+    claimed = re.search(r"^(\d+) tests\. `pytest --cov", readme, re.M)
+    assert claimed, "the README no longer opens that sentence with a test count"
+
+    proc = subprocess.run(
+        [sys.executable, "-m", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider"],
+        cwd=ROOT, capture_output=True, text=True,
+    )
+    found = re.search(r"(\d+) tests? collected", proc.stdout)
+    assert found, f"could not read a collected count from pytest:\n{proc.stdout[-400:]}"
+    assert int(claimed.group(1)) == int(found.group(1)), (
+        f"the README says {claimed.group(1)} tests, pytest collects {found.group(1)}"
+    )
+
+
+def test_the_coverage_sentence_does_not_quote_two_different_figures():
+    """The percentage is stated twice in one sentence, and once it was updated alone.
+
+    Not a coverage measurement - that takes two minutes and would make this suite depend
+    on running itself. This is the drift that happened: "reports **91%** of statements"
+    and "the 91% says nothing about" are the same number written twice, and nothing tied
+    them together.
+    """
+    readme = README.read_text(encoding="utf-8")
+    sentence = re.search(
+        r"`pytest --cov=blast_radius` reports \*\*(\d+)%\*\* of statements.*?"
+        r"the (\d+)% says nothing about",
+        readme, re.S,
+    )
+    assert sentence, "the coverage sentence has been reworded; re-point this guard"
+    assert sentence.group(1) == sentence.group(2), (
+        f"the README quotes {sentence.group(1)}% and then {sentence.group(2)}% "
+        "for the same measurement"
+    )
+
+
 def test_the_click_patch_run_in_the_readme_is_the_committed_one():
     run = _load("click-8.1.6-to-8.1.7.json")
     readme = README.read_text(encoding="utf-8")
