@@ -1,5 +1,5 @@
 ---
-title: "Silent Behavioural Change in Python Dependency Upgrades: A 2,997-Pair Census"
+title: "Silent Behavioural Change in Python Dependency Upgrades: A 2,937-Pair Census"
 author: "Muhammad Hammas, Independent Researcher"
 date: 2026-10-31
 ---
@@ -14,7 +14,7 @@ signature, and returns something different.
 
 We install both versions of a package, import each in an isolated subprocess, and execute
 every function whose call shape survived the upgrade on identical generated inputs. Over
-**2,997 measured release pairs from 1,204 distinct PyPI packages**, 15.6% broke an exported
+**2,937 measured release pairs from 1,202 distinct PyPI packages**, 15.6% broke an exported
 name. Patch releases broke one in forty (2.5%, 95% CI [1.6%, 3.8%]); major releases broke
 two in five (41.5% [37.4%, 45.7%]).
 
@@ -70,7 +70,7 @@ frame.
 
 1. A behavioural-difference method for library upgrades, with a sandbox, a determinism
    check, and an explicit refusal to report a difference it cannot reproduce (§2).
-2. A census of 2,997 release pairs across 1,204 PyPI packages, with per-cohort rates,
+2. A census of 2,937 release pairs across 1,202 PyPI packages, with per-cohort rates,
    Wilson intervals and pairwise significance under Holm correction (§3).
 3. Three qualifications of those rates — a monotonic surface-size confound, four
    non-separated cohort pairs, and extreme concentration of symbol-level damage (§4).
@@ -129,6 +129,39 @@ finish. **2,937 pairs were measured.**
 
 The ordinal claim holds strongly: patch vs minor $p = 2.1\times10^{-17}$, minor vs major
 $p = 6.3\times10^{-31}$ (Fisher exact, Holm-corrected over fifteen comparisons).
+
+## 3.1 The same question in other ecosystems
+
+The rate above has no meaning without something to place it against, and three ecosystems
+have been measured.
+
+| ecosystem | what was measured | rate |
+|---|---|---:|
+| Maven (Java) | releases introducing at least one breaking change [@maven-replication] | ~30% |
+| Go | non-major upgrades introducing a breaking change, 124K libraries [@go-semver] | 28.6% |
+| npm | dependent releases impacted by a breaking change in a non-major update [@npm-breaking] | ~14% |
+| **PyPI (this work)** | **non-major upgrades (patch + minor) changing an exported name** | **8.2%** |
+| **PyPI (this work)** | **all upgrades, every cohort** | **15.6%** |
+
+**PyPI's non-major rate is the lowest of the four, and the detector is the first
+explanation to rule out, not the last.** Each row measures something different. Maven's
+counts releases; Go's counts upgrades by signature diffing; npm's counts *client*
+manifestation, so a break nobody depends on is not counted. Ours counts an exported name
+disappearing or widening under execution, which is narrower than "any breaking change" —
+a changed exception type, a changed default, a changed return value under the same
+signature is a break this row does not contain, and §2 is explicit that the behavioural
+category is reported separately for exactly that reason. A narrower definition produces a
+smaller number, and the 8.2% should be read as a lower bound on PyPI's non-major breakage
+rather than as evidence that PyPI breaks less than Go.
+
+What *is* comparable across the rows is the shape. Raemaekers et al. report Maven's minor
+and major releases breaking at similar rates [@maven-replication]; here they do not, by a
+factor of five — minor 13.7% against major 41.5%, non-overlapping Wilson intervals and
+$p = 6.3	imes10^{-31}$ in the table above.
+Whatever else differs between the two measurements, PyPI's major releases carry the
+breakage its minor releases do not, and Maven's reportedly do not. That is a difference in
+the thing being described rather than in how it is counted, and it is the comparison worth
+making.
 
 # 4. Three qualifications
 
@@ -218,6 +251,14 @@ not be walked within any budget tried.
 > per cohort. It described 2,997 pairs where the rest of the paper describes 2,937, with
 > the patch cohort at 23/830 rather than 20/808. The module now imports both filters from
 > the summariser rather than reproducing them, and every figure in §4 was regenerated.
+>
+> The title, the abstract and contribution 2 were **not** regenerated at the same time
+> and carried 2,997 for a further revision — the paper was called *A 2,997-Pair Census*
+> while §6 explained that 2,997 was wrong. A correction applied to the section that
+> produced the error and not to the places that quote it is the failure mode this note
+> exists to record, and it has now happened twice in one paper. The package count was
+> wrong by two in the same places. `tests/test_census_numbers.py` now reads both out of
+> the ledger.
 
 # 7. Figures
 
@@ -268,7 +309,8 @@ both versions and both tools.
 # References
 
 - [@maven-replication] *Breaking changes and semantic versioning in Maven Central: a replication study.* Journal of Systems and Software, 2023.
-- [@npm-breaking] *I Depended on You and You Broke Me: An Empirical Study of Manifesting Breaking Changes in Client Packages.* arXiv:2301.04563.
+- [@npm-breaking] *I Depended on You and You Broke Me: An Empirical Study of Manifesting Breaking Changes in Client Packages.* arXiv:2301.04563. In npm, **about 12% of dependent packages and 14% of their releases were impacted by a breaking change** during updates of non-major releases of their dependencies.
+- [@go-semver] *A Large-Scale Empirical Study on Semantic Versioning in Golang Ecosystem.* arXiv:2309.02894. 124K third-party libraries and 532K client programs; 86.3% of library upgrades follow semantic versioning, **28.6% of non-major upgrades introduce breaking changes**, and 33.3% of downstream clients may be affected.
 - [@slr] *Breaking Changes in Software Ecosystems: A Systematic Literature Review.* arXiv:2605.24397.
 - [@aexpy] Du, X. and Ma, J. *AexPy: Detecting API Breaking Changes in Python Packages.* ISSRE 2022.
 - [@ruiz-behavioural] Ruiz, D. et al. *Understanding the Impact of APIs Behavioral Breaking Changes on Client Applications.* Proc. ACM Softw. Eng., 2024. <https://doi.org/10.1145/3643782>

@@ -240,3 +240,86 @@ def test_the_decoded_body_claim_holds(section):
         "the class-member filter changed; a property may now reach a surface and the "
         "README's claim about decoded_body would no longer be true"
     )
+
+
+# --- the title and the abstract quote the ledger too ---------------------------------
+
+
+def _measured_rows() -> list[dict]:
+    import gzip
+    import json as _json
+    import sys as _sys
+
+    _sys.path.insert(0, str(ROOT / "scripts"))
+    import census_summary as cs  # noqa: PLC0415
+
+    with gzip.open(ROOT / "docs" / "census-rows.json.gz", "rt", encoding="utf-8") as fh:
+        raw = _json.loads(fh.read())
+    rows = raw["rows"] if isinstance(raw, dict) else raw
+    rows = [r for r in rows if cs.is_upgrade(r["old"], r["new"])]
+    rows, _ = cs.one_pair_per_package(rows)
+    return [r for r in rows if r.get("module")]
+
+
+def test_the_title_and_abstract_quote_the_measured_pair_count() -> None:
+    """The place a withdrawn number survived longest.
+
+    Section 6 records that an earlier draft described 2,997 pairs where the rest of the
+    paper describes 2,937, and says every figure in section 4 was regenerated. The
+    title, the abstract and contribution 2 were not, so the paper was called
+    *A 2,997-Pair Census* while section 6 explained that 2,997 was wrong. Nothing read
+    the title.
+    """
+    paper = (ROOT / "paper" / "main.md").read_text(encoding="utf-8")
+    measured = len(_measured_rows())
+    assert measured > 0
+    shown = f"{measured:,}"
+
+    title = next(ln for ln in paper.splitlines() if ln.startswith("title:"))
+    assert shown in title, f"the title says {title!r}, the ledger measures {shown} pairs"
+
+    abstract = paper[paper.index("# Abstract") : paper.index("# 1. Introduction")]
+    assert shown in abstract, f"the abstract does not quote {shown}"
+
+    stale = {"2,997", "2997"}
+    for name, body in (("title", title), ("abstract", abstract)):
+        for wrong in stale:
+            assert wrong not in body, f"the {name} still carries the withdrawn {wrong}"
+
+
+def test_the_abstract_quotes_the_distinct_package_count() -> None:
+    """1,204 against the ledger's 1,202: wrong by two, in the abstract, unguarded."""
+    paper = (ROOT / "paper" / "main.md").read_text(encoding="utf-8")
+    packages = len({r["package"] for r in _measured_rows()})
+    abstract = paper[paper.index("# Abstract") : paper.index("# 1. Introduction")]
+    assert f"{packages:,} distinct PyPI packages" in abstract, (
+        f"the ledger holds {packages:,} distinct packages among measured pairs"
+    )
+
+
+def test_the_cross_ecosystem_table_states_our_own_non_major_rate_correctly() -> None:
+    """Section 3.1 compares PyPI with three other ecosystems; recompute our row.
+
+    A comparison table is where a number is most tempting to round in the direction
+    that makes the comparison cleaner.
+    """
+    import sys as _sys
+
+    _sys.path.insert(0, str(ROOT / "scripts"))
+    import census_summary as cs  # noqa: PLC0415
+
+    # cs.BREAKING, not a predicate retyped here. Section 6 records what happened the
+    # last time this repository reproduced the summariser's filters instead of
+    # importing them: a table of figures over 2,997 pairs that the rest of the paper
+    # did not recognise. `exported_widened` is not breaking - adding an accepted
+    # argument does not break a caller - and a hand-written predicate that included it
+    # put this rate at 14.3% instead of 8.2%.
+    rows = _measured_rows()
+    non_major = [r for r in rows if r["cohort"] in {"patch", "minor"}]
+    broke = [r for r in non_major if any(r.get(k) for k in cs.BREAKING)]
+    rate = len(broke) / len(non_major)
+    paper = (ROOT / "paper" / "main.md").read_text(encoding="utf-8")
+    section = paper[paper.index("## 3.1 The same question") : paper.index("# 4. ")]
+    assert f"**{rate * 100:.1f}%**" in section, (
+        f"the non-major rate is {rate * 100:.1f}% over {len(non_major)} pairs"
+    )

@@ -23,7 +23,17 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from semver_sweep import classify, is_upgrade, version_key  # noqa: E402
+# Imported under a guard, not bare. CI's second job copies `tests/` alone next to an
+# installed distribution, where this directory does not exist; a bare import raises
+# ModuleNotFoundError during collection, which fails the whole job instead of
+# skipping this file.
+
+semver_sweep = pytest.importorskip(
+    "semver_sweep", reason="scripts/ and research/ are not shipped with the tests"
+)
+classify = semver_sweep.classify
+is_upgrade = semver_sweep.is_upgrade
+version_key = semver_sweep.version_key
 
 CENSUS = ROOT / "docs" / "pair-census.json"
 SUMMARY = ROOT / "docs" / "census-summary.json"

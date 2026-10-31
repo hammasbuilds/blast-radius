@@ -426,7 +426,7 @@ scripts/
                         the same bytes -> docs/griffe-comparison.json
 ```
 
-335 tests. `pytest --cov=blast_radius` reports **92%** of statements, with one gap worth
+338 tests. `pytest --cov=blast_radius` reports **92%** of statements, with one gap worth
 naming: the sandbox is a source string executed in the probe's subprocesses, so coverage
 cannot see it at all and the 92% says nothing about the part that guards your machine.
 That is measured separately, by running 28 escape routes against it.
