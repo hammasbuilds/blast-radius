@@ -1,0 +1,105 @@
+{
+ "counts": {
+  "patch": [
+   20,
+   808
+  ],
+  "minor": [
+   114,
+   830
+  ],
+  "major": [
+   221,
+   532
+  ],
+  "0.x-patch": [
+   29,
+   372
+  ],
+  "0.x-breaking": [
+   65,
+   346
+  ],
+  "0.0.z": [
+   8,
+   49
+  ]
+ },
+ "tests": {
+  "patch vs major": {
+   "p": 2.4834215653293533e-78,
+   "p_holm": 3.72513234799403e-77,
+   "significant_at_05": true
+  },
+  "major vs 0.x-patch": {
+   "p": 6.744640305730161e-32,
+   "p_holm": 9.442496428022226e-31,
+   "significant_at_05": true
+  },
+  "minor vs major": {
+   "p": 1.0151235746834049e-30,
+   "p_holm": 1.3196606470884263e-29,
+   "significant_at_05": true
+  },
+  "patch vs 0.x-breaking": {
+   "p": 3.817222384228022e-20,
+   "p_holm": 4.580666861073626e-19,
+   "significant_at_05": true
+  },
+  "patch vs minor": {
+   "p": 5.312712408948742e-18,
+   "p_holm": 5.843983649843616e-17,
+   "significant_at_05": true
+  },
+  "major vs 0.x-breaking": {
+   "p": 9.890736191862911e-13,
+   "p_holm": 9.89073619186291e-12,
+   "significant_at_05": true
+  },
+  "0.x-patch vs 0.x-breaking": {
+   "p": 1.3189235347453118e-05,
+   "p_holm": 0.00011870311812707806,
+   "significant_at_05": true
+  },
+  "patch vs 0.x-patch": {
+   "p": 5.452473686495427e-05,
+   "p_holm": 0.00043619789491963415,
+   "significant_at_05": true
+  },
+  "patch vs 0.0.z": {
+   "p": 8.312914401907879e-05,
+   "p_holm": 0.0005819040081335515,
+   "significant_at_05": true
+  },
+  "major vs 0.0.z": {
+   "p": 0.00038176508779312845,
+   "p_holm": 0.0022905905267587706,
+   "significant_at_05": true
+  },
+  "minor vs 0.x-patch": {
+   "p": 0.002791885481670108,
+   "p_holm": 0.013959427408350539,
+   "significant_at_05": true
+  },
+  "minor vs 0.x-breaking": {
+   "p": 0.03239021471315631,
+   "p_holm": 0.12956085885262525,
+   "significant_at_05": false
+  },
+  "0.x-patch vs 0.0.z": {
+   "p": 0.05906076989172233,
+   "p_holm": 0.177182309675167,
+   "significant_at_05": false
+  },
+  "minor vs 0.0.z": {
+   "p": 0.6692333421986029,
+   "p_holm": 1.0,
+   "significant_at_05": false
+  },
+  "0.x-breaking vs 0.0.z": {
+   "p": 0.8443645900498509,
+   "p_holm": 1.0,
+   "significant_at_05": false
+  }
+ }
+}

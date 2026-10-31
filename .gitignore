@@ -45,3 +45,7 @@ docs/*-census.json.poisoned
 
 # A one-off watcher log.
 census_wait.log
+
+# The research environment. research/ and paper/ are experiment and manuscript material
+# and ship in neither the wheel nor the sdist.
+.venv-research/
