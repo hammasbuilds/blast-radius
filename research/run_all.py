@@ -2,6 +2,14 @@
 
     .venv-research/Scripts/python research/run_all.py
 
+`.venv-research` is not in the repository (every `.venv*` is ignored) and holds only
+matplotlib, so a fresh clone has to create it before this command can run. A sibling
+repository had lost its copy without anything failing, because the committed figures still
+looked fine:
+
+    uv venv .venv-research --python 3.12
+    uv pip install --python .venv-research/Scripts/python matplotlib==3.11.2
+
 Reads `docs/census-rows.json.gz` only - 115 KB, in the repository - so every number and
 figure rebuilds without the 4.3 MB raw census.
 
