@@ -32,6 +32,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from pair_census import _pin_temp_to_scratch_drive  # noqa: E402
 from semver_sweep import measure  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -66,6 +67,10 @@ def main() -> int:
 
     # Read once and never written back: --plant corrupts rows in memory, and a run that
     # wrote them out would plant a false removal in the published census.
+    # Before the first install: this re-measures two package versions per sampled pair,
+    # 120 installs at --per-cohort 10, and every one of them landed on C: until now.
+    _pin_temp_to_scratch_drive()
+
     census = json.loads(args.census.read_text(encoding="utf-8"))
     rows = [r for r in census["results"] if verdict(r) is not None]
     by_cohort: dict[str, list[dict]] = collections.defaultdict(list)

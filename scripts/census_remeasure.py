@@ -28,6 +28,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from pair_census import _pin_temp_to_scratch_drive  # noqa: E402
 from semver_sweep import measure  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -88,6 +89,11 @@ def main() -> int:
                          "connection, and a timeout would otherwise replace a measured "
                          "row with an error about this machine")
     args = ap.parse_args()
+
+    # Before the first install. Without it `tempfile` follows TMPDIR, which is on C:
+    # here, and each re-measured ansible version is about half a gigabyte - the reason
+    # C: went from 58 GB free to 31 over one day's measurements.
+    _pin_temp_to_scratch_drive()
 
     census = json.loads(args.census.read_text(encoding="utf-8"))
     rows = census["results"]
