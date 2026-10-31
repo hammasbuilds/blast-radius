@@ -219,7 +219,44 @@ not be walked within any budget tried.
 > the patch cohort at 23/830 rather than 20/808. The module now imports both filters from
 > the summariser rather than reproducing them, and every figure in §4 was regenerated.
 
-# 7. Reproducibility
+# 7. Figures
+
+All five rebuild from `docs/census-rows.json.gz` via `python research/run_all.py`.
+Nothing is encoded by colour alone, and every caption states its denominator.
+
+![Figure 1](../research/figures/fig1_rate_by_cohort.png)
+
+**Figure 1.** Breakage rate by bump class over 2,937 measured release pairs, with Wilson
+95% intervals. Counts above each bar are breaking pairs over measured pairs. The y-axis
+starts at zero.
+
+![Figure 2](../research/figures/fig2_rate_by_surface_size.png)
+
+**Figure 2.** Breakage rate against the size of the exported surface. The rate moves from
+4.1% in the smallest bucket to 40.5% in the largest, so surface size is a confound for any
+cohort comparison and is reported beside it rather than adjusted away (§4).
+
+![Figure 3](../research/figures/fig3_lorenz.png)
+
+**Figure 3.** Concentration of broken exported symbols. Over all cohorts, 85% of symbols
+come from the top 10% of breaking pairs (Gini 0.89, 457 pairs). This is why the pair-level
+rate is the headline and the symbol-level rate is reported with its largest contributor
+named.
+
+![Figure 4](../research/figures/fig4_symbols_per_breaking_pair.png)
+
+**Figure 4.** How much a breaking pair breaks, over 457 breaking pairs, log x-axis with
+doubling bins. The median breaking pair loses 3 exported names and 46% lose two or fewer,
+while the largest loses 2,941. A mean over this distribution would describe no pair in it.
+
+![Figure 5](../research/figures/fig5_unmeasured.png)
+
+**Figure 5.** Why 780 of 3,777 pairs produced no surface comparison, top eight reasons. A
+rate over the measured pairs alone is a rate over a denominator this census chose, and the
+reasons are not independent of the packages: a package with no importable module is a
+different exclusion from one whose walk did not finish.
+
+# 8. Reproducibility
 
 `docs/census-rows.json.gz` (115 KB) holds one row per pair with counts and reasons and no
 symbol names. `python scripts/census_summary.py --census docs/census-rows.json.gz`
