@@ -46,8 +46,25 @@ of cases, usually by changing the pinned version rather than their code [@npm-br
 2026 systematic review treats persistent semantic-versioning violation as an open
 problem [@slr].
 
-Every one of those detects breakage by comparing declarations. Our contribution is the
-category that method cannot reach, measured at scale on the ecosystem least covered by it.
+Every one of those detects breakage by comparing declarations. The closest neighbour to
+this work is `AexPy` [@aexpy], which is PyPI-specific and detects API breaking changes
+between Python releases — and does so by diffing extracted API descriptions, so a
+function that keeps its name, its signature and its exception behaviour while returning a
+different answer is outside what it can represent.
+
+Two pieces of work do execute. Ruiz et al. [@ruiz-behavioural] update dependencies
+automatically and run client test suites, reporting behavioural breaking changes in about
+2.3% of updates — the right method, applied to Java. *Who Broke Me?* [@who-broke-me]
+assembles BBCBench, 100 behavioural dependency breaks of which 41 are Python, but it is a
+**repair benchmark**: the breaks are collected to be fixed, not sampled to estimate a
+rate, so it carries no denominator.
+
+The gap is therefore specific, and narrower than "nobody has studied PyPI". Execution-
+based measurement of behavioural change exists but not for Python; Python breaking-change
+measurement exists but not by execution; a Python behavioural-break *corpus* exists but
+not as a census with a population behind it. Our contribution is the intersection: the
+category static diffing cannot reach, measured at ecosystem scale with a stated sampling
+frame.
 
 **Contributions.**
 
@@ -216,10 +233,21 @@ both versions and both tools.
 - [@maven-replication] *Breaking changes and semantic versioning in Maven Central: a replication study.* Journal of Systems and Software, 2023.
 - [@npm-breaking] *I Depended on You and You Broke Me: An Empirical Study of Manifesting Breaking Changes in Client Packages.* arXiv:2301.04563.
 - [@slr] *Breaking Changes in Software Ecosystems: A Systematic Literature Review.* arXiv:2605.24397.
+- [@aexpy] Du, X. and Ma, J. *AexPy: Detecting API Breaking Changes in Python Packages.* ISSRE 2022.
+- [@ruiz-behavioural] Ruiz, D. et al. *Understanding the Impact of APIs Behavioral Breaking Changes on Client Applications.* Proc. ACM Softw. Eng., 2024. <https://doi.org/10.1145/3643782>
+- [@who-broke-me] *Who Broke Me? Execution-Guided Repair of Behavioral Dependency Breaks.* arXiv:2610.09267. Introduces BBCBench (100 breaks, 41 Python).
 - *griffe* — API differ, mkdocstrings. <https://mkdocstrings.github.io/griffe/>
 
-> **Citation status.** The three references above were located by a literature search and
-> their claims are quoted from that search's summaries, not from the full texts. Before
-> submission each must be read and verified, and the search found **no PyPI-specific
-> semantic-versioning compliance study** — the novelty claim in §1 rests on that absence
-> and needs one further confirmatory pass.
+> **Citation status.** A previous draft of this note recorded that the literature search
+> had found **no PyPI-specific semantic-versioning study**, and made the novelty claim in
+> §1 rest on that absence. That was wrong: `AexPy` [@aexpy] is PyPI-specific. A second
+> search also found execution-based behavioural-break measurement [@ruiz-behavioural],
+> in Java, and a Python behavioural-break benchmark [@who-broke-me] with no denominator.
+> §1 has been rewritten to claim the intersection those three leave open rather than an
+> absence, which is both true and a narrower claim.
+>
+> The remaining references are quoted from search summaries rather than full texts and
+> must each be read before submission. `AexPy`, `@ruiz-behavioural` and `@who-broke-me`
+> are summarised from abstracts and search results; in particular the 2.3% figure and
+> the 41-Python-case count are second-hand and load-bearing for the paragraph that cites
+> them.
