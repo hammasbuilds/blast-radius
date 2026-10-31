@@ -19,7 +19,6 @@ a crash: a comparison that silently drops the side that did worse is not a compa
 from __future__ import annotations
 
 import argparse
-import collections
 import json
 import os
 import re
@@ -45,7 +44,7 @@ BASE_CLASS_REMOVED = "Base class was removed"
 # The griffe side runs in its own interpreter, so it is a script rather than an import.
 # `allow_inspection=False` is the whole point of comparing against it: griffe must not
 # fall back to importing the package, or both tools would be doing the same thing.
-GRIFFE_SCRIPT = '''
+GRIFFE_SCRIPT = """
 import collections, json, sys, time
 import griffe
 
@@ -90,7 +89,7 @@ print("__JSON__" + json.dumps({
     "seconds": round(elapsed, 1),
     "rows": rows,
 }))
-'''
+"""
 
 
 def _python(venv: Path) -> Path:
@@ -125,8 +124,18 @@ def install(package: str, version: str) -> Path:
     if target.exists():
         return target
     subprocess.run(
-        [sys.executable, "-m", "pip", "install", "-q", "--disable-pip-version-check",
-         "--target", str(target), "--no-deps", f"{package}=={version}"],
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "-q",
+            "--disable-pip-version-check",
+            "--target",
+            str(target),
+            "--no-deps",
+            f"{package}=={version}",
+        ],
         check=True,
     )
     return target
@@ -142,13 +151,14 @@ def bases_in(target: Path, dotted: str) -> str | None:
     parts = dotted.split(".")
     cls = parts[-1]
     for cut in range(len(parts) - 1, 0, -1):
-        for candidate in (target.joinpath(*parts[:cut]).with_suffix(".py"),
-                          target.joinpath(*parts[:cut], "__init__.py")):
+        for candidate in (
+            target.joinpath(*parts[:cut]).with_suffix(".py"),
+            target.joinpath(*parts[:cut], "__init__.py"),
+        ):
             if not candidate.exists():
                 continue
             text = candidate.read_text(encoding="utf-8", errors="replace")
-            found = re.search(rf"^\s*class\s+{re.escape(cls)}\s*\(([^)]*)\)\s*:",
-                              text, re.M)
+            found = re.search(rf"^\s*class\s+{re.escape(cls)}\s*\(([^)]*)\)\s*:", text, re.M)
             if found:
                 return " ".join(found.group(1).split())
             if re.search(rf"^\s*class\s+{re.escape(cls)}\s*:", text, re.M):
@@ -160,12 +170,13 @@ def run_griffe(package: str, old: str, new: str) -> dict:
     old_dir, new_dir = install(package, old), install(package, new)
     proc = subprocess.run(
         [str(_python(VENV)), "-c", GRIFFE_SCRIPT, package, str(old_dir), str(new_dir)],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     marker = proc.stdout.find("__JSON__")
     if marker < 0:
         return {"error": (proc.stderr or proc.stdout or "no output")[-400:]}
-    out = json.loads(proc.stdout[marker + len("__JSON__"):].splitlines()[0])
+    out = json.loads(proc.stdout[marker + len("__JSON__") :].splitlines()[0])
     prefix = str(TARGETS) + os.sep
     for row in out["rows"]:
         row["explain"] = ANSI.sub("", row["explain"]).replace(prefix, "")
@@ -176,10 +187,8 @@ def run_griffe(package: str, old: str, new: str) -> dict:
     base_rows = [r for r in out["rows"] if r["kind"] == BASE_CLASS_REMOVED]
     out["base_class_removals"] = {
         "rows": len(base_rows),
-        "bases_object_only": sum(1 for r in base_rows
-                                 if r.get("bases_in_old_version") == "object"),
-        "bases_unreadable": sum(1 for r in base_rows
-                                if r.get("bases_in_old_version") is None),
+        "bases_object_only": sum(1 for r in base_rows if r.get("bases_in_old_version") == "object"),
+        "bases_unreadable": sum(1 for r in base_rows if r.get("bases_in_old_version") is None),
     }
     return out
 
@@ -188,7 +197,9 @@ def run_blast_radius(package: str, old: str, new: str) -> dict:
     start = time.perf_counter()
     proc = subprocess.run(
         [sys.executable, "-m", "blast_radius", "check", package, old, new, "--json"],
-        capture_output=True, text=True, cwd=ROOT,
+        capture_output=True,
+        text=True,
+        cwd=ROOT,
     )
     wall = round(time.perf_counter() - start, 1)
     if proc.returncode != 0 or not proc.stdout.strip():
@@ -213,8 +224,13 @@ def run_blast_radius(package: str, old: str, new: str) -> dict:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--pair", nargs=3, metavar=("PACKAGE", "OLD", "NEW"), action="append",
-                    help="a pair to compare; repeatable (default: the two in docs/COMPARISON.md)")
+    ap.add_argument(
+        "--pair",
+        nargs=3,
+        metavar=("PACKAGE", "OLD", "NEW"),
+        action="append",
+        help="a pair to compare; repeatable (default: the two in docs/COMPARISON.md)",
+    )
     ap.add_argument("--out", type=Path, default=ARTEFACT)
     args = ap.parse_args()
     pairs = [tuple(p) for p in args.pair] if args.pair else PAIRS
@@ -236,20 +252,24 @@ def main() -> int:
         "griffe": {
             "version": griffe_version,
             "how": "griffe.load(package, search_paths=[dir]) on each version, then "
-                   "griffe.find_breaking_changes(old, new); allow_inspection=False, so "
-                   "nothing is imported",
+            "griffe.find_breaking_changes(old, new); allow_inspection=False, so "
+            "nothing is imported",
             "note": "griffe's own one-line explanations, with its ANSI colour codes "
-                    "stripped and the local target directory removed from each path",
+            "stripped and the local target directory removed from each path",
             "runs": runs_griffe,
         },
         "blast_radius": {
             "version": subprocess.run(
                 [sys.executable, "-m", "blast_radius", "--version"],
-                capture_output=True, text=True, cwd=ROOT,
-            ).stdout.strip().split()[-1],
+                capture_output=True,
+                text=True,
+                cwd=ROOT,
+            )
+            .stdout.strip()
+            .split()[-1],
             "how": "blast-radius check <package> <old> <new> --json, which installs both "
-                   "versions, imports each in its own subprocess, and executes the "
-                   "functions whose call shape survived",
+            "versions, imports each in its own subprocess, and executes the "
+            "functions whose call shape survived",
             "runs": runs_br,
         },
     }
@@ -261,9 +281,11 @@ def main() -> int:
         if "error" in row:
             print(f"  griffe {row['package']}: FAILED - {row['error'][:80]}")
             continue
-        print(f"  griffe {row['package']} {row['old']} -> {row['new']}: "
-              f"{row['breakages']} breakage(s) at {row['distinct_owners']} owner(s), "
-              f"{row['seconds']}s")
+        print(
+            f"  griffe {row['package']} {row['old']} -> {row['new']}: "
+            f"{row['breakages']} breakage(s) at {row['distinct_owners']} owner(s), "
+            f"{row['seconds']}s"
+        )
         for kind, n in row["by_kind"].items():
             print(f"      {kind:52}{n:>5}")
     for label, row in runs_br.items():
@@ -271,9 +293,12 @@ def main() -> int:
             print(f"  blast-radius {label}: FAILED - {row['error'][:80]}")
             continue
         counts = ", ".join(f"{k} {v}" for k, v in row["counts"].items())
-        print(f"  blast-radius {label}: {counts} ({row['seconds']}s measured, "
-              f"{row['wall_seconds']}s including both installs)")
-    print(f"\nwritten to {args.out.relative_to(ROOT) if args.out.is_relative_to(ROOT) else args.out}")
+        print(
+            f"  blast-radius {label}: {counts} ({row['seconds']}s measured, "
+            f"{row['wall_seconds']}s including both installs)"
+        )
+    shown = args.out.relative_to(ROOT) if args.out.is_relative_to(ROOT) else args.out
+    print(f"\nwritten to {shown}")
     return 0
 
 

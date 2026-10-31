@@ -33,24 +33,6 @@ from blast_radius.probe import resolve_names, surface  # noqa: E402
 from blast_radius.types import Kind  # noqa: E402
 
 
-def version_key(text: str) -> tuple[int, ...]:
-    """Every numeric component, for ORDERING two final releases.
-
-    Separate from classify()'s three padded components, which answer "which position
-    changed" and deliberately ignore anything past the third. Ordering needs them all:
-    1.2.19 and 1.2.19.1 agree on three and are not the same release.
-    """
-    out = []
-    for chunk in text.split("."):
-        digits = ""
-        for ch in chunk:
-            if not ch.isdigit():
-                break
-            digits += ch
-        out.append(int(digits) if digits else 0)
-    return tuple(out)
-
-
 def is_upgrade(old: str, new: str) -> bool:
     """True when `new` is a later release than `old`.
 
@@ -164,16 +146,55 @@ PAIRS = [
 
 
 def version_key(version: str) -> tuple:
-    """A sort key for a version string, numeric parts as numbers.
+    """A sort key for a version string: release components, then any pre-release tail.
 
-    Not a full PEP 440 ordering - it does not need to be. It needs to be TOTAL and
-    deterministic, so that choosing between two pairs of the same package gives the same
-    answer whatever order they were measured in.
+    This module defined `version_key` **twice**, with different return shapes, and the
+    second silently shadowed the first - so `is_upgrade`, written against the first,
+    had been running on the second since whenever the second was added. The surviving
+    one has to do both jobs, and they are:
+
+      * **Order two final releases** on every numeric component, not three.
+        `classify()` pads to three because it answers "which position changed"; ordering
+        needs them all, since 1.2.19 and 1.2.19.1 agree on three and are not the same
+        release.
+      * **Be total and deterministic**, so that choosing between two pairs of the same
+        package gives the same answer whatever order they were measured in.
+
+    Neither of the two it replaces ordered a pre-release correctly. The first truncated
+    `1.0rc1` to (1, 0) and read it as *equal* to `1.0`; the second made the `0rc1` chunk
+    sort after every number and read `1.0rc1` as *later* than `1.0`. Both answers make
+    `is_upgrade("1.0rc1", "1.0")` false, which drops a real upgrade as backwards. No
+    published number moved - neither census contains a single pre- or post-release
+    component, which is why this survived - but the rule was wrong and is now right:
+    the release components compare first, and a version carrying a pre-release tail
+    sorts before the bare release of the same components.
+
+    Still not full PEP 440: `rc` against `b` against `dev` is ordered lexically rather
+    than by PEP 440's precedence, and an epoch is not read. Stated rather than implied,
+    because the next person to need one of those should know this is not it.
     """
-    out = []
-    for part in str(version).replace("-", ".").replace("+", ".").split("."):
-        out.append((0, int(part), "") if part.isdigit() else (1, 0, part))
-    return tuple(out)
+    text = str(version).replace("-", ".").replace("+", ".")
+    release: list[int] = []
+    tail: list[str] = []
+    for part in text.split("."):
+        if part.isdigit() and not tail:
+            release.append(int(part))
+            continue
+        # The first component that is not a bare number begins the tail: "1.0rc1" keeps
+        # release (1, 0) and tail "rc1", and everything after it is tail too, so a
+        # trailing number cannot be read back as a release component.
+        digits = ""
+        for ch in part:
+            if not ch.isdigit():
+                break
+            digits += ch
+        if digits and not tail:
+            release.append(int(digits))
+            tail.append(part[len(digits) :])
+        else:
+            tail.append(part)
+    # 0 before 1 so that a pre-release sorts before the bare release it precedes.
+    return (tuple(release), 0 if any(tail) else 1, tuple(tail))
 
 
 def one_pair_per_package(rows: list[dict]) -> tuple[list[dict], list[dict]]:
@@ -228,13 +249,14 @@ def _why_empty(version: str, got: dict | None, modules: list[str], timeout: floa
     seconds on the machine this was measured on, let alone 300.
     """
     if got is None:
-        return (f"the surface probe for {version} did not finish within {timeout:.0f}s "
-                f"({len(modules)} module(s) planned)")
+        return (
+            f"the surface probe for {version} did not finish within {timeout:.0f}s "
+            f"({len(modules)} module(s) planned)"
+        )
     failed = (got.get("__meta__") or {}).get("failed") or {}
     if failed:
         first = sorted(failed)[0]
-        return (f"import {_named(sorted(failed))} failed in {version}: "
-                f"{str(failed[first])[:120]}")
+        return f"import {_named(sorted(failed))} failed in {version}: {str(failed[first])[:120]}"
     return f"import {_named(modules)} found nothing public in {version}"
 
 
@@ -269,8 +291,12 @@ def measure(
             continue
         scope = "exported" if c.qualname in exported else "internal"
         rows.setdefault(f"{scope}_{c.kind.value}", []).append(c.qualname)
-    return {"module": module, "modules_compared": len(plan.modules),
-            "exported_symbols": len(exported), **rows}
+    return {
+        "module": module,
+        "modules_compared": len(plan.modules),
+        "exported_symbols": len(exported),
+        **rows,
+    }
 
 
 def main() -> int:

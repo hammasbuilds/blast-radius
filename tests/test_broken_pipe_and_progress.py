@@ -43,6 +43,7 @@ class TestSilenceStdout:
         `os.dup2(null, sys.stdout.fileno())` raises for both, and this must swallow that
         rather than turn a broken pipe into a second exception.
         """
+
         class NoFileno(io.StringIO):
             def fileno(self):  # noqa: ANN201
                 raise io.UnsupportedOperation("no fileno")
@@ -98,7 +99,7 @@ class TestFinishedCount:
         import blast_radius.probe as probe
 
         source = Path(probe.__file__).read_text(encoding="utf-8")
-        assert 'b\'"r": \'' in source, "the marker moved; check the writer still matches"
+        assert "b'\"r\": '" in source, "the marker moved; check the writer still matches"
         assert "separators=" not in source, (
             "probe.py now passes explicit json separators - confirm _finished's marker "
             "still matches what the journal writer emits"

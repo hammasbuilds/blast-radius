@@ -126,8 +126,8 @@ def _pin_temp_to_scratch_drive() -> None:
     print(f"temp pinned to {landed}")
     print(f"uv cache pinned to {os.environ['UV_CACHE_DIR']}")
 
-TOP = ("https://raw.githubusercontent.com/hugovk/top-pypi-packages/main/"
-       "top-pypi-packages.min.json")
+
+TOP = "https://raw.githubusercontent.com/hugovk/top-pypi-packages/main/top-pypi-packages.min.json"
 RELEASE = re.compile(r"^\d+(\.\d+)*$")  # no pre-release, dev or local segments
 
 
@@ -181,7 +181,7 @@ def pairs_for(package: str, since: str) -> dict[str, tuple[str, str]]:
     """
     versions = released_versions(package)
     chosen: dict[str, tuple[str, str]] = {}
-    for (_, old), (new_date, new) in zip(versions, versions[1:]):
+    for (_, old), (new_date, new) in zip(versions, versions[1:], strict=False):
         if new_date < since:
             continue
         # Consecutive BY DATE is not consecutive by version. A project that ships a
@@ -208,9 +208,17 @@ def revision() -> str:
     """
     try:
         out = subprocess.run(
-            ["git", "-C", str(Path(__file__).resolve().parent.parent),
-             "rev-parse", "--short", "HEAD"],
-            capture_output=True, text=True, timeout=30,
+            [
+                "git",
+                "-C",
+                str(Path(__file__).resolve().parent.parent),
+                "rev-parse",
+                "--short",
+                "HEAD",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
         )
     except (OSError, subprocess.SubprocessError):
         return "unknown"
@@ -219,27 +227,43 @@ def revision() -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--packages", type=int, default=200,
-                    help="how many of the top packages to walk")
+    ap.add_argument(
+        "--packages", type=int, default=200, help="how many of the top packages to walk"
+    )
     ap.add_argument("--cohorts", default=",".join(SEMVER_COHORTS + ZERO_COHORTS))
-    ap.add_argument("--since", default="2021-01-01",
-                    help="a pair counts only if the newer version was published on or "
-                         "after this date (2021-01-01)")
-    ap.add_argument("--workers", type=int, default=1,
-                    help="pairs measured at once. A pair is mostly waiting on network "
-                         "and disk, and each worker installs into its own directory; "
-                         "the only shared state is uv's cache (1)")
-    ap.add_argument("--resume", action="store_true",
-                    help="keep pairs already present in --out and measure only the rest")
+    ap.add_argument(
+        "--since",
+        default="2021-01-01",
+        help="a pair counts only if the newer version was published on or "
+        "after this date (2021-01-01)",
+    )
+    ap.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="pairs measured at once. A pair is mostly waiting on network "
+        "and disk, and each worker installs into its own directory; "
+        "the only shared state is uv's cache (1)",
+    )
+    ap.add_argument(
+        "--resume",
+        action="store_true",
+        help="keep pairs already present in --out and measure only the rest",
+    )
     ap.add_argument("--out", default="census.json")
-    ap.add_argument("--plan-only", action="store_true",
-                    help="choose the pairs and write them, without installing anything")
+    ap.add_argument(
+        "--plan-only",
+        action="store_true",
+        help="choose the pairs and write them, without installing anything",
+    )
     args = ap.parse_args()
     wanted = set(args.cohorts.split(","))
 
     names = top_packages(args.packages)
-    print(f"{len(names)} packages from the external top-downloads list, "
-          f"pairs released on or after {args.since}")
+    print(
+        f"{len(names)} packages from the external top-downloads list, "
+        f"pairs released on or after {args.since}"
+    )
 
     plan = []
     for i, name in enumerate(names, 1):
@@ -261,12 +285,20 @@ def main() -> int:
     out = Path(args.out)
     if args.plan_only:
         out.write_text(
-            json.dumps({"since": args.since, "packages_requested": args.packages,
-                        "cohorts": sorted(wanted), "top_downloads_list": TOP,
-                        "command": "python " + " ".join(["scripts/pair_census.py",
-                                                         *sys.argv[1:]]),
-                        "plan": plan, "counts": counts}, indent=1),
-            encoding="utf-8")
+            json.dumps(
+                {
+                    "since": args.since,
+                    "packages_requested": args.packages,
+                    "cohorts": sorted(wanted),
+                    "top_downloads_list": TOP,
+                    "command": "python " + " ".join(["scripts/pair_census.py", *sys.argv[1:]]),
+                    "plan": plan,
+                    "counts": counts,
+                },
+                indent=1,
+            ),
+            encoding="utf-8",
+        )
         print(f"\nplan written to {out}")
         return 0
 
@@ -320,12 +352,17 @@ def main() -> int:
             done_count += 1
             n = done_count
             rate = (time.time() - started) / n
-            print(f"  [{len(seen) + n}/{len(plan)}] {spec['package']} "
-                  f"{spec['old']}->{spec['new']} ({spec['cohort']}) "
-                  f"{'error' if 'error' in row else 'ok'}  {rate:.1f}s/pair "
-                  f"~{rate * (len(todo) - n) / 60:.0f}min left", flush=True)
-            out.write_text(json.dumps({**provenance, "plan_counts": counts,
-                                       "results": results}, indent=1), encoding="utf-8")
+            print(
+                f"  [{len(seen) + n}/{len(plan)}] {spec['package']} "
+                f"{spec['old']}->{spec['new']} ({spec['cohort']}) "
+                f"{'error' if 'error' in row else 'ok'}  {rate:.1f}s/pair "
+                f"~{rate * (len(todo) - n) / 60:.0f}min left",
+                flush=True,
+            )
+            out.write_text(
+                json.dumps({**provenance, "plan_counts": counts, "results": results}, indent=1),
+                encoding="utf-8",
+            )
         return row
 
     with tempfile.TemporaryDirectory(prefix="pair-census-", dir=SCRATCH) as tmp:
@@ -338,8 +375,10 @@ def main() -> int:
                 one(pair, root)
 
     ok = [r for r in results if "error" not in r]
-    print(f"\n{len(ok)} of {len(results)} pairs produced a surface; "
-          f"{len(results) - len(ok)} could not be measured and are kept in the file")
+    print(
+        f"\n{len(ok)} of {len(results)} pairs produced a surface; "
+        f"{len(results) - len(ok)} could not be measured and are kept in the file"
+    )
     print(f"written to {out}")
     return 0
 

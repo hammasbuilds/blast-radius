@@ -50,6 +50,38 @@ def test_a_fourth_component_is_not_ignored_when_ordering() -> None:
     assert version_key("1.2.19") < version_key("1.2.19.1")
 
 
+def test_a_pre_release_sorts_before_the_release_it_precedes() -> None:
+    """Both of the two `version_key` definitions this module used to carry got this
+    wrong, in opposite ways, and both made `is_upgrade("1.0rc1", "1.0")` false - which
+    drops a genuine upgrade as if it ran backwards.
+
+    One truncated `1.0rc1` to (1, 0) and called it equal to `1.0`; the other made the
+    `0rc1` chunk sort after every number and called `1.0rc1` the later release. Pinned
+    in both directions, because a key that ordered them equal passes a one-sided check.
+    """
+    assert version_key("1.0rc1") < version_key("1.0")
+    assert version_key("1.0.dev1") < version_key("1.0")
+    assert version_key("1.0b2") < version_key("1.0rc1")
+    assert is_upgrade("1.0rc1", "1.0")
+    assert not is_upgrade("1.0", "1.0rc1")
+    assert not is_upgrade("1.0", "1.0")
+
+
+def test_there_is_exactly_one_version_key() -> None:
+    """The defect was a second definition shadowing the first, which no test could see.
+
+    Counted in the source, because importing the module gives whichever one survived and
+    cannot report that another was overwritten on the way.
+    """
+    import re  # noqa: PLC0415
+
+    source = (ROOT / "scripts" / "semver_sweep.py").read_text(encoding="utf-8")
+    found = re.findall(r"^def (version_key|is_upgrade|classify)\(", source, re.M)
+    assert sorted(found) == ["classify", "is_upgrade", "version_key"], (
+        f"expected one definition of each, found {found}"
+    )
+
+
 def test_no_measured_pair_in_the_census_runs_backwards() -> None:
     """The census on disk, after the summariser's filter, holds only real upgrades."""
     if not (CENSUS.exists() and SUMMARY.exists()):

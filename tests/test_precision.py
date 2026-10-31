@@ -93,8 +93,12 @@ def test_a_package_whose_whole_surface_is_one_constant_is_compared(fake_index, c
     witness, and `__version__` moves every release - so a package consisting of one
     constant has an API that did not change.
     """
-    fake_index({"1.0.0": {"fakepkg/__init__.py": "VERSION = 1\n"},
-                "2.0.0": {"fakepkg/__init__.py": "VERSION = 2\n"}})
+    fake_index(
+        {
+            "1.0.0": {"fakepkg/__init__.py": "VERSION = 1\n"},
+            "2.0.0": {"fakepkg/__init__.py": "VERSION = 2\n"},
+        }
+    )
     code = cli.main(["check", "fakepkg", "1.0.0", "2.0.0", "--no-behaviour"])
     out = capsys.readouterr().out
     assert code == 0, out
@@ -105,8 +109,12 @@ def test_a_package_whose_whole_surface_is_one_constant_is_compared(fake_index, c
 
 def test_a_removed_constant_is_gone(fake_index, capsys):
     """The case the griffe comparison found: four of click 8's removals are strings."""
-    fake_index({"1.0.0": {"fakepkg/__init__.py": "LIMIT = 5\n\ndef f():\n    return 1\n"},
-                "2.0.0": {"fakepkg/__init__.py": "def f():\n    return 1\n"}})
+    fake_index(
+        {
+            "1.0.0": {"fakepkg/__init__.py": "LIMIT = 5\n\ndef f():\n    return 1\n"},
+            "2.0.0": {"fakepkg/__init__.py": "def f():\n    return 1\n"},
+        }
+    )
     code = cli.main(["check", "fakepkg", "1.0.0", "2.0.0", "--no-behaviour"])
     out = capsys.readouterr().out
     assert code == 0, out

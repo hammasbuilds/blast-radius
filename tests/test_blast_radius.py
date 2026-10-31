@@ -345,9 +345,7 @@ def test_every_kind_is_counted_even_at_zero():
     passes whatever happened. The human report has always printed all five rows with
     their zeros, so the two outputs disagreed about the schema.
     """
-    assert Report().counts() == {
-        "gone": 0, "reshaped": 0, "widened": 0, "silent": 0, "added": 0
-    }
+    assert Report().counts() == {"gone": 0, "reshaped": 0, "widened": 0, "silent": 0, "added": 0}
     assert list(Report().counts()) == [k.value for k in Kind], (
         "the JSON should read in the same order as the report"
     )

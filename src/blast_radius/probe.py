@@ -566,7 +566,8 @@ def assigned_here(mod, name):
                 text = fh.read()
         except OSError:
             text = ""
-        names = set(re.findall(r"(?m)^[ \t]*([A-Za-z_][A-Za-z_0-9]*)[ \t]*(?::[^=\n]+)?=[^=]", text))
+        assignment = r"(?m)^[ \t]*([A-Za-z_][A-Za-z_0-9]*)[ \t]*(?::[^=\n]+)?=[^=]"
+        names = set(re.findall(assignment, text))
         _assigned[path] = names
     return name in names
 

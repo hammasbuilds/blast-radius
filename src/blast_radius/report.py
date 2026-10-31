@@ -167,9 +167,7 @@ def summary(report: Report) -> str:
     for reason, group in _weak_by_reason(report).items():
         names = ", ".join(c.qualname for c in group[:6])
         more = " ..." if len(group) > 6 else ""
-        lines.append(
-            f"\n  Not counted ({len(group)}): {reason}.\n    {names}{more}"
-        )
+        lines.append(f"\n  Not counted ({len(group)}): {reason}.\n    {names}{more}")
 
     for kind in (Kind.GONE, Kind.RESHAPED):
         items = _by_severity(report.of(kind))
@@ -182,7 +180,8 @@ def summary(report: Report) -> str:
             # removed function in the terminal, because the kind was in the JSON only.
             # Not annotating functions is deliberate: `(function)` beside four hundred
             # names is noise, and the one name that is not a function is the point.
-            was = f"  ({c.before})" if kind is Kind.GONE and c.before not in ("", "function") else ""
+            named = kind is Kind.GONE and c.before not in ("", "function")
+            was = f"  ({c.before})" if named else ""
             lines.append(f"    {c.qualname}{was}{where}")
             if kind is Kind.RESHAPED and c.before:
                 # Windowed around the difference: urllib3's new `version_string`

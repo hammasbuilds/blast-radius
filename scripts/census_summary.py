@@ -45,11 +45,28 @@ BREAKING = ("exported_gone", "exported_reshaped")
 
 
 # Every field of a census row except the symbol LISTS, which are the 4.3 MB.
-LEDGER_FIELDS = ("package", "old", "new", "cohort", "module", "modules_compared",
-                 "exported_symbols", "error", "measured_at", "remeasured_at",
-                 "remeasure_failed", "remeasure_attempted_at")
-SYMBOL_KEYS = ("exported_gone", "exported_reshaped", "exported_widened",
-               "internal_gone", "internal_reshaped", "internal_widened")
+LEDGER_FIELDS = (
+    "package",
+    "old",
+    "new",
+    "cohort",
+    "module",
+    "modules_compared",
+    "exported_symbols",
+    "error",
+    "measured_at",
+    "remeasured_at",
+    "remeasure_failed",
+    "remeasure_attempted_at",
+)
+SYMBOL_KEYS = (
+    "exported_gone",
+    "exported_reshaped",
+    "exported_widened",
+    "internal_gone",
+    "internal_reshaped",
+    "internal_widened",
+)
 
 
 def ledger(rows: list[dict]) -> list[dict]:
@@ -62,8 +79,15 @@ def ledger(rows: list[dict]) -> list[dict]:
     repository alone and a wrong row shows up as a diff.
     """
     out = []
-    for row in sorted(rows, key=lambda r: (r.get("package", ""), r.get("cohort", ""),
-                                           r.get("old", ""), r.get("new", ""))):
+    for row in sorted(
+        rows,
+        key=lambda r: (
+            r.get("package", ""),
+            r.get("cohort", ""),
+            r.get("old", ""),
+            r.get("new", ""),
+        ),
+    ):
         line = {k: row[k] for k in LEDGER_FIELDS if k in row}
         for key in SYMBOL_KEYS:
             value = row.get(key)
@@ -80,7 +104,9 @@ def _head() -> str:
     try:
         out = subprocess.run(
             ["git", "-C", str(ROOT), "rev-parse", "--short", "HEAD"],
-            capture_output=True, text=True, timeout=30,
+            capture_output=True,
+            text=True,
+            timeout=30,
         )
     except (OSError, subprocess.SubprocessError):
         return "unknown"
@@ -95,8 +121,7 @@ def revisions_of(rows: list[dict]) -> dict[str, int]:
     error this replaces, and it was published in a file and a commit message.
     """
     counted = collections.Counter(
-        row.get("remeasured_at") or row.get("measured_at") or "not recorded"
-        for row in rows
+        row.get("remeasured_at") or row.get("measured_at") or "not recorded" for row in rows
     )
     return dict(counted.most_common())
 
@@ -175,9 +200,19 @@ def summarise(census: dict) -> dict:
         "since": census.get("since"),
         # Whatever the run recorded about itself, carried through rather than restated.
         # A census written before this existed has none, and the summary says so.
-        "run": {k: census[k] for k in (
-            "packages_requested", "cohorts", "workers", "top_downloads_list",
-            "revision_of_this_run", "command") if k in census} or "not recorded",
+        "run": {
+            k: census[k]
+            for k in (
+                "packages_requested",
+                "cohorts",
+                "workers",
+                "top_downloads_list",
+                "revision_of_this_run",
+                "command",
+            )
+            if k in census
+        }
+        or "not recorded",
         "packages_in_the_rows": len({r.get("package") for r in rows}),
         "planned": dict(census.get("plan_counts") or {}),
         "rows": len(rows),
@@ -200,9 +235,13 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--census", type=Path, default=ROOT / "docs" / "pair-census.json")
     ap.add_argument("--out", type=Path, default=ROOT / "docs" / "census-summary.json")
-    ap.add_argument("--ledger", type=Path, default=ROOT / "docs" / "census-rows.json.gz",
-                    help="per-pair counts, committed, so a rate can be recomputed and a "
-                         "replaced row can be recovered")
+    ap.add_argument(
+        "--ledger",
+        type=Path,
+        default=ROOT / "docs" / "census-rows.json.gz",
+        help="per-pair counts, committed, so a rate can be recomputed and a "
+        "replaced row can be recovered",
+    )
     args = ap.parse_args()
     if not args.census.exists():
         raise SystemExit(f"no census at {args.census} - run scripts/pair_census.py first")
@@ -220,9 +259,20 @@ def main() -> int:
             "somewhere else, or point --census at the raw census"
         )
     lines = ledger(census["results"])
-    header = {k: census[k] for k in (
-        "since", "packages_requested", "cohorts", "workers", "top_downloads_list",
-        "revision_of_this_run", "command", "plan_counts") if k in census}
+    header = {
+        k: census[k]
+        for k in (
+            "since",
+            "packages_requested",
+            "cohorts",
+            "workers",
+            "top_downloads_list",
+            "revision_of_this_run",
+            "command",
+            "plan_counts",
+        )
+        if k in census
+    }
     # mtime=0: gzip stores a timestamp, and a ledger that is byte-identical except for
     # when it was written is a diff every time the script runs.
     with gzip.GzipFile(args.ledger, "wb", mtime=0) as fh:
@@ -238,9 +288,11 @@ def main() -> int:
             f"dropped {summary['dropped_not_an_upgrade']} row(s) whose 'new' version is "
             f"older than its 'old' - consecutive by upload date, not by version\n"
         )
-    print(f"{summary['rows']} rows, {summary['measured']} measured, "
-          f"{summary['broke_exported']} broke an exported name "
-          f"({(summary['broke_exported_share'] or 0) * 100:.1f}%)\n")
+    print(
+        f"{summary['rows']} rows, {summary['measured']} measured, "
+        f"{summary['broke_exported']} broke an exported name "
+        f"({(summary['broke_exported_share'] or 0) * 100:.1f}%)\n"
+    )
     unaccounted = summary["revisions"].get("not recorded", 0)
     if unaccounted:
         print(
@@ -252,8 +304,10 @@ def main() -> int:
     for name, c in summary["cohorts"].items():
         share = "n/a" if c["broke_exported_share"] is None else f"{c['broke_exported_share']:.1%}"
         print(f"  {name:14}{c['pairs']:>7}{c['measured']:>10}{c['broke_exported']:>7}{share:>8}")
-    print(f"\nwritten to {args.out.name}, and {len(lines)} row(s) to {args.ledger.name} "
-          f"({args.ledger.stat().st_size / 1024:.0f} KB)")
+    print(
+        f"\nwritten to {args.out.name}, and {len(lines)} row(s) to {args.ledger.name} "
+        f"({args.ledger.stat().st_size / 1024:.0f} KB)"
+    )
     return 0
 
 

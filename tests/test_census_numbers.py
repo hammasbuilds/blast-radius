@@ -110,14 +110,20 @@ def test_the_named_largest_pairs_are_the_largest(section, table):
 
 
 def test_the_totals_and_the_deductions_match_the_summary(section, summary):
-    assert f"**3,777 pairs were walked**" in section
-    assert summary["rows"] + summary["dropped_not_an_upgrade"] + summary[
-        "dropped_second_pair_for_a_package"] == 3777
+    assert "**3,777 pairs were walked**" in section
+    assert (
+        summary["rows"]
+        + summary["dropped_not_an_upgrade"]
+        + summary["dropped_second_pair_for_a_package"]
+        == 3777
+    )
     assert f"{summary['dropped_not_an_upgrade']} are dropped because" in section
     assert f"{summary['dropped_second_pair_for_a_package']} because a sweep resumed" in section
     unmeasured = summary["rows"] - summary["measured"]
-    assert f"**{unmeasured} could\nnot be measured**" in section or \
-           f"**{unmeasured} could not be measured**" in section
+    assert (
+        f"**{unmeasured} could\nnot be measured**" in section
+        or f"**{unmeasured} could not be measured**" in section
+    )
 
 
 def test_the_headline_counts_are_the_summarys(section, summary):
@@ -129,8 +135,10 @@ def test_the_section_says_how_many_rows_lack_a_revision(section, summary):
     """The provenance caveat is a number, so it is checked like the others."""
     unstamped = summary["revisions"].get("not recorded", 0)
     assert unstamped, "every row now carries a revision - the caveat should be rewritten"
-    assert f"**The sweep spans revisions of this tool, and {unstamped:,} of its " \
-           f"{summary['rows']:,} rows do not record which.**" in section
+    assert (
+        f"**The sweep spans revisions of this tool, and {unstamped:,} of its "
+        f"{summary['rows']:,} rows do not record which.**" in section
+    )
 
 
 def test_the_recheck_numbers_are_the_rechecks(section):
@@ -139,20 +147,27 @@ def test_the_recheck_numbers_are_the_rechecks(section):
         pytest.skip("docs/census-recheck.json is not shipped")
     recheck = json.loads(RECHECK.read_text(encoding="utf-8"))
     assert f"| pairs re-measured | {recheck['re_measured']} |" in section
-    assert ("| verdicts that changed (would move a rate) | "
-            f"**{recheck['verdict_flips']}** |") in section
-    assert ("| exported symbols that moved without changing a verdict | "
-            f"**{recheck['exported_symbol_changes_without_a_flip']}** |") in section
-    assert ("| rows where only internal symbols moved | "
-            f"{recheck['internal_only_changes']} |") in section
+    assert (
+        f"| verdicts that changed (would move a rate) | **{recheck['verdict_flips']}** |"
+    ) in section
+    assert (
+        "| exported symbols that moved without changing a verdict | "
+        f"**{recheck['exported_symbol_changes_without_a_flip']}** |"
+    ) in section
+    assert (
+        f"| rows where only internal symbols moved | {recheck['internal_only_changes']} |"
+    ) in section
 
 
 def test_the_two_internal_differences_are_the_ones_described(section):
     if not RECHECK.exists():
         pytest.skip("docs/census-recheck.json is not shipped")
     recheck = json.loads(RECHECK.read_text(encoding="utf-8"))
-    internal = [c for c in recheck["changed"]
-                if not c["verdict_flipped"] and not c["exported_symbols_moved"]]
+    internal = [
+        c
+        for c in recheck["changed"]
+        if not c["verdict_flipped"] and not c["exported_symbols_moved"]
+    ]
     assert len(internal) == 2
     pairs = {c["pair"].split(" (")[0] for c in internal}
     assert pairs == {"pyiceberg 0.11.1->0.12.0", "aws-lambda-powertools 2.43.1->3.0.0"}
@@ -162,8 +177,17 @@ def test_the_two_internal_differences_are_the_ones_described(section):
     # The prose spells these counts as words, so the count becomes the word the prose
     # would have to use. Written as `f"... {n} ..." or "... four ..."`, the computed half
     # of the assertion never ran: the literal matched whatever n was.
-    words = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six",
-             13: "thirteen", 14: "fourteen", 15: "fifteen"}
+    words = {
+        1: "one",
+        2: "two",
+        3: "three",
+        4: "four",
+        5: "five",
+        6: "six",
+        13: "thirteen",
+        14: "fourteen",
+        15: "fifteen",
+    }
     by_pair = {c["pair"].split(" (")[0]: c for c in internal}
     ice = by_pair["pyiceberg 0.11.1->0.12.0"]["internal_symbols_moved"]["internal_gone"]
     alp = by_pair["aws-lambda-powertools 2.43.1->3.0.0"]["internal_symbols_moved"]["internal_gone"]
@@ -182,8 +206,10 @@ def test_the_two_internal_differences_are_the_ones_described(section):
 
 def test_the_scramp_example_is_a_patch_release_and_reads_right(section):
     """The example for 'exported understates' has to be a patch release."""
-    assert "`scramp`\n1.4.18, a **patch** release" in section or \
-           "`scramp` 1.4.18, a **patch** release" in section
+    assert (
+        "`scramp`\n1.4.18, a **patch** release" in section
+        or "`scramp` 1.4.18, a **patch** release" in section
+    )
     for name in ("MECHANISMS", "CHANNEL_TYPES", "MAX_ITERATION_COUNT"):
         assert name in section
     assert "declares no `__all__`" in section
@@ -195,8 +221,10 @@ def test_the_section_says_the_old_page_is_corrected(section):
 
 
 def test_the_rebuild_command_names_a_file_that_is_committed(section):
-    assert "scripts/census_summary.py --census\ndocs/census-rows.json.gz" in section or \
-           "scripts/census_summary.py --census docs/census-rows.json.gz" in section
+    assert (
+        "scripts/census_summary.py --census\ndocs/census-rows.json.gz" in section
+        or "scripts/census_summary.py --census docs/census-rows.json.gz" in section
+    )
     assert LEDGER.exists(), "the README offers a command against a file that is not here"
 
 

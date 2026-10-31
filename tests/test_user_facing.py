@@ -515,9 +515,7 @@ def test_weak_differences_are_listed_apart_and_not_counted():
     # Every kind at zero: a weak difference must not raise any count, and "silent: 0" is
     # the statement that it did not - an absent key would leave a consumer unable to tell
     # "no silent changes" from "this field does not exist".
-    assert report.counts() == {
-        "gone": 0, "reshaped": 0, "widened": 0, "silent": 0, "added": 0
-    }
+    assert report.counts() == {"gone": 0, "reshaped": 0, "widened": 0, "silent": 0, "added": 0}
 
 
 def test_each_uncounted_reason_gets_its_own_block():
@@ -532,13 +530,24 @@ def test_each_uncounted_reason_gets_its_own_block():
     report = _report()
     report.behaviour_checked = True
     report.weak = [
-        Change(Kind.SILENT, "p.rejects", weak_reason=WRONG_TYPE_REASON,
-               witness={"args": "('',)", "old": "raise: TypeError: x", "new": "ok: 1"}),
-        Change(Kind.SILENT, "p.reworded", weak_reason=MESSAGE_ONLY_REASON,
-               witness={"args": "('',)", "old": "raise: ValueError: a",
-                        "new": "raise: ValueError: b"}),
-        Change(Kind.SILENT, "p.reworded_too", weak_reason=MESSAGE_ONLY_REASON,
-               witness={"args": "()", "old": "raise: KeyError: a", "new": "raise: KeyError: b"}),
+        Change(
+            Kind.SILENT,
+            "p.rejects",
+            weak_reason=WRONG_TYPE_REASON,
+            witness={"args": "('',)", "old": "raise: TypeError: x", "new": "ok: 1"},
+        ),
+        Change(
+            Kind.SILENT,
+            "p.reworded",
+            weak_reason=MESSAGE_ONLY_REASON,
+            witness={"args": "('',)", "old": "raise: ValueError: a", "new": "raise: ValueError: b"},
+        ),
+        Change(
+            Kind.SILENT,
+            "p.reworded_too",
+            weak_reason=MESSAGE_ONLY_REASON,
+            witness={"args": "()", "old": "raise: KeyError: a", "new": "raise: KeyError: b"},
+        ),
     ]
     text = summary(report)
     assert f"Not counted (1): {WRONG_TYPE_REASON}." in text

@@ -42,8 +42,14 @@ BREAKING = ("exported_gone", "exported_reshaped")
 # still a change the code made, and a check that reads only the published keys cannot say
 # whether anything happened. The constants change lands almost entirely in `internal_*`,
 # because a constant in a submodule is neither in __all__ nor at the top level.
-ALL_KEYS = ("exported_gone", "exported_reshaped", "exported_widened",
-            "internal_gone", "internal_reshaped", "internal_widened")
+ALL_KEYS = (
+    "exported_gone",
+    "exported_reshaped",
+    "exported_widened",
+    "internal_gone",
+    "internal_reshaped",
+    "internal_widened",
+)
 SEED = 20261028
 
 
@@ -59,10 +65,15 @@ def main() -> int:
     ap.add_argument("--census", type=Path, default=ROOT / "docs" / "pair-census.json")
     ap.add_argument("--per-cohort", type=int, default=8)
     ap.add_argument("--out", type=Path, default=ROOT / "docs" / "census-recheck.json")
-    ap.add_argument("--plant", type=int, default=0, metavar="N",
-                    help="sensitivity run: corrupt N sampled rows in a copy of the census "
-                         "and report whether the re-check contradicts each one. "
-                         "'nothing changed' is not evidence until a planted change is found")
+    ap.add_argument(
+        "--plant",
+        type=int,
+        default=0,
+        metavar="N",
+        help="sensitivity run: corrupt N sampled rows in a copy of the census "
+        "and report whether the re-check contradicts each one. "
+        "'nothing changed' is not evidence until a planted change is found",
+    )
     args = ap.parse_args()
 
     # Read once and never written back: --plant corrupts rows in memory, and a run that
@@ -91,8 +102,9 @@ def main() -> int:
             row.setdefault("exported_gone", [])
             row["exported_gone"] = [*row["exported_gone"], "planted.symbol.that.never.existed"]
             planted.add(f"{row['package']} {row['old']}->{row['new']} ({row['cohort']})")
-        print(f"planted a false removal in {len(planted)} row(s); each must come back "
-              f"as a change\n")
+        print(
+            f"planted a false removal in {len(planted)} row(s); each must come back as a change\n"
+        )
 
     print(f"{len(rows)} measured pairs in the census; re-measuring {len(sample)}\n")
     changed, unmeasurable, checked = [], [], []
@@ -111,22 +123,26 @@ def main() -> int:
         else:
             checked.append(label)
             moved = {
-                k: {"gained": sorted(set(now.get(k, [])) - set(row.get(k, []))),
-                    "lost": sorted(set(row.get(k, [])) - set(now.get(k, [])))}
+                k: {
+                    "gained": sorted(set(now.get(k, [])) - set(row.get(k, []))),
+                    "lost": sorted(set(row.get(k, [])) - set(now.get(k, []))),
+                }
                 for k in ALL_KEYS
                 if set(now.get(k, [])) != set(row.get(k, []))
             }
             exported_moved = {k: v for k, v in moved.items() if k.startswith("exported_")}
             internal_moved = {k: v for k, v in moved.items() if k.startswith("internal_")}
             if was != is_now or moved:
-                changed.append({
-                    "pair": label,
-                    "was": was,
-                    "now": is_now,
-                    "verdict_flipped": was != is_now,
-                    "exported_symbols_moved": exported_moved,
-                    "internal_symbols_moved": internal_moved,
-                })
+                changed.append(
+                    {
+                        "pair": label,
+                        "was": was,
+                        "now": is_now,
+                        "verdict_flipped": was != is_now,
+                        "exported_symbols_moved": exported_moved,
+                        "internal_symbols_moved": internal_moved,
+                    }
+                )
             if was != is_now or exported_moved:
                 mark = "CHANGED (a published rate depends on this)"
             elif internal_moved:
@@ -136,10 +152,12 @@ def main() -> int:
         print(f"  [{n}/{len(sample)}] {label}: {mark}", flush=True)
 
     flips = [c for c in changed if c["verdict_flipped"]]
-    exported_moves = [c for c in changed
-                      if not c["verdict_flipped"] and c["exported_symbols_moved"]]
-    internal_only = [c for c in changed
-                     if not c["verdict_flipped"] and not c["exported_symbols_moved"]]
+    exported_moves = [
+        c for c in changed if not c["verdict_flipped"] and c["exported_symbols_moved"]
+    ]
+    internal_only = [
+        c for c in changed if not c["verdict_flipped"] and not c["exported_symbols_moved"]
+    ]
     out = {
         "census": str(args.census.name),
         "measured_pairs_in_census": len(rows),
@@ -155,19 +173,19 @@ def main() -> int:
     }
     args.out.write_text(json.dumps(out, indent=1), encoding="utf-8")
 
-    print(f"\n{len(checked)} pair(s) comparable; {len(flips)} changed verdict, "
-          f"{len(exported_moves)} moved an exported symbol without changing the verdict, "
-          f"{len(internal_only)} changed only internal symbols")
+    print(
+        f"\n{len(checked)} pair(s) comparable; {len(flips)} changed verdict, "
+        f"{len(exported_moves)} moved an exported symbol without changing the verdict, "
+        f"{len(internal_only)} changed only internal symbols"
+    )
     for c in changed:
         where = "exported" if (c["verdict_flipped"] or c["exported_symbols_moved"]) else "internal"
         print(f"  {c['pair']}: was {c['was']}, now {c['now']} ({where})")
         for key, move in {**c["exported_symbols_moved"], **c["internal_symbols_moved"]}.items():
             if move["gained"]:
-                print(f"      {key} +{len(move['gained'])}: "
-                      f"{', '.join(move['gained'][:4])}")
+                print(f"      {key} +{len(move['gained'])}: {', '.join(move['gained'][:4])}")
             if move["lost"]:
-                print(f"      {key} -{len(move['lost'])}: "
-                      f"{', '.join(move['lost'][:4])}")
+                print(f"      {key} -{len(move['lost'])}: {', '.join(move['lost'][:4])}")
     if unmeasurable:
         print(f"{len(unmeasurable)} pair(s) cannot be measured today and were not compared:")
         for u in unmeasurable:
@@ -175,15 +193,19 @@ def main() -> int:
     if planted:
         found = {c["pair"] for c in changed}
         missed = sorted(planted - found)
-        print(f"\nsensitivity: {len(planted) - len(missed)} of {len(planted)} planted "
-              f"changes were caught")
+        print(
+            f"\nsensitivity: {len(planted) - len(missed)} of {len(planted)} planted "
+            f"changes were caught"
+        )
         for pair in missed:
             print(f"  MISSED {pair}")
         out["planted"] = sorted(planted)
         out["planted_missed"] = missed
         if missed:
-            print("\nthe re-check cannot be trusted to report a difference, so "
-                  "'nothing changed' from it means nothing")
+            print(
+                "\nthe re-check cannot be trusted to report a difference, so "
+                "'nothing changed' from it means nothing"
+            )
             args.out.write_text(json.dumps(out, indent=1), encoding="utf-8")
             return 1
 

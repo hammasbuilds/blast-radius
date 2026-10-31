@@ -90,7 +90,8 @@ def summarise(rows: list[dict]) -> dict[str, dict]:
             "broken_symbols": symbols,
             "largest_pair": (
                 f"{biggest['package']} {biggest['old']}->{biggest['new']}"
-                if biggest is not None and top_symbols else None
+                if biggest is not None and top_symbols
+                else None
             ),
             "largest_pair_symbols": top_symbols,
             "largest_pair_share": (top_symbols / symbols) if symbols else None,
@@ -133,34 +134,44 @@ def main() -> int:
         f"{unmeasured:,} further pairs could not be measured and are listed with their "
         f"reason in `{args.census.name}`.",
         "",
-        "| Bump | Pairs | Packages | Broke exported API | Broken symbols | Of exported symbols | Largest pair's share | Widened |",
+        "| Bump | Pairs | Packages | Broke exported API | Broken symbols "
+        "| Of exported symbols | Largest pair's share | Widened |",
         "|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for cohort in ORDER:
         if cohort not in table:
             continue
         v = table[cohort]
-        rate = (f"{v['symbol_rate'] * 100:.2f}%" if v["symbol_rate"] is not None else "-")
+        rate = f"{v['symbol_rate'] * 100:.2f}%" if v["symbol_rate"] is not None else "-"
         share = (
             f"{v['largest_pair_share']:.0%} ({v['largest_pair']})"
-            if v["largest_pair_share"] is not None else "-"
+            if v["largest_pair_share"] is not None
+            else "-"
         )
         lines.append(
             f"| **{cohort}** | {v['pairs']:,} | {v['packages']:,} | "
             f"{fmt_rate(v['broke_rate'], v['broke'], v['pairs'])} | {v['broken_symbols']:,} | "
             f"{v['broken_symbols']:,} of {v['exported_symbols']:,} ({rate}) | {share} | "
-            f"{v['widened']:,} |")
+            f"{v['widened']:,} |"
+        )
 
     thin = [c for c, v in table.items() if v["broke_rate"] is None]
     if thin:
-        lines += ["", f"No percentage is given for {', '.join(thin)}: under {MIN_FOR_RATE} "
-                      "measured pairs, a rate would read as precision the sample cannot carry."]
+        lines += [
+            "",
+            f"No percentage is given for {', '.join(thin)}: under {MIN_FOR_RATE} "
+            "measured pairs, a rate would read as precision the sample cannot carry.",
+        ]
 
-    why = collections.Counter(
-        str(r["error"]).split(":")[0][:48] for r in rows if "error" in r)
+    why = collections.Counter(str(r["error"]).split(":")[0][:48] for r in rows if "error" in r)
     if why:
-        lines += ["", "Pairs that could not be measured, by reason:", "",
-                  "| Reason | Pairs |", "|---|---:|"]
+        lines += [
+            "",
+            "Pairs that could not be measured, by reason:",
+            "",
+            "| Reason | Pairs |",
+            "|---|---:|",
+        ]
         # Sorted by count and then by reason, not most_common(): ties come out in
         # insertion order, so the same census summarised from two files that hold the
         # same rows in a different order printed the same numbers in a different order.

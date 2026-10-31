@@ -958,9 +958,7 @@ def behaviour_changes(
         # Which reason, when there is no strong disagreement left: whichever applies to
         # the witness actually published, so the sentence and the evidence agree.
         reason = (
-            WRONG_TYPE_REASON
-            if _wrong_type(rows_a[best], rows_b[best])
-            else MESSAGE_ONLY_REASON
+            WRONG_TYPE_REASON if _wrong_type(rows_a[best], rows_b[best]) else MESSAGE_ONLY_REASON
         )
         (changes if strong else weak).append(
             Change(
