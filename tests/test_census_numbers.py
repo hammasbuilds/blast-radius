@@ -323,3 +323,43 @@ def test_the_cross_ecosystem_table_states_our_own_non_major_rate_correctly() -> 
     assert f"**{rate * 100:.1f}%**" in section, (
         f"the non-major rate is {rate * 100:.1f}% over {len(non_major)} pairs"
     )
+
+
+def test_the_cross_ecosystem_row_describes_the_predicate_it_used() -> None:
+    """The row said "changing an exported name", which includes widening. It does not.
+
+    `census_summary.BREAKING` is ('exported_gone', 'exported_reshaped'); a signature
+    that only grew is explicitly not breaking, because every existing call still binds.
+    The sentence explaining what the number means described a different number - and a
+    hand-written predicate built from that description put the rate at 14.3% instead of
+    8.2% when this test was first written, which is how the error was found.
+    """
+    import sys as _sys
+
+    _sys.path.insert(0, str(ROOT / "scripts"))
+    import census_summary as cs  # noqa: PLC0415
+
+    paper = (ROOT / "paper" / "main.md").read_text(encoding="utf-8")
+    section = paper[paper.index("## 3.1 The same question") : paper.index("# 4. ")]
+    assert "widened" in section, "the section must say what it excludes, not only what it counts"
+    assert "exported_widened" not in cs.BREAKING
+    for field in cs.BREAKING:
+        word = field.removeprefix("exported_")
+        assert f"`{word}`" in section, (
+            f"the section does not name `{word}`, which is one of the two conditions "
+            f"its rate counts"
+        )
+
+
+def test_no_latex_command_lost_its_backslash() -> None:
+    """A heredoc ate the backslash out of `\times` twice in this set of papers.
+
+    It renders as a tab followed by `imes`, which is invisible in a diff and survives
+    every numeric check, because no number changed.
+    """
+    paper = (ROOT / "paper" / "main.md").read_text(encoding="utf-8")
+    for fragment in ("imes10", "ext{", "rac{", "imes "):
+        assert "\t" + fragment not in paper, (
+            f"a tab precedes {fragment!r}: a LaTeX command lost its backslash"
+        )
+    assert "\t" not in paper, "a literal tab in the manuscript is almost always an eaten escape"

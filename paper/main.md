@@ -140,14 +140,16 @@ have been measured.
 | Maven (Java) | releases introducing at least one breaking change [@maven-replication] | ~30% |
 | Go | non-major upgrades introducing a breaking change, 124K libraries [@go-semver] | 28.6% |
 | npm | dependent releases impacted by a breaking change in a non-major update [@npm-breaking] | ~14% |
-| **PyPI (this work)** | **non-major upgrades (patch + minor) changing an exported name** | **8.2%** |
+| **PyPI (this work)** | **non-major upgrades (patch + minor) losing or reshaping an exported name** | **8.2%** |
 | **PyPI (this work)** | **all upgrades, every cohort** | **15.6%** |
 
 **PyPI's non-major rate is the lowest of the four, and the detector is the first
 explanation to rule out, not the last.** Each row measures something different. Maven's
 counts releases; Go's counts upgrades by signature diffing; npm's counts *client*
 manifestation, so a break nobody depends on is not counted. Ours counts an exported name
-disappearing or widening under execution, which is narrower than "any breaking change" —
+that is **`gone` or `reshaped`** under execution — `widened`, a signature that only grew,
+is explicitly not breaking here, because every existing call still binds — which is
+narrower than "any breaking change":
 a changed exception type, a changed default, a changed return value under the same
 signature is a break this row does not contain, and §2 is explicit that the behavioural
 category is reported separately for exactly that reason. A narrower definition produces a
@@ -157,7 +159,7 @@ rather than as evidence that PyPI breaks less than Go.
 What *is* comparable across the rows is the shape. Raemaekers et al. report Maven's minor
 and major releases breaking at similar rates [@maven-replication]; here they do not, by a
 factor of five — minor 13.7% against major 41.5%, non-overlapping Wilson intervals and
-$p = 6.3	imes10^{-31}$ in the table above.
+$p = 6.3\times10^{-31}$ in the table above.
 Whatever else differs between the two measurements, PyPI's major releases carry the
 breakage its minor releases do not, and Maven's reportedly do not. That is a difference in
 the thing being described rather than in how it is counted, and it is the comparison worth
@@ -324,6 +326,16 @@ both versions and both tools.
 > in Java, and a Python behavioural-break benchmark [@who-broke-me] with no denominator.
 > §1 has been rewritten to claim the intersection those three leave open rather than an
 > absence, which is both true and a narrower claim.
+>
+> §3.1's cross-ecosystem table is **entirely second-hand**. The Go figure (28.6% of
+> non-major upgrades) and the npm figure (about 12% of dependent packages and 14% of
+> their releases) were read from the papers' own abstracts; the Maven figure is a search
+> summary of @maven-replication, and so is the claim §3.1 leans on hardest — that
+> Maven's minor and major releases break at similar rates, which is the contrast with
+> this paper's fivefold gap. That sentence should not survive submission without the
+> replication study's own table in front of it, because it is the one place where a
+> second-hand number is used to say something about *this* paper's result rather than
+> to set context.
 >
 > The remaining references are quoted from search summaries rather than full texts and
 > must each be read before submission. `AexPy`, `@ruiz-behavioural` and `@who-broke-me`
