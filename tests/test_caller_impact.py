@@ -39,9 +39,24 @@ PUBLISHED_BROKE = 163
 
 
 def _model():
-    import semver_compliance  # noqa: PLC0415
+    """`research/semver_compliance`, or a skip when only the wheel is present.
 
-    return semver_compliance
+    The wheel job copies `tests/` alone into a scratch directory and runs it against the
+    installed package, which is what proves the suite does not depend on the source tree.
+    `research/` is not in the wheel, so a plain import raises there and fails the job -
+    which is how this file first broke CI. `importorskip` names the reason instead.
+    """
+    return pytest.importorskip(
+        "semver_compliance",
+        reason="research/ is not in the wheel; the model lives there",
+    )
+
+
+def _repo_file(path: pathlib.Path) -> str:
+    """A file that lives in the repository rather than in the wheel."""
+    if not path.is_file():
+        pytest.skip(f"{path.name} is not present - running against an installed wheel")
+    return path.read_text(encoding="utf-8")
 
 
 def _measured():
@@ -158,7 +173,7 @@ def test_the_caller_rate_is_below_the_pair_rate_at_every_caller_size():
 def test_the_section_quotes_the_artefact_and_not_a_rounding_of_its_own():
     data = _measured()
     promising = data["caller_impact"]["promising"]
-    text = PAPER.read_text(encoding="utf-8")
+    text = _repo_file(PAPER)
     start = text.index("**4.4 A caller is not a package")
     section = " ".join(text[start : text.index("\n# 5.", start)].split())
     for k in (1, 3, 10):
@@ -173,7 +188,7 @@ def test_the_section_quotes_the_artefact_and_not_a_rounding_of_its_own():
 
 def test_the_section_keeps_the_direction_of_its_own_bias():
     """The uniform assumption overstates impact; an edit must not drop that."""
-    text = PAPER.read_text(encoding="utf-8")
+    text = _repo_file(PAPER)
     start = text.index("**4.4 A caller is not a package")
     section = " ".join(text[start : text.index("\n# 5.", start)].split())
     assert "overstates" in section
@@ -182,7 +197,7 @@ def test_the_section_keeps_the_direction_of_its_own_bias():
 
 
 def test_the_abstract_and_the_heading_agree_on_how_many_qualifications_there_are():
-    text = PAPER.read_text(encoding="utf-8")
+    text = _repo_file(PAPER)
     assert "# 4. Four qualifications" in text
     assert "Four results qualify those rates" in text
     assert "Three results qualify those rates" not in text
@@ -193,7 +208,7 @@ def test_the_abstract_and_the_heading_agree_on_how_many_qualifications_there_are
 
 
 def test_the_new_comparison_rows_have_references():
-    text = PAPER.read_text(encoding="utf-8")
+    text = _repo_file(PAPER)
     for key in ("@raemaekers2014", "@breaking-bad"):
         # Cited in the table and defined in the reference list.
         assert text.count(f"[{key}]") >= 2, key
@@ -207,6 +222,6 @@ def test_pypi_is_still_the_lowest_row_in_the_comparison_table():
     mine = data["semver_compliance"]["compliance_rate_excluding_0x"]["rate"]["rate"]
     published = [s["rate"] for s in data["semver_compliance"]["published"]]
     assert all(mine < other for other in published), (mine, published)
-    text = PAPER.read_text(encoding="utf-8")
+    text = _repo_file(PAPER)
     assert "lowest in the table" in text
     assert "lowest of the four" not in text
