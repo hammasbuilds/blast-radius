@@ -1,0 +1,299 @@
+{
+ "what": "The semantic-versioning compliance rate for PyPI, comparable to the published Maven and Go figures, and a caller-level impact estimate under uniform symbol choice. Same population and predicate as the paper's per-cohort rates.",
+ "semver_compliance": {
+  "promising_cohorts": [
+   "patch",
+   "minor",
+   "0.x-patch"
+  ],
+  "set_aside": {
+   "0.0.z": 49
+  },
+  "by_cohort": {
+   "patch": {
+    "pairs": 808,
+    "broke": 20,
+    "rate": {
+     "rate": 0.0248,
+     "lo": 0.0161,
+     "hi": 0.0379,
+     "n": 808,
+     "successes": 20
+    }
+   },
+   "minor": {
+    "pairs": 830,
+    "broke": 114,
+    "rate": {
+     "rate": 0.1373,
+     "lo": 0.1156,
+     "hi": 0.1624,
+     "n": 830,
+     "successes": 114
+    }
+   },
+   "0.x-patch": {
+    "pairs": 372,
+    "broke": 29,
+    "rate": {
+     "rate": 0.078,
+     "lo": 0.0548,
+     "hi": 0.1097,
+     "n": 372,
+     "successes": 29
+    }
+   },
+   "major": {
+    "pairs": 532,
+    "broke": 221,
+    "rate": {
+     "rate": 0.4154,
+     "lo": 0.3743,
+     "hi": 0.4577,
+     "n": 532,
+     "successes": 221
+    }
+   },
+   "0.x-breaking": {
+    "pairs": 346,
+    "broke": 65,
+    "rate": {
+     "rate": 0.1879,
+     "lo": 0.1502,
+     "hi": 0.2324,
+     "n": 346,
+     "successes": 65
+    }
+   },
+   "0.0.z": {
+    "pairs": 49,
+    "broke": 8,
+    "rate": {
+     "rate": 0.1633,
+     "lo": 0.0851,
+     "hi": 0.2904,
+     "n": 49,
+     "successes": 8
+    }
+   }
+  },
+  "compliance_rate": {
+   "pairs": 2010,
+   "broke": 163,
+   "rate": {
+    "rate": 0.0811,
+    "lo": 0.0699,
+    "hi": 0.0938,
+    "n": 2010,
+    "successes": 163
+   }
+  },
+  "compliance_rate_excluding_0x": {
+   "pairs": 1638,
+   "broke": 134,
+   "rate": {
+    "rate": 0.0818,
+    "lo": 0.0695,
+    "hi": 0.0961,
+    "n": 1638,
+    "successes": 134
+   }
+  },
+  "published": [
+   {
+    "study": "Raemaekers et al. (2014, 2017)",
+    "ecosystem": "Maven Central (Java)",
+    "rate": 0.145,
+    "quantity": "releases introducing a breaking change in a minor or patch version",
+    "method": "static API diff"
+   },
+   {
+    "study": "Ochoa et al. (2021), Breaking Bad?",
+    "ecosystem": "Maven Central (Java)",
+    "rate": 0.166,
+    "quantity": "non-major upgrades that do not comply (reported as 83.4% compliant)",
+    "method": "static API diff"
+   },
+   {
+    "study": "Li et al. (2023)",
+    "ecosystem": "Go",
+    "rate": 0.286,
+    "quantity": "minor and patch upgrades introducing a breaking change",
+    "method": "static API diff"
+   }
+  ]
+ },
+ "caller_impact": {
+  "caller_sizes": [
+   1,
+   3,
+   10
+  ],
+  "pairs_measured": 2937,
+  "pairs_with_an_exported_surface": 2674,
+  "pairs_exporting_nothing": 263,
+  "why_the_api_level_rate_differs": "Pairs exporting no names are dropped here and counted in `semver_compliance`. None of them can break an exported name, so excluding them raises the API-level rate; the difference is exactly those pairs.",
+  "by_cohort": {
+   "patch": {
+    "pairs": 746,
+    "api_level_rate": {
+     "rate": 0.0268,
+     "lo": 0.0174,
+     "hi": 0.041,
+     "n": 746,
+     "successes": 20
+    },
+    "broken_surface_share": {
+     "n": 20,
+     "mean": 0.114,
+     "median": 0.0242,
+     "max": 0.7442
+    },
+    "expected_caller_rate_k1": 0.0031,
+    "pairs_too_small_for_k1": 0,
+    "expected_caller_rate_k3": 0.0063,
+    "pairs_too_small_for_k3": 48,
+    "expected_caller_rate_k10": 0.0113,
+    "pairs_too_small_for_k10": 151
+   },
+   "minor": {
+    "pairs": 758,
+    "api_level_rate": {
+     "rate": 0.1504,
+     "lo": 0.1267,
+     "hi": 0.1776,
+     "n": 758,
+     "successes": 114
+    },
+    "broken_surface_share": {
+     "n": 114,
+     "mean": 0.0517,
+     "median": 0.0208,
+     "max": 1.0
+    },
+    "expected_caller_rate_k1": 0.0078,
+    "pairs_too_small_for_k1": 0,
+    "expected_caller_rate_k3": 0.0192,
+    "pairs_too_small_for_k3": 49,
+    "expected_caller_rate_k10": 0.0519,
+    "pairs_too_small_for_k10": 158
+   },
+   "0.x-patch": {
+    "pairs": 336,
+    "api_level_rate": {
+     "rate": 0.0863,
+     "lo": 0.0608,
+     "hi": 0.1212,
+     "n": 336,
+     "successes": 29
+    },
+    "broken_surface_share": {
+     "n": 29,
+     "mean": 0.0844,
+     "median": 0.0435,
+     "max": 0.52
+    },
+    "expected_caller_rate_k1": 0.0073,
+    "pairs_too_small_for_k1": 0,
+    "expected_caller_rate_k3": 0.0197,
+    "pairs_too_small_for_k3": 37,
+    "expected_caller_rate_k10": 0.048,
+    "pairs_too_small_for_k10": 87
+   },
+   "major": {
+    "pairs": 479,
+    "api_level_rate": {
+     "rate": 0.4614,
+     "lo": 0.4172,
+     "hi": 0.5062,
+     "n": 479,
+     "successes": 221
+    },
+    "broken_surface_share": {
+     "n": 221,
+     "mean": 0.2395,
+     "median": 0.1163,
+     "max": 1.0
+    },
+    "expected_caller_rate_k1": 0.1105,
+    "pairs_too_small_for_k1": 0,
+    "expected_caller_rate_k3": 0.2017,
+    "pairs_too_small_for_k3": 42,
+    "expected_caller_rate_k10": 0.3466,
+    "pairs_too_small_for_k10": 127
+   },
+   "0.x-breaking": {
+    "pairs": 313,
+    "api_level_rate": {
+     "rate": 0.2077,
+     "lo": 0.1664,
+     "hi": 0.256,
+     "n": 313,
+     "successes": 65
+    },
+    "broken_surface_share": {
+     "n": 65,
+     "mean": 0.1153,
+     "median": 0.04,
+     "max": 0.6744
+    },
+    "expected_caller_rate_k1": 0.0239,
+    "pairs_too_small_for_k1": 0,
+    "expected_caller_rate_k3": 0.0527,
+    "pairs_too_small_for_k3": 35,
+    "expected_caller_rate_k10": 0.1001,
+    "pairs_too_small_for_k10": 82
+   }
+  },
+  "overall": {
+   "pairs": 2674,
+   "api_level_rate": {
+    "rate": 0.1709,
+    "lo": 0.1571,
+    "hi": 0.1856,
+    "n": 2674,
+    "successes": 457
+   },
+   "broken_surface_share": {
+    "n": 457,
+    "mean": 0.1571,
+    "median": 0.0514,
+    "max": 1.0
+   },
+   "expected_caller_rate_k1": 0.0269,
+   "pairs_too_small_for_k1": 0,
+   "expected_caller_rate_k3": 0.0524,
+   "pairs_too_small_for_k3": 216,
+   "expected_caller_rate_k10": 0.0963,
+   "pairs_too_small_for_k10": 617
+  },
+  "promising": {
+   "pairs": 1840,
+   "api_level_rate": {
+    "rate": 0.0886,
+    "lo": 0.0764,
+    "hi": 0.1024,
+    "n": 1840,
+    "successes": 163
+   },
+   "broken_surface_share": {
+    "n": 163,
+    "mean": 0.0652,
+    "median": 0.0217,
+    "max": 1.0
+   },
+   "expected_caller_rate_k1": 0.0058,
+   "pairs_too_small_for_k1": 0,
+   "expected_caller_rate_k3": 0.014,
+   "pairs_too_small_for_k3": 134,
+   "expected_caller_rate_k10": 0.0345,
+   "pairs_too_small_for_k10": 396
+  },
+  "comparison": {
+   "study": "Li et al. (2023), Go",
+   "reported_client_impact": 0.079,
+   "quantity": "share of client programs affected by a breaking change",
+   "why_not_the_same": "Theirs is measured against real client code; this is an estimate under uniform symbol choice. Breakage is concentrated in the unused tail (Gini 0.887), and real callers import the popular names, so uniform choice overstates the chance a caller is hit."
+  }
+ }
+}

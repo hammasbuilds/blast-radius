@@ -129,10 +129,14 @@ def fisher_exact(a: int, b: int, c: int, d: int) -> float:
 
     def probability(x: int) -> float:
         return math.exp(
-            math.lgamma(row1 + 1) + math.lgamma(total - row1 + 1)
-            + math.lgamma(col1 + 1) + math.lgamma(total - col1 + 1)
-            - math.lgamma(total + 1) - math.lgamma(x + 1)
-            - math.lgamma(row1 - x + 1) - math.lgamma(col1 - x + 1)
+            math.lgamma(row1 + 1)
+            + math.lgamma(total - row1 + 1)
+            + math.lgamma(col1 + 1)
+            + math.lgamma(total - col1 + 1)
+            - math.lgamma(total + 1)
+            - math.lgamma(x + 1)
+            - math.lgamma(row1 - x + 1)
+            - math.lgamma(col1 - x + 1)
             - math.lgamma(total - row1 - col1 + x + 1)
         )
 
@@ -141,8 +145,10 @@ def fisher_exact(a: int, b: int, c: int, d: int) -> float:
     hi = min(row1, col1)
     # 1e-12 slack: two tables of equal probability must both be counted, and floating
     # point makes an exact equality test miss one of them.
-    return min(1.0, sum(probability(x) for x in range(lo, hi + 1)
-                        if probability(x) <= observed * (1 + 1e-12)))
+    return min(
+        1.0,
+        sum(probability(x) for x in range(lo, hi + 1) if probability(x) <= observed * (1 + 1e-12)),
+    )
 
 
 def holm(pairs: dict[str, float]) -> dict[str, dict]:
@@ -186,7 +192,7 @@ def cohort_tests(rows: list[dict]) -> dict:
         counts[cohort] = (sum(1 for r in mine if broke(r)), len(mine))
     raw = {}
     for i, one in enumerate(COHORTS):
-        for other in COHORTS[i + 1:]:
+        for other in COHORTS[i + 1 :]:
             a, n1 = counts[one]
             b, n2 = counts[other]
             raw[f"{one} vs {other}"] = fisher_exact(a, n1 - a, b, n2 - b)

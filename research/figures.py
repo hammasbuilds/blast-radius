@@ -9,7 +9,6 @@ Each function returns (pdf, png, caption).
 
 from __future__ import annotations
 
-import math
 from pathlib import Path
 
 import matplotlib
@@ -23,12 +22,20 @@ FIGURES = ROOT / "research" / "figures"
 BLUE, ORANGE, GREEN, GREY, PURPLE = "#0072B2", "#E69F00", "#009E73", "#999999", "#CC79A7"
 # SemVer cohorts in blue, 0.x cohorts in orange: the promise differs, so the colour does.
 COHORT_COLOUR = {
-    "patch": BLUE, "minor": BLUE, "major": BLUE,
-    "0.x-patch": ORANGE, "0.x-breaking": ORANGE, "0.0.z": ORANGE,
+    "patch": BLUE,
+    "minor": BLUE,
+    "major": BLUE,
+    "0.x-patch": ORANGE,
+    "0.x-breaking": ORANGE,
+    "0.0.z": ORANGE,
 }
 COHORT_HATCH = {
-    "patch": "", "minor": "//", "major": "xx",
-    "0.x-patch": "", "0.x-breaking": "//", "0.0.z": "xx",
+    "patch": "",
+    "minor": "//",
+    "major": "xx",
+    "0.x-patch": "",
+    "0.x-breaking": "//",
+    "0.0.z": "xx",
 }
 ORDER = ["patch", "minor", "major", "0.x-patch", "0.x-breaking", "0.0.z"]
 
@@ -64,21 +71,49 @@ def rate_by_cohort_figure(cohorts: dict) -> tuple[Path, Path, str]:
 
     fig, ax = plt.subplots(figsize=(7.0, 4.0))
     for i, cohort in enumerate(present):
-        ax.bar(i, rates[i], width=0.62, color=COHORT_COLOUR[cohort],
-               hatch=COHORT_HATCH[cohort], edgecolor="white", linewidth=0.6)
-    ax.errorbar(range(len(present)), rates, yerr=[los, his], fmt="none",
-                ecolor="#333333", capsize=4, linewidth=1.2)
+        ax.bar(
+            i,
+            rates[i],
+            width=0.62,
+            color=COHORT_COLOUR[cohort],
+            hatch=COHORT_HATCH[cohort],
+            edgecolor="white",
+            linewidth=0.6,
+        )
+    ax.errorbar(
+        range(len(present)),
+        rates,
+        yerr=[los, his],
+        fmt="none",
+        ecolor="#333333",
+        capsize=4,
+        linewidth=1.2,
+    )
     for i, cohort in enumerate(present):
         row = cohorts[cohort]
-        ax.text(i, row["hi"] + 0.012, f"{row['successes']}/{row['n']}",
-                ha="center", fontsize=8, color="#333333")
+        ax.text(
+            i,
+            row["hi"] + 0.012,
+            f"{row['successes']}/{row['n']}",
+            ha="center",
+            fontsize=8,
+            color="#333333",
+        )
     ax.set_xticks(range(len(present)))
     ax.set_xticklabels(present, fontsize=9, rotation=20, ha="right")
     ax.set_ylim(0, max(cohorts[c]["hi"] for c in present) + 0.06)
     ax.set_ylabel("share of pairs that broke an exported name", fontsize=10)
     _bare(ax)
-    ax.text(0.99, 0.97, "blue: SemVer promises\norange: 0.x, no promise",
-            transform=ax.transAxes, ha="right", va="top", fontsize=8, color=GREY)
+    ax.text(
+        0.99,
+        0.97,
+        "blue: SemVer promises\norange: 0.x, no promise",
+        transform=ax.transAxes,
+        ha="right",
+        va="top",
+        fontsize=8,
+        color=GREY,
+    )
     total = sum(cohorts[c]["n"] for c in present)
     caption = (
         f"Breakage rate by bump class over {total:,} measured release pairs, with Wilson "
@@ -105,11 +140,23 @@ def surface_size_figure(rows: list[dict], buckets: dict) -> tuple[Path, Path, st
     ns = [buckets[k]["n"] for k in labels]
 
     fig, (top, bottom) = plt.subplots(
-        2, 1, figsize=(7.0, 4.8), sharex=True,
+        2,
+        1,
+        figsize=(7.0, 4.8),
+        sharex=True,
         gridspec_kw={"height_ratios": [2.2, 1.0], "hspace": 0.1},
     )
-    top.errorbar(range(len(labels)), rates, yerr=[los, his], fmt="o-", color=BLUE,
-                 ecolor="#333333", capsize=4, linewidth=2, markersize=6)
+    top.errorbar(
+        range(len(labels)),
+        rates,
+        yerr=[los, his],
+        fmt="o-",
+        color=BLUE,
+        ecolor="#333333",
+        capsize=4,
+        linewidth=2,
+        markersize=6,
+    )
     top.set_ylabel("breakage rate", fontsize=10)
     top.set_ylim(0, max(buckets[k]["hi"] for k in labels) + 0.03)
     _bare(top)
@@ -141,20 +188,22 @@ def lorenz_figure(concentrations: dict) -> tuple[Path, Path, str]:
     equality; distance from it is the concentration.
     """
     fig, ax = plt.subplots(figsize=(5.6, 5.2))
-    ax.plot([0, 1], [0, 1], color=GREY, linewidth=1, linestyle=":",
-            label="equal contribution")
-    shown = [c for c in ["all", *ORDER]
-             if concentrations.get(c, {}).get("lorenz")]
+    ax.plot([0, 1], [0, 1], color=GREY, linewidth=1, linestyle=":", label="equal contribution")
+    shown = [c for c in ["all", *ORDER] if concentrations.get(c, {}).get("lorenz")]
     styles = {"all": ("#333333", "-", 2.2)}
     for cohort in shown:
         curve = concentrations[cohort]["lorenz"]
         n = len(curve)
         xs = [(i + 1) / n for i in range(n)]
-        colour, style, width = styles.get(
-            cohort, (COHORT_COLOUR.get(cohort, GREY), "-", 1.2)
+        colour, style, width = styles.get(cohort, (COHORT_COLOUR.get(cohort, GREY), "-", 1.2))
+        ax.plot(
+            xs,
+            curve,
+            color=colour,
+            linestyle=style,
+            linewidth=width,
+            label=f"{cohort} (Gini {concentrations[cohort]['gini']:.2f})",
         )
-        ax.plot(xs, curve, color=colour, linestyle=style, linewidth=width,
-                label=f"{cohort} (Gini {concentrations[cohort]['gini']:.2f})")
     ax.set_xlabel("share of breaking pairs, largest first", fontsize=10)
     ax.set_ylabel("cumulative share of broken symbols", fontsize=10)
     ax.set_xlim(0, 1)
@@ -208,8 +257,7 @@ def symbol_count_figure(rows: list[dict]) -> tuple[Path, Path, str]:
     median = counts[len(counts) // 2]
     one_or_two = sum(1 for c in counts if c <= 2) / len(counts)
     ax.axvline(median, color=ORANGE, linewidth=1.4, linestyle="--")
-    ax.text(median * 1.15, ax.get_ylim()[1] * 0.9, f"median {median}",
-            fontsize=8, color=ORANGE)
+    ax.text(median * 1.15, ax.get_ylim()[1] * 0.9, f"median {median}", fontsize=8, color=ORANGE)
     caption = (
         f"Distribution of how much a breaking pair breaks, {len(counts):,} breaking pairs, "
         f"log x-axis with doubling bins. The median breaking pair loses {median} exported "

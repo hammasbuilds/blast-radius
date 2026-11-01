@@ -21,8 +21,12 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: pip install "pytest>=8" "ruff>=0.16,<0.17"
-      - run: ruff check src tests scripts demo.py
-      - run: ruff format --check src tests scripts demo.py
+      # `research` draws the paper's figures and its tables, so it is linted too:
+      # an unlinted directory is where the next unused import lives. It held one,
+      # and a loop that unpacked a figure's PNG path and discarded it, so nothing
+      # checked the file the manuscript embeds had been written.
+      - run: ruff check src tests scripts research demo.py
+      - run: ruff format --check src tests scripts research demo.py
       - run: pip install -e .
       # The suite installs nothing and reaches no network: everything under test is the
       # code that decides what counts as a change.

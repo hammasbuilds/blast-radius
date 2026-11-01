@@ -18,14 +18,18 @@ every function whose call shape survived the upgrade on identical generated inpu
 name. Patch releases broke one in forty (2.5%, 95% CI [1.6%, 3.8%]); major releases broke
 two in five (41.5% [37.4%, 45.7%]).
 
-Three results qualify those rates rather than decorate them. **Breakage rises monotonically
+Four results qualify those rates rather than decorate them. **Breakage rises monotonically
 with the size of the exported surface**, from 4.1% [3.0%, 5.6%] for packages exporting ten
 names or fewer to 40.5% [32.0%, 49.6%] for packages exporting over a thousand — so a
 cohort rate is partly a measurement of API size. **Four of fifteen pairwise cohort
 comparisons do not survive multiplicity correction**, so six published percentages are not
 six distinguishable populations. And **broken symbols are extremely concentrated** (Gini
 0.887; the top 10% of breaking pairs own 84.7% of all broken symbols), so symbol-level
-rates are properties of a few packages.
+rates are properties of a few packages. Finally, **a pair-level rate is not a caller-level
+one**: the median breaking pair gives up 2.17% of its exported surface, and under uniform
+symbol choice a caller importing one name from a compatibility-promising upgrade is hit
+0.58% of the time against the pair-level 8.86% — a factor of fifteen, in the direction that
+makes the headline rate the wrong number to plan an upgrade by.
 
 Against `griffe`, a static API differ, the executing approach found four removed public
 constants `griffe` reported and our own tool did not — a defect the comparison exposed and
@@ -138,12 +142,14 @@ have been measured.
 | ecosystem | what was measured | rate |
 |---|---|---:|
 | Maven (Java) | releases introducing at least one breaking change [@maven-replication] | ~30% |
+| Maven (Java) | non-major upgrades that do **not** comply, i.e. 100% less the reported 83.4% [@breaking-bad] | 16.6% |
+| Maven (Java) | releases breaking in a minor or patch version [@raemaekers2014] | 14.5% |
 | Go | non-major upgrades introducing a breaking change, 124K libraries [@go-semver] | 28.6% |
 | npm | dependent releases impacted by a breaking change in a non-major update [@npm-breaking] | ~14% |
 | **PyPI (this work)** | **non-major upgrades (patch + minor) losing or reshaping an exported name** | **8.2%** |
 | **PyPI (this work)** | **all upgrades, every cohort** | **15.6%** |
 
-**PyPI's non-major rate is the lowest of the four, and the detector is the first
+**PyPI's non-major rate is the lowest in the table, and the detector is the first
 explanation to rule out, not the last.** Each row measures something different. Maven's
 counts releases; Go's counts upgrades by signature diffing; npm's counts *client*
 manifestation, so a break nobody depends on is not counted. Ours counts an exported name
@@ -165,7 +171,7 @@ breakage its minor releases do not, and Maven's reportedly do not. That is a dif
 the thing being described rather than in how it is counted, and it is the comparison worth
 making.
 
-# 4. Three qualifications
+# 4. Four qualifications
 
 **4.1 Surface size is a confound, and it is monotonic.**
 
@@ -194,6 +200,55 @@ symbols. The distribution of damage is heavy-tailed: the median breaking pair lo
 handful of names and the largest loses thousands, so a mean describes no pair in it. **We
 therefore report pair-level rates as the headline and never a symbol-level rate without its
 largest contributor named.**
+
+**4.4 A caller is not a package, and the gap between them is a factor of fourteen.** Every
+rate above counts a release *pair*: the pair breaks if one exported name went or was
+reshaped. That is the right unit for asking whether maintainers keep the semantic-versioning
+promise, and the wrong one for the question a reader actually arrives with, which is whether
+*their* upgrade will break. A pair that lost one exported name of eight hundred is counted
+identically to one that lost three hundred of five hundred, and §4.3 has already shown the
+damage is concentrated: the median breaking pair gives up **2.17%** of its exported surface,
+the mean 6.52%, and at the other end there is a pair that lost **100%** of it.
+
+The npm row in §3.1 is the only published figure that counts client manifestation rather than
+API change, and it is the one this paper cannot compare against, because nothing here looks
+at a client. What can be done without one is to state the arithmetic. For a caller importing
+$k$ of a module's $n$ exported names, with $b$ of them broken, the chance at least one of the
+caller's names is among them is, under uniform choice without replacement,
+
+$$1 - \binom{n-b}{k} \Big/ \binom{n}{k}$$
+
+Averaged over the 1,840 compatibility-promising pairs that export anything:
+
+| the caller imports | chance at least one of its names broke |
+|---|---:|
+| 1 name | 0.58% |
+| 3 names | 1.40% |
+| 10 names | 3.45% |
+
+Against an API-level 8.86% over the same 1,840 pairs. So the headline rate and the
+caller-level estimate differ by between a factor of two and a factor of fifteen, depending
+on how much of a module a caller touches, and **the API-level rate is not an estimate of the
+chance an upgrade breaks a given caller.** It was never offered as one, but it is the reading
+a reader will take unless the difference is printed, and until now it was not.
+
+Two things keep this an estimate rather than a measurement.
+
+*The uniform assumption points one way, and it is the wrong way.* Real callers do not sample
+a module's names uniformly; they import the documented, popular ones. Breakage is
+concentrated in the long tail — Gini 0.887 — and the tail is exactly what nobody imports. So
+uniform choice spreads the broken names across the whole surface and **overstates** the
+chance a real caller is hit. The table is an upper bound on caller impact under its own
+model, and the Go study's independently measured 7.9% of *client programs* affected is not
+the same quantity as any row of it: theirs is over real client code and over all non-major
+upgrades, mine is per upgrade and per import count.
+
+*The denominator moved.* These 1,840 pairs are the 2,010 of §3 minus the 170 that export no
+names at all. A module exporting nothing cannot break an exported name, so excluding them
+raises the API-level rate from 8.11% to 8.86% on an unchanged numerator of 163. Both
+denominators are correct for their question and they are not interchangeable;
+`research/results/semver_compliance.json` records all three counts so the 0.75-point step is
+attributable rather than mysterious.
 
 # 5. Comparison with a static differ
 
@@ -311,6 +366,8 @@ both versions and both tools.
 # References
 
 - [@maven-replication] *Breaking changes and semantic versioning in Maven Central: a replication study.* Journal of Systems and Software, 2023.
+- [@raemaekers2014] Raemaekers, S., van Deursen, A. and Visser, J. *Semantic Versioning versus Breaking Changes: A Study of the Maven Repository.* SCAM 2014. Reports **14.5% of releases introducing breaking changes in a minor or patch version**.
+- [@breaking-bad] Ochoa, L., Degueule, T., Falleri, J.-R. and Vinju, J. *Breaking Bad? Semantic Versioning and Impact of Breaking Changes in Maven Central.* Empirical Software Engineering 27, 2022; arXiv:2110.07889. A larger replication: **83.4% of non-major upgrades comply**, so 16.6% do not, with compliance rising over time.
 - [@npm-breaking] *I Depended on You and You Broke Me: An Empirical Study of Manifesting Breaking Changes in Client Packages.* arXiv:2301.04563. In npm, **about 12% of dependent packages and 14% of their releases were impacted by a breaking change** during updates of non-major releases of their dependencies.
 - [@go-semver] *A Large-Scale Empirical Study on Semantic Versioning in Golang Ecosystem.* arXiv:2309.02894. 124K third-party libraries and 532K client programs; 86.3% of library upgrades follow semantic versioning, **28.6% of non-major upgrades introduce breaking changes**, and 33.3% of downstream clients may be affected.
 - [@slr] *Breaking Changes in Software Ecosystems: A Systematic Literature Review.* arXiv:2605.24397.

@@ -39,17 +39,18 @@ def write(name: str, payload) -> Path:
 def main() -> int:
     rows = metrics.load()
     done = metrics.measured(rows)
-    print(f"{len(rows):,} rows, {len(done):,} measured, "
-          f"{len(rows) - len(done):,} not\n")
+    print(f"{len(rows):,} rows, {len(done):,} measured, {len(rows) - len(done):,} not\n")
 
     # --- rates with intervals -------------------------------------------------
     cohorts = metrics.by_cohort(done)
     print("breakage rate by cohort, Wilson 95%:")
     for cohort, row in cohorts.items():
         if row:
-            print(f"  {cohort:14} {row['successes']:>4}/{row['n']:<5} "
-                  f"{row['rate']:.4f}  [{row['lo']:.4f}, {row['hi']:.4f}]  "
-                  f"width {row['hi'] - row['lo']:.4f}")
+            print(
+                f"  {cohort:14} {row['successes']:>4}/{row['n']:<5} "
+                f"{row['rate']:.4f}  [{row['lo']:.4f}, {row['hi']:.4f}]  "
+                f"width {row['hi'] - row['lo']:.4f}"
+            )
     write("rate_by_cohort", cohorts)
 
     # --- are the cohorts actually different? ----------------------------------
@@ -61,20 +62,26 @@ def main() -> int:
     write("cohort_tests", tests)
     not_separated = [n for n, r in tests["tests"].items() if not r["significant_at_05"]]
     if not_separated:
-        print(f"\n  {len(not_separated)} of 15 cohort pairs are NOT separated at 0.05 "
-              f"after correction")
+        print(
+            f"\n  {len(not_separated)} of 15 cohort pairs are NOT separated at 0.05 "
+            f"after correction"
+        )
 
     # --- the confound ---------------------------------------------------------
     sizes = metrics.surface_size_distribution(done)
-    print(f"\nexported surface size: median {sizes['median']}, "
-          f"p75 {sizes['p75']}, p95 {sizes['p95']}, max {sizes['max']:,} "
-          f"(mean {sizes['mean']})")
+    print(
+        f"\nexported surface size: median {sizes['median']}, "
+        f"p75 {sizes['p75']}, p95 {sizes['p95']}, max {sizes['max']:,} "
+        f"(mean {sizes['mean']})"
+    )
     buckets = metrics.by_surface_size(done)
     print("breakage rate by surface size, Wilson 95%:")
     for label, row in buckets.items():
         if row and row["n"]:
-            print(f"  {label:>10} exports  {row['successes']:>4}/{row['n']:<5} "
-                  f"{row['rate']:.4f}  [{row['lo']:.4f}, {row['hi']:.4f}]")
+            print(
+                f"  {label:>10} exports  {row['successes']:>4}/{row['n']:<5} "
+                f"{row['rate']:.4f}  [{row['lo']:.4f}, {row['hi']:.4f}]"
+            )
     write("rate_by_surface_size", {"distribution": sizes, "buckets": buckets})
 
     # --- concentration --------------------------------------------------------
@@ -84,10 +91,12 @@ def main() -> int:
         row = metrics.concentration(done, cohort)
         concentrations[row.get("cohort", "all")] = row
         if row.get("symbols"):
-            print(f"  {row['cohort']:14} {row['symbols']:>6} symbol(s) over "
-                  f"{row['pairs_with_a_broken_symbol']:>4} pair(s); largest pair "
-                  f"{row['largest_pair_share']:.1%}, top 10% "
-                  f"{row['top_10_percent_share']:.1%}, Gini {row['gini']:.3f}")
+            print(
+                f"  {row['cohort']:14} {row['symbols']:>6} symbol(s) over "
+                f"{row['pairs_with_a_broken_symbol']:>4} pair(s); largest pair "
+                f"{row['largest_pair_share']:.1%}, top 10% "
+                f"{row['top_10_percent_share']:.1%}, Gini {row['gini']:.3f}"
+            )
     write("concentration", concentrations)
 
     write("unmeasured_reasons", metrics.unmeasured_reasons(rows))
@@ -102,9 +111,20 @@ def main() -> int:
         figures.symbol_count_figure(done),
         figures.unmeasured_figure(metrics.unmeasured_reasons(rows), len(rows)),
     ]
+    # The PNG path was unpacked and discarded, so nothing checked that the file a
+    # caption is written for actually landed - and the README and the manuscript embed
+    # the PNGs, not the PDFs. A figure that failed to write would have shown up as a
+    # broken image in the published paper rather than as an error here.
+    missing = []
     for pdf, png, caption in made:
         captions[pdf.stem] = caption
+        for path in (pdf, png):
+            if not path.is_file() or path.stat().st_size == 0:
+                missing.append(path)
         print(f"  {pdf.name:34} {caption[:86]}...")
+    if missing:
+        names = ", ".join(str(m) for m in missing)
+        raise SystemExit(f"figure file(s) missing or empty after writing: {names}")
     write("captions", captions)
     print(f"\n{len(made)} figure(s) and 6 table(s) written to research/")
     return 0

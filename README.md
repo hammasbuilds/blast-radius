@@ -158,6 +158,30 @@ revision could report.
 
 &#128202; **[Every cohort, every reason, and the per-pair ledger &rarr;](https://github.com/hammasbuilds/blast-radius/blob/main/docs/census-summary.json)**
 
+### A pair-level rate is not a caller-level rate
+
+Every rate above counts a release *pair*: it breaks if one exported name went or was reshaped. A pair that lost one name of
+eight hundred counts the same as one that lost three hundred of five hundred, and the damage is concentrated - the **median
+breaking pair gives up 2.17%** of its exported surface, the mean 6.52%, and one pair lost all of it.
+
+For a caller importing `k` of a module's `n` exported names with `b` broken, the chance at least one of its names broke is
+`1 - C(n-b, k) / C(n, k)`. Averaged over the 1,840 compatibility-promising pairs that export anything:
+
+| the caller imports | chance at least one of its names broke |
+|---|---:|
+| 1 name | 0.58% |
+| 3 names | 1.40% |
+| 10 names | 3.45% |
+
+Against a pair-level **8.86%** over those same pairs. **The headline rate is not the chance your upgrade breaks you** - it is
+between two and fifteen times larger, depending on how much of a module you touch.
+
+The assumption points one way and it is the wrong way: real callers import the documented, popular names, while breakage sits
+in the long tail nobody imports (Gini 0.887). So uniform choice **overstates** caller impact, and the table is an upper bound
+under its own model. Rebuild with `python research/semver_compliance.py`.
+
+&#128202; **[The compliance rate against the published Maven and Go figures &rarr;](https://github.com/hammasbuilds/blast-radius/blob/main/research/results/semver_compliance.json)**
+
 ### 22 upgrade pairs: how often does a patch release break public API?
 
 **API surface only.** This sweep runs `--no-behaviour`, so it sees names that vanished and
@@ -426,7 +450,7 @@ scripts/
                         the same bytes -> docs/griffe-comparison.json
 ```
 
-340 tests. `pytest --cov=blast_radius` reports **92%** of statements, with one gap worth
+357 tests. `pytest --cov=blast_radius` reports **92%** of statements, with one gap worth
 naming: the sandbox is a source string executed in the probe's subprocesses, so coverage
 cannot see it at all and the 92% says nothing about the part that guards your machine.
 That is measured separately, by running 28 escape routes against it.
