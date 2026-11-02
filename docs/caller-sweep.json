@@ -1,0 +1,2219 @@
+{
+ "what": "Caller-level impact measured against real client code, against section 4.4's estimate under uniform symbol choice.",
+ "top_packages_indexed": 2000,
+ "dependents_per_pair": 25,
+ "pairs_in_the_promising_cohorts": 7,
+ "pairs_with_a_dependent_in_the_index": 7,
+ "pairs_measured": 7,
+ "pairs_limit": null,
+ "metadata_unreadable": [],
+ "source": "semver-sweep",
+ "summary": {
+  "pairs_with_a_surface": 7,
+  "observations": 175,
+  "observations_where_the_client_uses_any_name": 136,
+  "observations_where_the_client_imports_but_uses_nothing": 39,
+  "exact_rate_over_observations": 0.2286,
+  "exact_hits": 40,
+  "exact_rate_among_clients_that_use_a_name": 0.2941,
+  "exact_mean_of_per_pair_rates": 0.2286,
+  "enclosing_rate_over_observations": 0.4686,
+  "enclosing_hits": 82,
+  "enclosing_rate_among_clients_that_use_a_name": 0.6029,
+  "enclosing_mean_of_per_pair_rates": 0.4686,
+  "loose_rate_over_observations": 0.52,
+  "loose_hits": 91,
+  "loose_rate_among_clients_that_use_a_name": 0.6691,
+  "loose_mean_of_per_pair_rates": 0.52,
+  "model_under_uniform_choice": {
+   "what": "section 4.4's estimate, with n and b from the pair and k from the names this client actually uses. Only the choice of names differs.",
+   "observations_the_model_can_be_asked_about": 136,
+   "observations_too_small_for_the_model": 0,
+   "mean_predicted_rate": 0.3721,
+   "measured_exact_rate": 0.2941,
+   "ratio_measured_over_predicted": 0.79,
+   "direction": "overstates"
+  },
+  "note": "A client that imports the module and touches none of its names cannot be broken by a name going away. Those observations are in the denominator, counted separately, and reported both ways: excluding them would measure the wrong population and including them silently would let a module's popularity stand in for its callers' exposure."
+ },
+ "rows": [
+  {
+   "package": "coverage",
+   "old": "7.5.0",
+   "new": "7.5.4",
+   "cohort": "patch",
+   "exported_symbols": 80,
+   "broken_count_in_the_ledger": 1,
+   "dependents_in_the_index": 103,
+   "broken_names": [
+    "coverage.CoverageData.update"
+   ],
+   "module": "coverage",
+   "broken_count_now": 1,
+   "import_roots": [
+    "coverage"
+   ],
+   "observations": [
+    {
+     "dependent": "acryl-datahub",
+     "version": "1.7.0.19",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "agate",
+     "version": "1.14.2",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "aiomultiprocess",
+     "version": "0.9.1",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "aiosqlite",
+     "version": "0.22.1",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "aniso8601",
+     "version": "10.0.1",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "apprise",
+     "version": "2.1.0",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "argcomplete",
+     "version": "3.7.2",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "asteval",
+     "version": "1.0.10",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "asyncstdlib",
+     "version": "3.14.0",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "aws-msk-iam-sasl-signer-python",
+     "version": "1.0.2",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "aws-sam-translator",
+     "version": "1.116.0",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "azure-functions",
+     "version": "2.3.0",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "bandit",
+     "version": "1.9.4",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "beartype",
+     "version": "0.23.1",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "channels",
+     "version": "4.3.2",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "checkov",
+     "version": "3.4.0",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "curl-cffi",
+     "version": "0.17.0",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "cyclopts",
+     "version": "5.3.2",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "deepdiff",
+     "version": "9.1.0",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "discord-py",
+     "version": "2.7.1",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "django-environ",
+     "version": "0.14.0",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "django-ipware",
+     "version": "8.0.0",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "django-oauth-toolkit",
+     "version": "3.4.1",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "dnspython",
+     "version": "2.9.1",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "docker",
+     "version": "7.2.0",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    }
+   ]
+  },
+  {
+   "package": "urllib3",
+   "old": "2.2.1",
+   "new": "2.2.2",
+   "cohort": "patch",
+   "exported_symbols": 92,
+   "broken_count_in_the_ledger": 2,
+   "dependents_in_the_index": 73,
+   "broken_names": [
+    "urllib3.BaseHTTPResponse",
+    "urllib3.HTTPResponse"
+   ],
+   "module": "urllib3",
+   "broken_count_now": 2,
+   "import_roots": [
+    "urllib3"
+   ],
+   "observations": [
+    {
+     "dependent": "acryl-datahub",
+     "version": "1.7.0.19",
+     "names_used": 12,
+     "exact_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "apache-airflow-providers-cncf-kubernetes",
+     "version": "10.25.0",
+     "names_used": 11,
+     "exact_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "apprise",
+     "version": "2.1.0",
+     "names_used": 8,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "auth0-python",
+     "version": "6.8.0",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "aws-lambda-powertools",
+     "version": "3.38.0",
+     "names_used": 13,
+     "exact_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "loose_hits": [
+      "urllib3.BaseHTTPResponse",
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "awscli",
+     "version": "1.46.2",
+     "names_used": 32,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "bedrock-agentcore",
+     "version": "1.25.2",
+     "names_used": 6,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "blobfile",
+     "version": "3.3.0",
+     "names_used": 9,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": [
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "botocore",
+     "version": "1.43.123",
+     "names_used": 34,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "browser-use-sdk",
+     "version": "3.12.1",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "celery",
+     "version": "5.6.3",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "checkov",
+     "version": "3.4.0",
+     "names_used": 11,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": [
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "clickhouse-connect",
+     "version": "1.11.0",
+     "names_used": 7,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": [
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "confluent-kafka",
+     "version": "2.16.1",
+     "names_used": 2,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "courlan",
+     "version": "1.4.0",
+     "names_used": 3,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "databricks-cli",
+     "version": "0.18.0",
+     "names_used": 5,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "databricks-sdk",
+     "version": "0.158.0",
+     "names_used": 1,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "databricks-sql-connector",
+     "version": "4.8.0",
+     "names_used": 13,
+     "exact_hits": [
+      "urllib3.BaseHTTPResponse",
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.BaseHTTPResponse",
+      "urllib3.HTTPResponse"
+     ],
+     "loose_hits": [
+      "urllib3.BaseHTTPResponse",
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "datadog-api-client",
+     "version": "2.62.0",
+     "names_used": 7,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "daytona",
+     "version": "0.227.0",
+     "names_used": 7,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "daytona-analytics-api-client",
+     "version": "0.227.0",
+     "names_used": 7,
+     "exact_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "daytona-api-client",
+     "version": "0.227.0",
+     "names_used": 7,
+     "exact_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "daytona-toolbox-api-client",
+     "version": "0.227.0",
+     "names_used": 7,
+     "exact_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "diffusers",
+     "version": "0.42.1",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "django-oauth-toolkit",
+     "version": "3.4.1",
+     "names_used": 3,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    }
+   ]
+  },
+  {
+   "package": "click",
+   "old": "8.0.4",
+   "new": "8.1.7",
+   "cohort": "minor",
+   "exported_symbols": 200,
+   "broken_count_in_the_ledger": 5,
+   "dependents_in_the_index": 86,
+   "broken_names": [
+    "click.Group.resultcallback",
+    "click.get_os_args",
+    "click.get_terminal_size",
+    "click.Parameter",
+    "click.Path.coerce_path_result"
+   ],
+   "module": "click",
+   "broken_count_now": 5,
+   "import_roots": [
+    "click"
+   ],
+   "observations": [
+    {
+     "dependent": "acryl-datahub",
+     "version": "1.7.0.19",
+     "names_used": 29,
+     "exact_hits": [
+      "click.Parameter"
+     ],
+     "enclosing_hits": [
+      "click.Group.resultcallback",
+      "click.Parameter",
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Group.resultcallback",
+      "click.Parameter",
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "apprise",
+     "version": "2.1.0",
+     "names_used": 9,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "arq",
+     "version": "0.28.0",
+     "names_used": 6,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "aws-msk-iam-sasl-signer-python",
+     "version": "1.0.2",
+     "names_used": 6,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "beartype",
+     "version": "0.23.1",
+     "names_used": 2,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "black",
+     "version": "26.10.1",
+     "names_used": 31,
+     "exact_hits": [
+      "click.Parameter"
+     ],
+     "enclosing_hits": [
+      "click.Parameter",
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Parameter",
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "browser-use",
+     "version": "0.13.14",
+     "names_used": 4,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "c7n-org",
+     "version": "0.6.52",
+     "names_used": 8,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "celery",
+     "version": "5.6.3",
+     "names_used": 30,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "checkov",
+     "version": "3.4.0",
+     "names_used": 2,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "click-default-group",
+     "version": "1.2.4",
+     "names_used": 1,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Group.resultcallback"
+     ],
+     "loose_hits": [
+      "click.Group.resultcallback"
+     ]
+    },
+    {
+     "dependent": "click-didyoumean",
+     "version": "0.3.1",
+     "names_used": 6,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Group.resultcallback"
+     ],
+     "loose_hits": [
+      "click.Group.resultcallback"
+     ]
+    },
+    {
+     "dependent": "click-option-group",
+     "version": "0.5.9",
+     "names_used": 10,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "click-plugins",
+     "version": "1.1.1.2",
+     "names_used": 8,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Group.resultcallback"
+     ],
+     "loose_hits": [
+      "click.Group.resultcallback"
+     ]
+    },
+    {
+     "dependent": "click-repl",
+     "version": "0.4.1",
+     "names_used": 29,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Group.resultcallback"
+     ],
+     "loose_hits": [
+      "click.Group.resultcallback",
+      "click.Parameter"
+     ]
+    },
+    {
+     "dependent": "cligj",
+     "version": "0.7.2",
+     "names_used": 7,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "cloudsplaining",
+     "version": "0.9.1",
+     "names_used": 9,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "cookiecutter",
+     "version": "2.7.1",
+     "names_used": 13,
+     "exact_hits": [
+      "click.Parameter"
+     ],
+     "enclosing_hits": [
+      "click.Parameter",
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Parameter",
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "dagster",
+     "version": "1.13.28",
+     "names_used": 19,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Group.resultcallback",
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Group.resultcallback",
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "dagster-cloud-cli",
+     "version": "1.13.28",
+     "names_used": 7,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "dagster-webserver",
+     "version": "1.13.28",
+     "names_used": 10,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "dask",
+     "version": "2026.8.0",
+     "names_used": 11,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Group.resultcallback"
+     ],
+     "loose_hits": [
+      "click.Group.resultcallback"
+     ]
+    },
+    {
+     "dependent": "databricks-cli",
+     "version": "0.18.0",
+     "names_used": 20,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "dbt-core",
+     "version": "1.12.6",
+     "names_used": 40,
+     "exact_hits": [
+      "click.Parameter"
+     ],
+     "enclosing_hits": [
+      "click.Group.resultcallback",
+      "click.Parameter",
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Group.resultcallback",
+      "click.Parameter",
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "dbt-semantic-interfaces",
+     "version": "0.10.5",
+     "names_used": 1,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    }
+   ]
+  },
+  {
+   "package": "urllib3",
+   "old": "2.1.0",
+   "new": "2.2.2",
+   "cohort": "minor",
+   "exported_symbols": 90,
+   "broken_count_in_the_ledger": 2,
+   "dependents_in_the_index": 73,
+   "broken_names": [
+    "urllib3.BaseHTTPResponse",
+    "urllib3.HTTPResponse"
+   ],
+   "module": "urllib3",
+   "broken_count_now": 2,
+   "import_roots": [
+    "urllib3"
+   ],
+   "observations": [
+    {
+     "dependent": "acryl-datahub",
+     "version": "1.7.0.19",
+     "names_used": 12,
+     "exact_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "apache-airflow-providers-cncf-kubernetes",
+     "version": "10.25.0",
+     "names_used": 11,
+     "exact_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "apprise",
+     "version": "2.1.0",
+     "names_used": 8,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "auth0-python",
+     "version": "6.8.0",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "aws-lambda-powertools",
+     "version": "3.38.0",
+     "names_used": 13,
+     "exact_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "loose_hits": [
+      "urllib3.BaseHTTPResponse",
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "awscli",
+     "version": "1.46.2",
+     "names_used": 32,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "bedrock-agentcore",
+     "version": "1.25.2",
+     "names_used": 6,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "blobfile",
+     "version": "3.3.0",
+     "names_used": 9,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": [
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "botocore",
+     "version": "1.43.123",
+     "names_used": 34,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "browser-use-sdk",
+     "version": "3.12.1",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "celery",
+     "version": "5.6.3",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "checkov",
+     "version": "3.4.0",
+     "names_used": 11,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": [
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "clickhouse-connect",
+     "version": "1.11.0",
+     "names_used": 7,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": [
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "confluent-kafka",
+     "version": "2.16.1",
+     "names_used": 2,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "courlan",
+     "version": "1.4.0",
+     "names_used": 3,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "databricks-cli",
+     "version": "0.18.0",
+     "names_used": 5,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "databricks-sdk",
+     "version": "0.158.0",
+     "names_used": 1,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "databricks-sql-connector",
+     "version": "4.8.0",
+     "names_used": 13,
+     "exact_hits": [
+      "urllib3.BaseHTTPResponse",
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.BaseHTTPResponse",
+      "urllib3.HTTPResponse"
+     ],
+     "loose_hits": [
+      "urllib3.BaseHTTPResponse",
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "datadog-api-client",
+     "version": "2.62.0",
+     "names_used": 7,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "daytona",
+     "version": "0.227.0",
+     "names_used": 7,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "daytona-analytics-api-client",
+     "version": "0.227.0",
+     "names_used": 7,
+     "exact_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "daytona-api-client",
+     "version": "0.227.0",
+     "names_used": 7,
+     "exact_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "daytona-toolbox-api-client",
+     "version": "0.227.0",
+     "names_used": 7,
+     "exact_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "diffusers",
+     "version": "0.42.1",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "django-oauth-toolkit",
+     "version": "3.4.1",
+     "names_used": 3,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    }
+   ]
+  },
+  {
+   "package": "uvicorn",
+   "old": "0.23.2",
+   "new": "0.30.1",
+   "cohort": "0.x-breaking",
+   "exported_symbols": 29,
+   "broken_count_in_the_ledger": 4,
+   "dependents_in_the_index": 37,
+   "broken_names": [
+    "uvicorn.Server.install_signal_handlers",
+    "uvicorn.main.Multiprocess.shutdown",
+    "uvicorn.main.Multiprocess.signal_handler",
+    "uvicorn.main.Multiprocess.startup"
+   ],
+   "module": "uvicorn",
+   "broken_count_now": 4,
+   "import_roots": [
+    "uvicorn"
+   ],
+   "observations": [
+    {
+     "dependent": "acryl-datahub",
+     "version": "1.7.0.19",
+     "names_used": 1,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "bedrock-agentcore",
+     "version": "1.25.2",
+     "names_used": 4,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ],
+     "loose_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ]
+    },
+    {
+     "dependent": "braintrust",
+     "version": "0.49.1",
+     "names_used": 1,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "chromadb",
+     "version": "1.5.9",
+     "names_used": 1,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "confluent-kafka",
+     "version": "2.16.1",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "curl-cffi",
+     "version": "0.17.0",
+     "names_used": 4,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ],
+     "loose_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ]
+    },
+    {
+     "dependent": "dagster-webserver",
+     "version": "1.13.28",
+     "names_used": 1,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "dash",
+     "version": "4.5.0",
+     "names_used": 2,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ],
+     "loose_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ]
+    },
+    {
+     "dependent": "ddgs",
+     "version": "9.16.1",
+     "names_used": 1,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "fastapi",
+     "version": "0.162.0",
+     "names_used": 1,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "fastapi-cli",
+     "version": "0.0.32",
+     "names_used": 3,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "fastapi-cloud-cli",
+     "version": "0.26.0",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "fastapi-mcp",
+     "version": "0.4.0",
+     "names_used": 3,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ],
+     "loose_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ]
+    },
+    {
+     "dependent": "fastmcp-slim",
+     "version": "4.1.5",
+     "names_used": 4,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ],
+     "loose_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ]
+    },
+    {
+     "dependent": "functions-framework",
+     "version": "3.10.2",
+     "names_used": 1,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "google-adk",
+     "version": "2.13.0",
+     "names_used": 2,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ],
+     "loose_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ]
+    },
+    {
+     "dependent": "google-cloud-aiplatform",
+     "version": "2.7.0",
+     "names_used": 1,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "gradio",
+     "version": "6.31.0",
+     "names_used": 4,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ],
+     "loose_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ]
+    },
+    {
+     "dependent": "harbor",
+     "version": "0.25.0",
+     "names_used": 4,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ],
+     "loose_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ]
+    },
+    {
+     "dependent": "import-linter",
+     "version": "2.15",
+     "names_used": 2,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "lightning",
+     "version": "2.6.6",
+     "names_used": 1,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "litellm",
+     "version": "1.106.6",
+     "names_used": 7,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ],
+     "loose_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ]
+    },
+    {
+     "dependent": "mcp",
+     "version": "2.3.0",
+     "names_used": 3,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ],
+     "loose_hits": [
+      "uvicorn.Server.install_signal_handlers"
+     ]
+    },
+    {
+     "dependent": "mlflow",
+     "version": "3.17.2",
+     "names_used": 1,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "mlflow-skinny",
+     "version": "3.17.2",
+     "names_used": 1,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    }
+   ]
+  },
+  {
+   "package": "click",
+   "old": "7.1.2",
+   "new": "8.1.7",
+   "cohort": "major",
+   "exported_symbols": 177,
+   "broken_count_in_the_ledger": 13,
+   "dependents_in_the_index": 86,
+   "broken_names": [
+    "click.Argument.full_process_value",
+    "click.Group.resultcallback",
+    "click.Option.full_process_value",
+    "click.get_os_args",
+    "click.get_terminal_size",
+    "click.FloatRange",
+    "click.IntRange",
+    "click.Option",
+    "click.OptionParser.add_argument",
+    "click.OptionParser.add_option",
+    "click.Parameter",
+    "click.Path.coerce_path_result",
+    "click.style"
+   ],
+   "module": "click",
+   "broken_count_now": 13,
+   "import_roots": [
+    "click"
+   ],
+   "observations": [
+    {
+     "dependent": "acryl-datahub",
+     "version": "1.7.0.19",
+     "names_used": 29,
+     "exact_hits": [
+      "click.IntRange",
+      "click.Parameter",
+      "click.style"
+     ],
+     "enclosing_hits": [
+      "click.Group.resultcallback",
+      "click.IntRange",
+      "click.Parameter",
+      "click.Path.coerce_path_result",
+      "click.style"
+     ],
+     "loose_hits": [
+      "click.Group.resultcallback",
+      "click.IntRange",
+      "click.Parameter",
+      "click.Path.coerce_path_result",
+      "click.style"
+     ]
+    },
+    {
+     "dependent": "apprise",
+     "version": "2.1.0",
+     "names_used": 9,
+     "exact_hits": [
+      "click.style"
+     ],
+     "enclosing_hits": [
+      "click.style"
+     ],
+     "loose_hits": [
+      "click.style"
+     ]
+    },
+    {
+     "dependent": "arq",
+     "version": "0.28.0",
+     "names_used": 6,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "aws-msk-iam-sasl-signer-python",
+     "version": "1.0.2",
+     "names_used": 6,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "beartype",
+     "version": "0.23.1",
+     "names_used": 2,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "black",
+     "version": "26.10.1",
+     "names_used": 31,
+     "exact_hits": [
+      "click.IntRange",
+      "click.Option",
+      "click.Parameter",
+      "click.style"
+     ],
+     "enclosing_hits": [
+      "click.IntRange",
+      "click.Option",
+      "click.Option.full_process_value",
+      "click.Parameter",
+      "click.Path.coerce_path_result",
+      "click.style"
+     ],
+     "loose_hits": [
+      "click.IntRange",
+      "click.Option",
+      "click.Option.full_process_value",
+      "click.Parameter",
+      "click.Path.coerce_path_result",
+      "click.style"
+     ]
+    },
+    {
+     "dependent": "browser-use",
+     "version": "0.13.14",
+     "names_used": 4,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "c7n-org",
+     "version": "0.6.52",
+     "names_used": 8,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "celery",
+     "version": "5.6.3",
+     "names_used": 30,
+     "exact_hits": [
+      "click.Option",
+      "click.style"
+     ],
+     "enclosing_hits": [
+      "click.Option",
+      "click.Option.full_process_value",
+      "click.Path.coerce_path_result",
+      "click.style"
+     ],
+     "loose_hits": [
+      "click.Option",
+      "click.Option.full_process_value",
+      "click.Path.coerce_path_result",
+      "click.style"
+     ]
+    },
+    {
+     "dependent": "checkov",
+     "version": "3.4.0",
+     "names_used": 2,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "click-default-group",
+     "version": "1.2.4",
+     "names_used": 1,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Group.resultcallback"
+     ],
+     "loose_hits": [
+      "click.Group.resultcallback"
+     ]
+    },
+    {
+     "dependent": "click-didyoumean",
+     "version": "0.3.1",
+     "names_used": 6,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Group.resultcallback"
+     ],
+     "loose_hits": [
+      "click.Group.resultcallback"
+     ]
+    },
+    {
+     "dependent": "click-option-group",
+     "version": "0.5.9",
+     "names_used": 10,
+     "exact_hits": [
+      "click.Option"
+     ],
+     "enclosing_hits": [
+      "click.Option",
+      "click.Option.full_process_value"
+     ],
+     "loose_hits": [
+      "click.Option",
+      "click.Option.full_process_value"
+     ]
+    },
+    {
+     "dependent": "click-plugins",
+     "version": "1.1.1.2",
+     "names_used": 8,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Group.resultcallback"
+     ],
+     "loose_hits": [
+      "click.Group.resultcallback"
+     ]
+    },
+    {
+     "dependent": "click-repl",
+     "version": "0.4.1",
+     "names_used": 29,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Argument.full_process_value",
+      "click.Group.resultcallback"
+     ],
+     "loose_hits": [
+      "click.Argument.full_process_value",
+      "click.Group.resultcallback",
+      "click.Option",
+      "click.Parameter"
+     ]
+    },
+    {
+     "dependent": "cligj",
+     "version": "0.7.2",
+     "names_used": 7,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "cloudsplaining",
+     "version": "0.9.1",
+     "names_used": 9,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "cookiecutter",
+     "version": "2.7.1",
+     "names_used": 13,
+     "exact_hits": [
+      "click.Parameter"
+     ],
+     "enclosing_hits": [
+      "click.Parameter",
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Parameter",
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "dagster",
+     "version": "1.13.28",
+     "names_used": 19,
+     "exact_hits": [
+      "click.style"
+     ],
+     "enclosing_hits": [
+      "click.Group.resultcallback",
+      "click.Path.coerce_path_result",
+      "click.style"
+     ],
+     "loose_hits": [
+      "click.Group.resultcallback",
+      "click.Path.coerce_path_result",
+      "click.style"
+     ]
+    },
+    {
+     "dependent": "dagster-cloud-cli",
+     "version": "1.13.28",
+     "names_used": 7,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "dagster-webserver",
+     "version": "1.13.28",
+     "names_used": 10,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "dask",
+     "version": "2026.8.0",
+     "names_used": 11,
+     "exact_hits": [
+      "click.style"
+     ],
+     "enclosing_hits": [
+      "click.Group.resultcallback",
+      "click.style"
+     ],
+     "loose_hits": [
+      "click.Group.resultcallback",
+      "click.style"
+     ]
+    },
+    {
+     "dependent": "databricks-cli",
+     "version": "0.18.0",
+     "names_used": 20,
+     "exact_hits": [
+      "click.Option",
+      "click.style"
+     ],
+     "enclosing_hits": [
+      "click.Option",
+      "click.Option.full_process_value",
+      "click.Path.coerce_path_result",
+      "click.style"
+     ],
+     "loose_hits": [
+      "click.Option",
+      "click.Option.full_process_value",
+      "click.Path.coerce_path_result",
+      "click.style"
+     ]
+    },
+    {
+     "dependent": "dbt-core",
+     "version": "1.12.6",
+     "names_used": 40,
+     "exact_hits": [
+      "click.Option",
+      "click.Parameter"
+     ],
+     "enclosing_hits": [
+      "click.Group.resultcallback",
+      "click.Option",
+      "click.Option.full_process_value",
+      "click.Parameter",
+      "click.Path.coerce_path_result"
+     ],
+     "loose_hits": [
+      "click.Group.resultcallback",
+      "click.Option",
+      "click.Option.full_process_value",
+      "click.Parameter",
+      "click.Path.coerce_path_result"
+     ]
+    },
+    {
+     "dependent": "dbt-semantic-interfaces",
+     "version": "0.10.5",
+     "names_used": 1,
+     "exact_hits": [
+      "click.style"
+     ],
+     "enclosing_hits": [
+      "click.style"
+     ],
+     "loose_hits": [
+      "click.style"
+     ]
+    }
+   ]
+  },
+  {
+   "package": "urllib3",
+   "old": "1.26.18",
+   "new": "2.2.2",
+   "cohort": "major",
+   "exported_symbols": 79,
+   "broken_count_in_the_ledger": 16,
+   "dependents_in_the_index": 73,
+   "broken_names": [
+    "urllib3.HTTPResponse.from_httplib",
+    "urllib3.get_host",
+    "urllib3.packages.backports.weakref_finalize.weakref_finalize",
+    "urllib3.packages.backports.weakref_finalize.weakref_finalize.detach",
+    "urllib3.packages.backports.weakref_finalize.weakref_finalize.peek",
+    "urllib3.request.RequestMethods",
+    "urllib3.request.RequestMethods.urlopen",
+    "urllib3.util.split_first",
+    "urllib3.util.wait.NoWayToWaitForSocketError",
+    "urllib3.HTTPConnectionPool",
+    "urllib3.HTTPResponse",
+    "urllib3.HTTPSConnectionPool",
+    "urllib3.PoolManager.connection_from_pool_key",
+    "urllib3.PoolManager.request",
+    "urllib3.Retry",
+    "urllib3.Retry.sleep_for_retry"
+   ],
+   "module": "urllib3",
+   "broken_count_now": 16,
+   "import_roots": [
+    "urllib3"
+   ],
+   "observations": [
+    {
+     "dependent": "acryl-datahub",
+     "version": "1.7.0.19",
+     "names_used": 12,
+     "exact_hits": [
+      "urllib3.HTTPConnectionPool",
+      "urllib3.HTTPResponse",
+      "urllib3.HTTPSConnectionPool",
+      "urllib3.Retry"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPConnectionPool",
+      "urllib3.HTTPResponse",
+      "urllib3.HTTPResponse.from_httplib",
+      "urllib3.HTTPSConnectionPool",
+      "urllib3.Retry",
+      "urllib3.Retry.sleep_for_retry"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPConnectionPool",
+      "urllib3.HTTPResponse",
+      "urllib3.HTTPResponse.from_httplib",
+      "urllib3.HTTPSConnectionPool",
+      "urllib3.Retry",
+      "urllib3.Retry.sleep_for_retry"
+     ]
+    },
+    {
+     "dependent": "apache-airflow-providers-cncf-kubernetes",
+     "version": "10.25.0",
+     "names_used": 11,
+     "exact_hits": [
+      "urllib3.HTTPConnectionPool",
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPConnectionPool",
+      "urllib3.HTTPResponse",
+      "urllib3.HTTPResponse.from_httplib"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPConnectionPool",
+      "urllib3.HTTPResponse",
+      "urllib3.HTTPResponse.from_httplib",
+      "urllib3.Retry"
+     ]
+    },
+    {
+     "dependent": "apprise",
+     "version": "2.1.0",
+     "names_used": 8,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": [
+      "urllib3.HTTPConnectionPool",
+      "urllib3.HTTPSConnectionPool"
+     ]
+    },
+    {
+     "dependent": "auth0-python",
+     "version": "6.8.0",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "aws-lambda-powertools",
+     "version": "3.38.0",
+     "names_used": 13,
+     "exact_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPResponse",
+      "urllib3.HTTPResponse.from_httplib",
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPConnectionPool",
+      "urllib3.HTTPResponse",
+      "urllib3.HTTPResponse.from_httplib",
+      "urllib3.HTTPSConnectionPool",
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request"
+     ]
+    },
+    {
+     "dependent": "awscli",
+     "version": "1.46.2",
+     "names_used": 32,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPConnectionPool",
+      "urllib3.HTTPSConnectionPool",
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request",
+      "urllib3.Retry"
+     ]
+    },
+    {
+     "dependent": "bedrock-agentcore",
+     "version": "1.25.2",
+     "names_used": 6,
+     "exact_hits": [
+      "urllib3.Retry"
+     ],
+     "enclosing_hits": [
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request",
+      "urllib3.Retry",
+      "urllib3.Retry.sleep_for_retry"
+     ],
+     "loose_hits": [
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request",
+      "urllib3.Retry",
+      "urllib3.Retry.sleep_for_retry"
+     ]
+    },
+    {
+     "dependent": "blobfile",
+     "version": "3.3.0",
+     "names_used": 9,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPResponse",
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request",
+      "urllib3.Retry"
+     ]
+    },
+    {
+     "dependent": "botocore",
+     "version": "1.43.123",
+     "names_used": 34,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPConnectionPool",
+      "urllib3.HTTPSConnectionPool",
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request",
+      "urllib3.Retry"
+     ]
+    },
+    {
+     "dependent": "browser-use-sdk",
+     "version": "3.12.1",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "celery",
+     "version": "5.6.3",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "checkov",
+     "version": "3.4.0",
+     "names_used": 11,
+     "exact_hits": [
+      "urllib3.Retry"
+     ],
+     "enclosing_hits": [
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request",
+      "urllib3.Retry",
+      "urllib3.Retry.sleep_for_retry"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPResponse",
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request",
+      "urllib3.Retry",
+      "urllib3.Retry.sleep_for_retry"
+     ]
+    },
+    {
+     "dependent": "clickhouse-connect",
+     "version": "1.11.0",
+     "names_used": 7,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": [
+      "urllib3.HTTPResponse"
+     ]
+    },
+    {
+     "dependent": "confluent-kafka",
+     "version": "2.16.1",
+     "names_used": 2,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request"
+     ],
+     "loose_hits": [
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request"
+     ]
+    },
+    {
+     "dependent": "courlan",
+     "version": "1.4.0",
+     "names_used": 3,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request"
+     ],
+     "loose_hits": [
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request",
+      "urllib3.Retry"
+     ]
+    },
+    {
+     "dependent": "databricks-cli",
+     "version": "0.18.0",
+     "names_used": 5,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": [
+      "urllib3.Retry"
+     ]
+    },
+    {
+     "dependent": "databricks-sdk",
+     "version": "0.158.0",
+     "names_used": 1,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "databricks-sql-connector",
+     "version": "4.8.0",
+     "names_used": 13,
+     "exact_hits": [
+      "urllib3.HTTPConnectionPool",
+      "urllib3.HTTPResponse",
+      "urllib3.HTTPSConnectionPool",
+      "urllib3.Retry"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPConnectionPool",
+      "urllib3.HTTPResponse",
+      "urllib3.HTTPResponse.from_httplib",
+      "urllib3.HTTPSConnectionPool",
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request",
+      "urllib3.Retry",
+      "urllib3.Retry.sleep_for_retry"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPConnectionPool",
+      "urllib3.HTTPResponse",
+      "urllib3.HTTPResponse.from_httplib",
+      "urllib3.HTTPSConnectionPool",
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request",
+      "urllib3.Retry",
+      "urllib3.Retry.sleep_for_retry"
+     ]
+    },
+    {
+     "dependent": "datadog-api-client",
+     "version": "2.62.0",
+     "names_used": 7,
+     "exact_hits": [],
+     "enclosing_hits": [
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request"
+     ],
+     "loose_hits": [
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request",
+      "urllib3.Retry"
+     ]
+    },
+    {
+     "dependent": "daytona",
+     "version": "0.227.0",
+     "names_used": 7,
+     "exact_hits": [
+      "urllib3.Retry"
+     ],
+     "enclosing_hits": [
+      "urllib3.Retry",
+      "urllib3.Retry.sleep_for_retry"
+     ],
+     "loose_hits": [
+      "urllib3.Retry",
+      "urllib3.Retry.sleep_for_retry"
+     ]
+    },
+    {
+     "dependent": "daytona-analytics-api-client",
+     "version": "0.227.0",
+     "names_used": 7,
+     "exact_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPResponse",
+      "urllib3.HTTPResponse.from_httplib",
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPResponse",
+      "urllib3.HTTPResponse.from_httplib",
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request"
+     ]
+    },
+    {
+     "dependent": "daytona-api-client",
+     "version": "0.227.0",
+     "names_used": 7,
+     "exact_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPResponse",
+      "urllib3.HTTPResponse.from_httplib",
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPResponse",
+      "urllib3.HTTPResponse.from_httplib",
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request"
+     ]
+    },
+    {
+     "dependent": "daytona-toolbox-api-client",
+     "version": "0.227.0",
+     "names_used": 7,
+     "exact_hits": [
+      "urllib3.HTTPResponse"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPResponse",
+      "urllib3.HTTPResponse.from_httplib",
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPResponse",
+      "urllib3.HTTPResponse.from_httplib",
+      "urllib3.PoolManager.connection_from_pool_key",
+      "urllib3.PoolManager.request"
+     ]
+    },
+    {
+     "dependent": "diffusers",
+     "version": "0.42.1",
+     "names_used": 0,
+     "exact_hits": [],
+     "enclosing_hits": [],
+     "loose_hits": []
+    },
+    {
+     "dependent": "django-oauth-toolkit",
+     "version": "3.4.1",
+     "names_used": 3,
+     "exact_hits": [
+      "urllib3.HTTPSConnectionPool"
+     ],
+     "enclosing_hits": [
+      "urllib3.HTTPSConnectionPool"
+     ],
+     "loose_hits": [
+      "urllib3.HTTPSConnectionPool"
+     ]
+    }
+   ]
+  }
+ ]
+}

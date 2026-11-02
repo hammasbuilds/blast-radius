@@ -180,6 +180,38 @@ The assumption points one way and it is the wrong way: real callers import the d
 in the long tail nobody imports (Gini 0.887). So uniform choice **overstates** caller impact, and the table is an upper bound
 under its own model. Rebuild with `python research/semver_compliance.py`.
 
+### So how wrong is it? Measured against real client code
+
+`scripts/caller_census.py` builds a reverse-dependency index from the external top-2,000 PyPI list by reading each package's
+declared `requires_dist` - 4,427 packages gain a dependent that way - then downloads the newest archive of up to 25 dependents
+per pair and parses it with `ast`. Nothing is imported and nothing is executed; every `from m import x`, every `import m`
+followed by `m.x`, and every aliased form is collected as a name that client really uses. Seven release pairs have their broken
+names on record (`click` twice, `urllib3` three times, `coverage`, `uvicorn`): **175 observations, 136 clients that use at
+least one name and 39 that import the module and name nothing in it**.
+
+| | rate among the 136 clients that use a name |
+|---|---:|
+| the client names the broken thing itself | **0.2941** |
+| *the model, at these clients' own import counts* | *0.3721* |
+| the client names an *ancestor* of the broken thing | 0.6029 |
+| only the final components agree | 0.6691 |
+
+**Hold the pair and the import count fixed and change only *which* names a client picks** - the assumption itself - and the
+model predicts 0.3721 against a measured 0.2941. So uniform choice overstates by a factor of **0.79**: the right direction,
+a fifth, not an order of magnitude. These clients import a median of **7** names each, so the `k = 1` row above is the
+misleading one to quote rather than the model being wrong.
+
+Two honest limits. The measured rate and the 0.58%-3.45% table are **not** comparable - that table averages over all 1,840
+compatibility-promising pairs including the 91% that broke nothing - which is why the comparison is against the model
+evaluated on these same clients. And every observation is a static import: a client that imports a broken name and never
+reaches the line using it counts as exposed here, which pushes the measured rate up and makes the overstatement a conservative
+estimate of itself. `coverage` shows the other end of it - a patch release dropped `CoverageData.update` and **not one of its
+25 dependents uses any name from `coverage`**, because it is depended on as a tool rather than as an API.
+
+Rebuild with `python scripts/caller_census.py --from-sweep`. The reverse index is committed as
+`docs/caller-index.json.gz` (71 KB), so that reproduces without two thousand metadata requests; drop the file to
+rebuild the index itself.
+
 &#128202; **[The compliance rate against the published Maven and Go figures &rarr;](https://github.com/hammasbuilds/blast-radius/blob/main/research/results/semver_compliance.json)**
 
 ### 22 upgrade pairs: how often does a patch release break public API?
@@ -450,7 +482,7 @@ scripts/
                         the same bytes -> docs/griffe-comparison.json
 ```
 
-357 tests. `pytest --cov=blast_radius` reports **92%** of statements, with one gap worth
+391 tests. `pytest --cov=blast_radius` reports **92%** of statements, with one gap worth
 naming: the sandbox is a source string executed in the probe's subprocesses, so coverage
 cannot see it at all and the 92% says nothing about the part that guards your machine.
 That is measured separately, by running 28 escape routes against it.

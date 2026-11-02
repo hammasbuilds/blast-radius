@@ -197,14 +197,28 @@ def test_the_section_keeps_the_direction_of_its_own_bias():
 
 
 def test_the_abstract_and_the_heading_agree_on_how_many_qualifications_there_are():
+    """Derived from the sections that exist, rather than from a typed number.
+
+    This test held the count in three places - the heading, the abstract and its own loop -
+    and adding section 4.5 made all three disagree at once. Counting the `**4.n ` headings
+    and checking the two sentences against *that* means a new qualification needs the
+    heading and the abstract updated and nothing else.
+    """
+    import re
+
     text = _repo_file(PAPER)
-    assert "# 4. Four qualifications" in text
-    assert "Four results qualify those rates" in text
-    assert "Three results qualify those rates" not in text
-    # And every numbered qualification exists.
-    for n in (1, 2, 3, 4):
-        assert f"**4.{n} " in text, n
-    assert "**4.5 " not in text
+    numbered = sorted(int(m) for m in re.findall(r"\*\*4\.(\d+) ", text))
+    assert numbered, "no numbered qualifications found"
+    # Contiguous from 1: a gap would mean a section was removed and the rest not renumbered.
+    assert numbered == list(range(1, len(numbered) + 1)), numbered
+    words = {1: "One", 2: "Two", 3: "Three", 4: "Four", 5: "Five", 6: "Six", 7: "Seven"}
+    word = words[len(numbered)]
+    assert f"# 4. {word} qualifications" in text, word
+    assert f"{word} results qualify those rates" in text, word
+    for other in words.values():
+        if other != word:
+            assert f"# 4. {other} qualifications" not in text, other
+            assert f"{other} results qualify those rates" not in text, other
 
 
 def test_the_new_comparison_rows_have_references():
