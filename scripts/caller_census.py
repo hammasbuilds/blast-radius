@@ -5,7 +5,7 @@
 Section 4.4 of the manuscript estimates caller-level impact from the pair-level rate under
 **uniform symbol choice**: a caller importing `k` of a module's `n` exported names is
 assumed to pick them at random, so the chance it touches one of the `b` broken ones is
-`1 - C(n-b, k)/C(n, b)`. The section states, rather than hides, that the assumption
+`1 - C(n-b, k)/C(n, k)`. The section states, rather than hides, that the assumption
 overstates - breakage is concentrated in the unused tail (Gini 0.887), and real callers
 import the popular names. What it could not say is by how much.
 
