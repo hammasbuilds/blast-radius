@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 import math
 import pathlib
+import re
 import sys
 
 import pytest
@@ -204,7 +205,6 @@ def test_the_abstract_and_the_heading_agree_on_how_many_qualifications_there_are
     and checking the two sentences against *that* means a new qualification needs the
     heading and the abstract updated and nothing else.
     """
-    import re
 
     text = _repo_file(PAPER)
     numbered = sorted(int(m) for m in re.findall(r"\*\*4\.(\d+) ", text))
@@ -226,8 +226,23 @@ def test_the_new_comparison_rows_have_references():
     for key in ("@raemaekers2014", "@breaking-bad"):
         # Cited in the table and defined in the reference list.
         assert text.count(f"[{key}]") >= 2, key
-    assert "14.5%" in text
-    assert "16.6%" in text
+    # The figures these rows carried - 14.5% and 16.6% - were both wrong and are gone.
+    # 14.5% appears in neither Maven paper's results; the nearest number in the
+    # replication's Table 5.1 is 14.8%, the share of upgrades that are *major*. 16.6% was
+    # 100% less a compliance figure whose denominator is all upgrades. The sources state
+    # the right ones outright, so the test pins those instead.
+    assert "20.1%" in text, "the replication's stated non-major breaking rate"
+    assert "14.6%" in text, "its patch rate"
+    assert "35.9%" in text and "35.7%" in text, "the original study's major/minor pair"
+    # The "must not appear" checks run against the body with the citation-status note
+    # removed. That note records both wrong figures on purpose, so checking the whole
+    # document would forbid the paper from explaining its own correction.
+    body = text.split("> **Citation status.**")[0]
+    assert "Citation status" not in body, "the note was not removed; the checks below are void"
+    assert "14.5%" not in body, "the unverifiable figure came back"
+    assert "16.6%" not in body, "the wrong-denominator subtraction came back"
+    # And the reference that does not exist must stay out of the citation positions.
+    assert "[@maven-replication]" not in body
 
 
 def test_pypi_is_still_the_lowest_row_in_the_comparison_table():

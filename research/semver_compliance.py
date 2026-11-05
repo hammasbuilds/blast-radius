@@ -6,14 +6,20 @@ semantic-versioning literature. That literature asks one aggregate question: of 
 upgrades whose version number *promises* compatibility, how many break it? Three studies
 answer it, and they disagree:
 
-* Raemaekers, van Deursen & Visser (2014, 2017), on Maven Central: **14.5%** of releases
-  introduce breaking changes in a minor or patch version.
+* Raemaekers, van Deursen & Visser (2014, 2017), on Maven Central: **29.0%** of non-major
+  upgrades introduce a breaking change, 30.0% over all levels. Not read directly; these
+  are the replication's reproduction of their results, Ochoa et al. Table 5.1.
 * Ochoa, Degueule, Falleri & Vinju, *Breaking Bad? Semantic Versioning and Impact of
-  Breaking Changes in Maven Central* (2021), a larger replication: **83.4%** of non-major
-  upgrades comply, so 16.6% do not, with compliance rising over time.
-* Li, Wang, Wang, Zhang et al., on the Go ecosystem (2023): **28.6%** of minor and patch
-  upgrades introduce breaking changes - and, separately, only **7.9%** of client programs
-  are actually affected.
+  Breaking Changes in Maven Central* (2021), a larger replication over 119,879 upgrades:
+  **20.1% of non-major upgrades break**, stated outright. Its 83.4% compliance figure is
+  over *all* upgrades, so deriving the non-major rate as 100% less 83.4% - which an
+  earlier version of this file did, giving 16.6% - uses the wrong denominator. Per level:
+  major 61.8%, minor 37.9%, patch 14.6%. Separately, **only 7.9% of clients are actually
+  affected**, because most breaking changes touch declarations no client uses.
+* Li, Wu, Fu & Zhou, on the Go ecosystem (2023): **28.6%** of non-major upgrades introduce
+  breaking changes over 124K libraries and 532K clients, and **33.3%** of downstream
+  clients may be affected. The 7.9% client figure above is Maven's, not Go's; an earlier
+  version of this file attached it to this bullet.
 
 `semver_compliance()` computes the first quantity for PyPI, over the same population and
 with the same predicate as the published per-cohort rates, so the comparison is a
@@ -72,19 +78,34 @@ UNCLASSIFIED = ("0.0.z",)
 
 # The published comparisons, with what each one measured, because the numbers are not
 # measuring the same thing and a table of four percentages would imply they are.
+# Every rate here was checked against its source in November 2026 and two of the three
+# moved. The Maven pair had been taken from search summaries: one was a figure (14.5%)
+# that appears nowhere in either Maven paper's results - the nearest number in the
+# replication's Table 5.1 is 14.8%, which is the *share of upgrades that are major*, not
+# a breaking rate - and the other was derived by subtracting a compliance figure whose
+# denominator is all upgrades from 100%. Both are replaced by figures the sources state
+# outright. Raemaekers et al. themselves remain unread; their rows come from the
+# replication's reproduction of their results in Ochoa et al., Table 5.1.
 PUBLISHED = [
     {
-        "study": "Raemaekers et al. (2014, 2017)",
+        "study": "Raemaekers et al. (2014, 2017), via Ochoa et al. Table 5.1",
         "ecosystem": "Maven Central (Java)",
-        "rate": 0.145,
-        "quantity": "releases introducing a breaking change in a minor or patch version",
+        "rate": 0.290,
+        "quantity": "non-major upgrades introducing a breaking change, 68,697 upgrades",
         "method": "static API diff",
     },
     {
         "study": "Ochoa et al. (2021), Breaking Bad?",
         "ecosystem": "Maven Central (Java)",
-        "rate": 0.166,
-        "quantity": "non-major upgrades that do not comply (reported as 83.4% compliant)",
+        "rate": 0.201,
+        "quantity": "non-major upgrades that break, stated directly, 98,591 upgrades",
+        "method": "static API diff",
+    },
+    {
+        "study": "Ochoa et al. (2021), Breaking Bad?",
+        "ecosystem": "Maven Central (Java)",
+        "rate": 0.146,
+        "quantity": "patch upgrades that break, 75,282 upgrades",
         "method": "static API diff",
     },
     {

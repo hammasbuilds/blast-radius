@@ -47,9 +47,10 @@ we fixed — while `griffe` cannot express the behavioural category at all.
 A dependency bump arrives as a version number and a changelog. Neither is evidence.
 
 The literature on whether version numbers predict breakage is substantial and almost
-entirely static. Replication work on Maven Central finds breaking changes widespread
-without regard for semantic versioning, while also finding compliance improving over
-time [@maven-replication]. A study of 384 Maven artifacts reports 67% introducing at least
+entirely static. Raemaekers et al. find breaking changes widespread in Maven
+Central without regard for semantic versioning [@raemaekers2014]; the replication that
+followed finds the same phenomenon at a lower rate, with compliance improving over time
+[@breaking-bad]. A study of 384 Maven artifacts reports 67% introducing at least
 one semantic-versioning violation. A multi-ecosystem study spanning Maven, PyPI and
 RubyGems detects breaking changes by diffing release code and reports API-breaking changes
 in 26% of provider packages. On npm, clients recover from breaking changes in about half
@@ -148,9 +149,9 @@ have been measured.
 
 | ecosystem | what was measured | rate |
 |---|---|---:|
-| Maven (Java) | releases introducing at least one breaking change [@maven-replication] | ~30% |
-| Maven (Java) | non-major upgrades that do **not** comply, i.e. 100% less the reported 83.4% [@breaking-bad] | 16.6% |
-| Maven (Java) | releases breaking in a minor or patch version [@raemaekers2014] | 14.5% |
+| Maven (Java) | breaking upgrades, all levels, original study [@raemaekers2014] | 30.0% |
+| Maven (Java) | **non-major** upgrades that break, 119,879 upgrades [@breaking-bad] | 20.1% |
+| Maven (Java) | patch upgrades that break [@breaking-bad] | 14.6% |
 | Go | non-major upgrades introducing a breaking change, 124K libraries [@go-semver] | 28.6% |
 | npm | dependent releases impacted by a breaking change in a non-major update [@npm-breaking] | ~14% |
 | **PyPI (this work)** | **non-major upgrades (patch + minor) losing or reshaping an exported name** | **8.2%** |
@@ -169,14 +170,21 @@ category is reported separately for exactly that reason. A narrower definition p
 smaller number, and the 8.2% should be read as a lower bound on PyPI's non-major breakage
 rather than as evidence that PyPI breaks less than Go.
 
-What *is* comparable across the rows is the shape. Raemaekers et al. report Maven's minor
-and major releases breaking at similar rates [@maven-replication]; here they do not, by a
-factor of five — minor 13.7% against major 41.5%, non-overlapping Wilson intervals and
-$p = 6.3\times10^{-31}$ in the table above.
-Whatever else differs between the two measurements, PyPI's major releases carry the
-breakage its minor releases do not, and Maven's reportedly do not. That is a difference in
-the thing being described rather than in how it is counted, and it is the comparison worth
-making.
+What *is* comparable across the rows is the shape, and here the literature is unusually
+direct. Raemaekers et al. report Maven's major and minor upgrades breaking at **35.9%**
+and **35.7%** respectively, and the replication says so in as many words: "the original
+study reports that there are as many breaking major upgrades as breaking minor upgrades"
+[@breaking-bad, Table 5.1]. On PyPI they do not. **Minor 13.7% against major 41.5%**, a
+factor of **three**, with non-overlapping Wilson intervals and $p = 6.3\times10^{-31}$ in
+the table above.
+
+The replication's own larger corpus separates the levels too - major 61.8%, minor 37.9%,
+patch 14.6% - so the similarity belongs to the original study's corpus rather than to
+Maven as such. The honest form of the comparison is therefore that PyPI separates its
+levels *more sharply than either Maven measurement*, not that Maven fails to separate
+them at all. Whatever else differs, PyPI's major releases carry breakage its minor
+releases do not, and that is a difference in the thing being described rather than in how
+it is counted.
 
 # 4. Five qualifications
 
@@ -248,9 +256,16 @@ come in at 0.2941. Breakage is
 concentrated in the long tail — Gini 0.887 — and the tail is exactly what nobody imports. So
 uniform choice spreads the broken names across the whole surface and **overstates** the
 chance a real caller is hit. The table is an upper bound on caller impact under its own
-model, and the Go study's independently measured 7.9% of *client programs* affected is not
-the same quantity as any row of it: theirs is over real client code and over all non-major
-upgrades, mine is per upgrade and per import count.
+model.
+
+Two published client-level figures sit near it and neither is the same quantity as any
+row of it. [@breaking-bad] finds **7.9% of Maven clients actually impacted**, over real
+client code and all non-major upgrades, because most breaking changes touch declarations
+no client uses - which is the same mechanism §4.4 measures as a Gini of 0.887 over broken
+symbols, arrived at independently. [@go-semver] finds **33.3% of Go clients may be
+affected**, which is a possibility rather than an observation. Mine is per upgrade and per
+import count, so it is comparable to neither directly. An earlier draft of this paragraph
+attributed the 7.9% to the Go study; it is Maven's, and Go's client figure is the 33.3%.
 
 *The denominator moved.* These 1,840 pairs are the 2,010 of §3 minus the 170 that export no
 names at all. A module exporting nothing cannot break an exported name, so excluding them
@@ -441,9 +456,8 @@ both versions and both tools.
 
 # References
 
-- [@maven-replication] *Breaking changes and semantic versioning in Maven Central: a replication study.* Journal of Systems and Software, 2023.
-- [@raemaekers2014] Raemaekers, S., van Deursen, A. and Visser, J. *Semantic Versioning versus Breaking Changes: A Study of the Maven Repository.* SCAM 2014. Reports **14.5% of releases introducing breaking changes in a minor or patch version**.
-- [@breaking-bad] Ochoa, L., Degueule, T., Falleri, J.-R. and Vinju, J. *Breaking Bad? Semantic Versioning and Impact of Breaking Changes in Maven Central.* Empirical Software Engineering 27, 2022; arXiv:2110.07889. A larger replication: **83.4% of non-major upgrades comply**, so 16.6% do not, with compliance rising over time.
+- [@raemaekers2014] Raemaekers, S., van Deursen, A. and Visser, J. *Semantic Versioning versus Breaking Changes: A Study of the Maven Repository.* SCAM 2014. Extended as *Semantic versioning and impact of breaking changes in the Maven repository*, Journal of Systems and Software 129, 2017. **Not read directly** - ScienceDirect refuses automated access and the TU Delft copy does not respond - so every figure attributed to it here comes from the replication's reproduction of it in [@breaking-bad, Table 5.1]: 80,589 upgrades, **30.0% breaking overall**, **major 35.9% against minor 35.7%**, patch 23.8%, non-major 29.0%.
+- [@breaking-bad] Ochoa, L., Degueule, T., Falleri, J.-R. and Vinju, J. *Breaking Bad? Semantic Versioning and Impact of Breaking Changes in Maven Central.* Empirical Software Engineering 27, 2022; arXiv:2110.07889. **Read in full** from the arXiv PDF. 119,879 upgrades and 293,817 clients. **83.4% of *all* upgrades comply** - not of non-major ones - and the paper states the non-major figure directly: **20.1% of non-major upgrades break**. Per level: major 61.8%, minor 37.9%, patch 14.6%, initial development 26.7%. Table 5.1 also reproduces the original study's results, which is this paper's source for them. **Only 7.9% of clients are actually impacted**, because most breaking changes touch declarations no client uses.
 - [@npm-breaking] *I Depended on You and You Broke Me: An Empirical Study of Manifesting Breaking Changes in Client Packages.* arXiv:2301.04563. In npm, **about 12% of dependent packages and 14% of their releases were impacted by a breaking change** during updates of non-major releases of their dependencies.
 - [@go-semver] *A Large-Scale Empirical Study on Semantic Versioning in Golang Ecosystem.* arXiv:2309.02894. 124K third-party libraries and 532K client programs; 86.3% of library upgrades follow semantic versioning, **28.6% of non-major upgrades introduce breaking changes**, and 33.3% of downstream clients may be affected.
 - [@slr] *Breaking Changes in Software Ecosystems: A Systematic Literature Review.* arXiv:2605.24397.
@@ -460,15 +474,39 @@ both versions and both tools.
 > §1 has been rewritten to claim the intersection those three leave open rather than an
 > absence, which is both true and a narrower claim.
 >
-> §3.1's cross-ecosystem table is **entirely second-hand**. The Go figure (28.6% of
-> non-major upgrades) and the npm figure (about 12% of dependent packages and 14% of
-> their releases) were read from the papers' own abstracts; the Maven figure is a search
-> summary of @maven-replication, and so is the claim §3.1 leans on hardest — that
-> Maven's minor and major releases break at similar rates, which is the contrast with
-> this paper's fivefold gap. That sentence should not survive submission without the
-> replication study's own table in front of it, because it is the one place where a
-> second-hand number is used to say something about *this* paper's result rather than
-> to set context.
+> **§3.1's cross-ecosystem table has now been checked against the sources, and it was
+> wrong in three ways.** The sentence it leans on hardest did survive; the apparatus
+> around it did not.
+>
+> *A reference that does not exist.* @maven-replication was listed as *Breaking changes
+> and semantic versioning in Maven Central: a replication study*, Journal of Systems and
+> Software, 2023, and cited twice. **No such paper is in OpenAlex or Crossref.** It
+> appears to be a conflation of three real ones: Raemaekers et al. at SCAM 2014, their
+> extended version in JSS 129 (2017), and Ochoa et al.'s actual replication in EMSE 27
+> (2022), which this paper already cites as @breaking-bad. The entry is removed and its
+> two citations reassigned to the papers that carry the claims.
+>
+> *A rate derived by the wrong subtraction.* The table gave Maven's non-major breaking
+> rate as "100% less the reported 83.4%", i.e. 16.6%. The 83.4% is **over all upgrades**,
+> not non-major ones, and @breaking-bad states the non-major figure directly: **20.1%**.
+> The table now quotes it rather than deriving it.
+>
+> *An arithmetic slip.* "A factor of five" for minor 13.7% against major 41.5% is a
+> factor of three.
+>
+> What held, and is now first-hand: @breaking-bad was read in full from its arXiv PDF,
+> and its Table 5.1 reproduces the original study's per-level results — major **35.9%**
+> against minor **35.7%** — with the text stating plainly that "the original study reports
+> that there are as many breaking major upgrades as breaking minor upgrades". That is the
+> contrast §3.1 draws, and it is now cited to the table that contains it. Raemaekers et
+> al. themselves remain **unread**: ScienceDirect refuses automated access and the TU
+> Delft copy does not respond, so every figure attributed to them here is explicitly
+> taken from the replication's reproduction of their work rather than from them.
+>
+> The Go figures (86.3% compliance, 28.6% of non-major upgrades, 124K libraries and 532K
+> clients, 33.3% of clients possibly affected) and the npm figures (about 12% of dependent
+> packages and 14% of their releases) were re-checked against the two papers' abstracts
+> and are exact.
 >
 > The remaining references are quoted from search summaries rather than full texts and
 > must each be read before submission. `AexPy`, `@ruiz-behavioural` and `@who-broke-me`
